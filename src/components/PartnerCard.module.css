@@ -1,0 +1,31 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--adflex-space-4);
+  height: 100%;
+  padding: var(--adflex-space-5);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+  box-shadow: var(--adflex-shadow-sm);
+}
+
+/* Decorative initials only — deliberately not styled to look like a logo. */
+.initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  font-size: var(--adflex-text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--adflex-color-ink);
+  background: var(--adflex-color-surface-soft);
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: var(--adflex-radius-md);
+}
+
+.name {
+  font-size: var(--adflex-text-lg);
+}

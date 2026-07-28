@@ -1,0 +1,190 @@
+/*
+ * Global base styles.
+ *
+ * Only a minimal reset lives at document level. Everything with an ADFLEX
+ * opinion is scoped to `.adflex-scope` and uses the tokens defined in
+ * src/styles/adflex-tokens.css.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  /* Anchor navigation should not animate for people who ask for reduced
+     motion, so smooth scrolling is opted into rather than out of. */
+  scroll-behavior: auto;
+}
+
+body {
+  min-height: 100%;
+  /* Guards against accidental horizontal page overflow without disabling
+     zoom or clipping sticky positioning. */
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* ADFLEX scope                                                        */
+/* ------------------------------------------------------------------ */
+
+.adflex-scope {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: var(--adflex-font-sans);
+  font-size: var(--adflex-text-base);
+  line-height: var(--adflex-leading-normal);
+  color: var(--adflex-color-text);
+  background: var(--adflex-color-background);
+}
+
+/* Heading defaults are written with :where() so they carry zero specificity.
+   A component's own class always wins without needing !important or deeper
+   selectors. */
+:where(.adflex-scope) :where(h1, h2, h3) {
+  color: var(--adflex-color-ink);
+  line-height: var(--adflex-leading-tight);
+  text-wrap: balance;
+}
+
+:where(.adflex-scope) :where(h1) {
+  font-size: var(--adflex-text-3xl);
+  letter-spacing: -0.015em;
+}
+
+:where(.adflex-scope) :where(h2) {
+  font-size: var(--adflex-text-2xl);
+  letter-spacing: -0.01em;
+}
+
+:where(.adflex-scope) :where(h3) {
+  font-size: var(--adflex-text-lg);
+}
+
+.adflex-scope :where(a, button, summary):focus-visible {
+  outline: 3px solid var(--adflex-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--adflex-radius-sm);
+}
+
+/* Layout container -------------------------------------------------- */
+.adflex-container {
+  width: 100%;
+  max-width: var(--adflex-container);
+  margin-inline: auto;
+  padding-inline: var(--adflex-space-5);
+}
+
+@media (max-width: 720px) {
+  .adflex-container {
+    padding-inline: var(--adflex-space-4);
+  }
+}
+
+/* Skip link --------------------------------------------------------- */
+.adflex-skip-link {
+  position: absolute;
+  top: var(--adflex-space-2);
+  left: var(--adflex-space-2);
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--adflex-target-min);
+  padding: var(--adflex-space-2) var(--adflex-space-4);
+  font-weight: 600;
+  color: var(--adflex-color-surface);
+  background: var(--adflex-color-primary);
+  border-radius: var(--adflex-radius-sm);
+  transform: translateY(calc(-100% - var(--adflex-space-4)));
+}
+
+.adflex-skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* Primary call to action -------------------------------------------- */
+.adflex-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--adflex-target-min);
+  min-width: var(--adflex-target-min);
+  padding: var(--adflex-space-3) var(--adflex-space-5);
+  font: inherit;
+  font-weight: 600;
+  color: var(--adflex-color-surface);
+  text-decoration: none;
+  background: var(--adflex-color-primary);
+  border: 1px solid transparent;
+  border-radius: var(--adflex-radius-md);
+  cursor: pointer;
+}
+
+.adflex-cta:hover {
+  background: var(--adflex-color-primary-hover);
+}
+
+/* Text link --------------------------------------------------------- */
+/* Standalone link. inline-flex plus a minimum height keeps the target at
+   least 44 CSS pixels tall. Links written inside a sentence should not use
+   this class. */
+.adflex-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--adflex-target-min);
+  color: var(--adflex-color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.adflex-link:hover {
+  color: var(--adflex-color-primary-hover);
+}
+
+/* Tag --------------------------------------------------------------- */
+.adflex-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--adflex-space-1) var(--adflex-space-3);
+  font-size: var(--adflex-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--adflex-color-ink);
+  background: var(--adflex-color-surface-soft);
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: 999px;
+}
+
+.adflex-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--adflex-space-2);
+  list-style: none;
+}

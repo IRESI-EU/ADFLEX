@@ -1,0 +1,88 @@
+/*
+ * ADFLEX design tokens — single CSS source of truth.
+ *
+ * All tokens are scoped to `.adflex-scope` rather than `:root`, so the ADFLEX
+ * brand cannot leak into anything else that may later be hosted in the same
+ * application. Both routes (`/` and `/design-system`) are wrapped in this class
+ * by the root layout.
+ *
+ * Colours are derived from the official ADFLEX logo. Contrast ratios noted
+ * below were calculated against #FFFFFF and are the reason the interaction
+ * teal is darker than the brand teal.
+ */
+
+.adflex-scope {
+  /* --- Colour --------------------------------------------------------- */
+  /* Very dark navy from the ADFLEX wordmark. Headings. */
+  --adflex-color-ink: #091320;
+  /* Body text. */
+  --adflex-color-text: #1b2733;
+  /* Secondary / supporting text. ~7.0:1 on white. */
+  --adflex-color-muted: #4a5a6a;
+
+  /* Interaction teal. White text on this colour is ~6.4:1. Used for buttons,
+     links and focus rings. Deliberately darker than the logo teal. */
+  --adflex-color-primary: #006b63;
+  --adflex-color-primary-hover: #00544e;
+  /* Logo teal (~4.5:1 on white). Decorative use: rules, marks, accents. */
+  --adflex-color-brand: #08857b;
+
+  /* Pale blue-grey from the logo tagline. Decorative only — never body text. */
+  --adflex-color-brand-soft: #8ea8c1;
+  /* Energy yellow from the logo bolt. Decorative accent only — never small
+     text on white. */
+  --adflex-color-accent: #fec003;
+
+  /* --- Surfaces ------------------------------------------------------- */
+  --adflex-color-background: #f2f7f6;
+  --adflex-color-surface: #ffffff;
+  --adflex-color-surface-soft: #e7f0ee;
+  --adflex-color-border: #d5e2e0;
+  --adflex-color-border-strong: #b9cbc8;
+
+  /* --- Typography ----------------------------------------------------- */
+  --adflex-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+
+  --adflex-text-xs: 0.8125rem;
+  --adflex-text-sm: 0.9375rem;
+  --adflex-text-base: 1.0625rem;
+  --adflex-text-lg: 1.1875rem;
+  --adflex-text-xl: 1.5rem;
+  --adflex-text-2xl: 1.875rem;
+  --adflex-text-3xl: clamp(2rem, 1.4rem + 2.2vw, 2.875rem);
+
+  --adflex-leading-tight: 1.2;
+  --adflex-leading-normal: 1.65;
+
+  /* --- Spacing scale -------------------------------------------------- */
+  --adflex-space-1: 0.25rem;
+  --adflex-space-2: 0.5rem;
+  --adflex-space-3: 0.75rem;
+  --adflex-space-4: 1rem;
+  --adflex-space-5: 1.5rem;
+  --adflex-space-6: 2.5rem;
+  --adflex-space-7: 4rem;
+
+  /* --- Radius --------------------------------------------------------- */
+  --adflex-radius-sm: 4px;
+  --adflex-radius-md: 10px;
+  --adflex-radius-lg: 16px;
+
+  /* --- Elevation ------------------------------------------------------ */
+  --adflex-shadow-sm: 0 1px 2px rgba(9, 19, 32, 0.06);
+  --adflex-shadow-md: 0 6px 20px rgba(9, 19, 32, 0.08);
+
+  /* --- Layout --------------------------------------------------------- */
+  --adflex-container: 1160px;
+  --adflex-header-height: 84px;
+
+  /* Minimum internal target size for interactive elements. */
+  --adflex-target-min: 44px;
+}
+
+@media (max-width: 720px) {
+  .adflex-scope {
+    --adflex-header-height: 72px;
+  }
+}

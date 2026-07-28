@@ -1,0 +1,49 @@
+/* Layout patterns for the home page. Cards themselves own their own styling. */
+
+.aboutGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--adflex-space-5);
+}
+
+.aboutCard {
+  height: 100%;
+  padding: var(--adflex-space-5);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+  box-shadow: var(--adflex-shadow-sm);
+}
+
+.aboutBody {
+  margin-top: var(--adflex-space-3);
+  color: var(--adflex-color-muted);
+}
+
+/* Two-column card grid on desktop, single column on mobile. */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--adflex-space-5);
+}
+
+.partnerGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--adflex-space-5);
+}
+
+@media (max-width: 900px) {
+  .aboutGrid,
+  .partnerGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .aboutGrid,
+  .partnerGrid,
+  .cardGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

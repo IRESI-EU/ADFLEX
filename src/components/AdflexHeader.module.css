@@ -1,0 +1,117 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--adflex-color-surface);
+  border-bottom: 1px solid var(--adflex-color-border);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--adflex-space-5);
+  min-height: var(--adflex-header-height);
+  padding-block: var(--adflex-space-2);
+}
+
+/* The supplied logo has an opaque white background, so it always sits on the
+   white header surface and is never recoloured, cropped or distorted. */
+.logoLink {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.logo {
+  width: 220px;
+  height: auto;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+}
+
+.navList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--adflex-space-1);
+  list-style: none;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--adflex-target-min);
+  padding: var(--adflex-space-2) var(--adflex-space-3);
+  font-size: var(--adflex-text-sm);
+  font-weight: 600;
+  color: var(--adflex-color-text);
+  text-decoration: none;
+  border-radius: var(--adflex-radius-sm);
+}
+
+.navLink:hover {
+  color: var(--adflex-color-primary);
+  background: var(--adflex-color-surface-soft);
+}
+
+.toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--adflex-target-min);
+  min-width: var(--adflex-target-min);
+  padding: var(--adflex-space-2) var(--adflex-space-4);
+  font: inherit;
+  font-size: var(--adflex-text-sm);
+  font-weight: 600;
+  color: var(--adflex-color-ink);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: var(--adflex-radius-sm);
+  cursor: pointer;
+}
+
+@media (max-width: 940px) {
+  .logo {
+    width: 170px;
+  }
+
+  .toggle {
+    display: inline-flex;
+  }
+
+  .navListCollapsible {
+    display: none;
+    position: absolute;
+    right: var(--adflex-space-4);
+    left: var(--adflex-space-4);
+    top: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: var(--adflex-space-2);
+    background: var(--adflex-color-surface);
+    border: 1px solid var(--adflex-color-border);
+    border-radius: var(--adflex-radius-md);
+    box-shadow: var(--adflex-shadow-md);
+  }
+
+  .navListOpen {
+    display: flex;
+  }
+
+  .navLink {
+    justify-content: flex-start;
+    font-size: var(--adflex-text-base);
+  }
+}
+
+@media (max-width: 420px) {
+  .logo {
+    width: 150px;
+  }
+}

@@ -1,0 +1,92 @@
+.hero {
+  padding-block: var(--adflex-space-7) var(--adflex-space-6);
+  background: var(--adflex-color-surface);
+  border-bottom: 1px solid var(--adflex-color-border);
+  scroll-margin-top: calc(var(--adflex-header-height) + var(--adflex-space-4));
+}
+
+.tags {
+  margin-bottom: var(--adflex-space-5);
+}
+
+.headline {
+  max-width: 22ch;
+}
+
+.tagline {
+  max-width: 62ch;
+  margin-top: var(--adflex-space-5);
+  font-size: var(--adflex-text-xl);
+  line-height: 1.45;
+  color: var(--adflex-color-text);
+}
+
+.explainer {
+  max-width: 62ch;
+  margin-top: var(--adflex-space-3);
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+.actions {
+  margin-top: var(--adflex-space-5);
+}
+
+.diagramWrap {
+  margin-top: var(--adflex-space-6);
+}
+
+.figure {
+  padding: var(--adflex-space-4);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+  box-shadow: var(--adflex-shadow-sm);
+}
+
+/* Full width, natural height: the whole panoramic diagram stays visible at
+   every viewport size and never overflows the page. */
+.diagram {
+  width: 100%;
+  height: auto;
+}
+
+.caption {
+  margin-top: var(--adflex-space-3);
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+.conceptsTitle {
+  margin-top: var(--adflex-space-6);
+  font-size: var(--adflex-text-lg);
+}
+
+.concepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--adflex-space-2);
+  margin-top: var(--adflex-space-3);
+  list-style: none;
+}
+
+.concept {
+  padding: var(--adflex-space-2) var(--adflex-space-3);
+  font-size: var(--adflex-text-sm);
+  background: var(--adflex-color-surface-soft);
+  border-radius: var(--adflex-radius-sm);
+}
+
+@media (max-width: 720px) {
+  .hero {
+    padding-block: var(--adflex-space-6);
+  }
+
+  .headline {
+    max-width: none;
+  }
+
+  .figure {
+    padding: var(--adflex-space-2);
+  }
+}

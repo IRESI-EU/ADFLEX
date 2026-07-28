@@ -1,0 +1,18 @@
+.empty {
+  max-width: 70ch;
+  padding: var(--adflex-space-6);
+  background: var(--adflex-color-surface);
+  /* Dashed edge signals "nothing here yet" alongside the wording, so the
+     state is not communicated by styling alone. */
+  border: 1px dashed var(--adflex-color-border-strong);
+  border-radius: var(--adflex-radius-lg);
+}
+
+.heading {
+  font-size: var(--adflex-text-xl);
+}
+
+.body {
+  margin-top: var(--adflex-space-3);
+  color: var(--adflex-color-muted);
+}

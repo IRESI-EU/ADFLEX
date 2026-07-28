@@ -1,0 +1,345 @@
+.main {
+  padding-block: var(--adflex-space-6) var(--adflex-space-7);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: var(--adflex-space-6);
+}
+
+/* Left column stretches to the full row height so the sticky navigation
+   inside it stays put for the whole scroll. */
+.sidebar {
+  min-width: 0;
+}
+
+.content {
+  min-width: 0;
+}
+
+.pageHead {
+  display: grid;
+  gap: var(--adflex-space-4);
+  padding-bottom: var(--adflex-space-6);
+  border-bottom: 1px solid var(--adflex-color-border);
+}
+
+.lead {
+  max-width: 70ch;
+  font-size: var(--adflex-text-lg);
+  color: var(--adflex-color-muted);
+}
+
+.section {
+  padding-top: var(--adflex-space-6);
+  scroll-margin-top: calc(var(--adflex-header-height) + var(--adflex-space-4));
+}
+
+.section > * + * {
+  margin-top: var(--adflex-space-4);
+}
+
+.subhead {
+  margin-top: var(--adflex-space-6);
+  padding-top: var(--adflex-space-3);
+  border-top: 2px solid var(--adflex-color-brand);
+  display: inline-block;
+}
+
+.note {
+  max-width: 70ch;
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+.caption {
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+.bullets {
+  max-width: 74ch;
+  display: grid;
+  gap: var(--adflex-space-2);
+  padding-left: var(--adflex-space-5);
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.875em;
+  color: var(--adflex-color-ink);
+  overflow-wrap: anywhere;
+}
+
+/* --- Colour swatches ------------------------------------------------ */
+.swatchGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--adflex-space-4);
+  list-style: none;
+}
+
+.swatch {
+  display: grid;
+  gap: var(--adflex-space-1);
+  padding: var(--adflex-space-4);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-md);
+}
+
+/* Filled from the live token, so a swatch can never drift from the value in
+   use — only the printed hex is documentation text. */
+.swatchChip {
+  display: block;
+  height: 56px;
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: var(--adflex-radius-sm);
+}
+
+.swatchName {
+  font-weight: 700;
+  color: var(--adflex-color-ink);
+}
+
+.swatchHex {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: var(--adflex-text-sm);
+}
+
+.swatchUsage {
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+/* --- Type specimen -------------------------------------------------- */
+.specimenList {
+  display: grid;
+  gap: var(--adflex-space-3);
+  padding: var(--adflex-space-5);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-md);
+}
+
+.specimen3xl {
+  font-size: var(--adflex-text-3xl);
+  line-height: var(--adflex-leading-tight);
+  color: var(--adflex-color-ink);
+}
+
+.specimen2xl {
+  font-size: var(--adflex-text-2xl);
+  line-height: var(--adflex-leading-tight);
+  color: var(--adflex-color-ink);
+}
+
+.specimenLg {
+  font-size: var(--adflex-text-lg);
+  color: var(--adflex-color-ink);
+}
+
+.specimenBase {
+  font-size: var(--adflex-text-base);
+}
+
+.specimenSm {
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+/* --- Token tables --------------------------------------------------- */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--adflex-text-sm);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-md);
+}
+
+.tableCaption {
+  padding-bottom: var(--adflex-space-2);
+  font-size: var(--adflex-text-sm);
+  font-weight: 700;
+  text-align: left;
+  color: var(--adflex-color-muted);
+}
+
+.table th,
+.table td {
+  padding: var(--adflex-space-3);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--adflex-color-border);
+}
+
+.table th {
+  color: var(--adflex-color-ink);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* --- Spacing scale -------------------------------------------------- */
+.spacingList {
+  display: grid;
+  gap: var(--adflex-space-2);
+  list-style: none;
+}
+
+.spacingRow {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr) 5rem;
+  gap: var(--adflex-space-3);
+  align-items: center;
+}
+
+.spacingBar {
+  display: block;
+  height: 16px;
+  background: var(--adflex-color-brand);
+  border-radius: var(--adflex-radius-sm);
+}
+
+.spacingValue {
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+/* --- Radius and shadow samples -------------------------------------- */
+.sampleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--adflex-space-5);
+  list-style: none;
+}
+
+.sample {
+  display: grid;
+  gap: var(--adflex-space-2);
+  justify-items: start;
+}
+
+.radiusBox {
+  display: block;
+  width: 88px;
+  height: 64px;
+  background: var(--adflex-color-surface-soft);
+  border: 1px solid var(--adflex-color-border-strong);
+}
+
+.shadowBox {
+  display: block;
+  width: 88px;
+  height: 64px;
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-md);
+}
+
+.sampleValue {
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+/* --- Logo & imagery ------------------------------------------------- */
+.logoStage {
+  display: grid;
+  gap: var(--adflex-space-3);
+  padding: var(--adflex-space-5);
+  background: var(--adflex-color-surface-soft);
+  border-radius: var(--adflex-radius-lg);
+}
+
+/* Intentional white surface with padding, so the logo's own white background
+   always meets a white background. */
+.logoSurface {
+  display: flex;
+  justify-content: center;
+  padding: var(--adflex-space-5);
+  background: var(--adflex-color-surface);
+  border-radius: var(--adflex-radius-md);
+}
+
+.logoImage {
+  width: min(420px, 100%);
+  height: auto;
+}
+
+.ruleColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--adflex-space-5);
+}
+
+.diagramFigure {
+  display: grid;
+  gap: var(--adflex-space-3);
+  padding: var(--adflex-space-4);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+}
+
+.diagramImage {
+  width: 100%;
+  height: auto;
+}
+
+/* --- Component examples --------------------------------------------- */
+.example {
+  display: grid;
+  gap: var(--adflex-space-3);
+  margin-top: var(--adflex-space-5);
+}
+
+.exampleLabel {
+  font-size: var(--adflex-text-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--adflex-color-muted);
+}
+
+.exampleStage {
+  padding: var(--adflex-space-5);
+  background: var(--adflex-color-surface-soft);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+}
+
+.patternBlock {
+  max-width: 74ch;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ruleColumns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .spacingRow {
+    grid-template-columns: 9rem minmax(0, 1fr) 4.5rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .spacingRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--adflex-space-1);
+  }
+
+  .exampleStage {
+    padding: var(--adflex-space-4);
+  }
+}

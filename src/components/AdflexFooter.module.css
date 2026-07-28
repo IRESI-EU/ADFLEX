@@ -1,0 +1,71 @@
+.footer {
+  margin-top: auto;
+  /* Light surface: the supplied logo has an opaque white background and must
+     never sit directly on a dark colour. */
+  background: var(--adflex-color-surface);
+  border-top: 1px solid var(--adflex-color-border);
+}
+
+.inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--adflex-space-6);
+  padding-block: var(--adflex-space-6);
+}
+
+.brand {
+  display: grid;
+  gap: var(--adflex-space-4);
+}
+
+.logo {
+  width: 200px;
+  height: auto;
+}
+
+.email {
+  font-size: var(--adflex-text-sm);
+}
+
+.navTitle {
+  font-size: var(--adflex-text-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--adflex-color-muted);
+}
+
+.navList {
+  display: grid;
+  gap: var(--adflex-space-1);
+  margin-top: var(--adflex-space-3);
+  list-style: none;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--adflex-target-min);
+  padding-right: var(--adflex-space-2);
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-text);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  color: var(--adflex-color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Reserved row for funding and legal information once it is supplied. */
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--adflex-space-2) var(--adflex-space-5);
+  padding-block: var(--adflex-space-4);
+  font-size: var(--adflex-text-xs);
+  color: var(--adflex-color-muted);
+  border-top: 1px solid var(--adflex-color-border);
+}
