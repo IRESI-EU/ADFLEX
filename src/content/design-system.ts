@@ -72,25 +72,14 @@ export const designSystemContent = {
   },
 
   bands: {
-    lead: "The palette is white, mild grey and the green taken from the logo. Reading sections sit on white; emphasis bands shift one step in tone to give the page rhythm; and a single saturated green band is reserved for a call to action. The whole thing has a dark counterpart, chosen with the toggle in the header.",
+    lead: "The palette is white, mild grey and the green taken from the logo. Reading sections sit on white; emphasis bands shift one step in tone to give the page rhythm; and a single saturated green band is reserved for a call to action. The site is light-only — there is no dark mode.",
     points: [
-      "There is one set of semantic token names. Four things rebind them and nothing else should: dark mode, the emphasis band (.adflex-band), the accent band (.adflex-accent) and the forced-light island (.adflex-light).",
-      "A component written with var(--adflex-color-surface) therefore works in all four with no extra CSS and no conditional class. Build against the semantic tokens — never a literal colour — and this comes for free.",
-      "The emphasis band does not carry any theme logic of its own. It points at --adflex-band-*, and dark mode changes what those mean, so the band is a soft green-grey tint in the light theme and a deeper shade of the page in the dark one.",
+      "There is one set of semantic token names. Three things rebind them and nothing else should: the emphasis band (.adflex-band), the accent band (.adflex-accent) and the forced-light island (.adflex-light).",
+      "A component written with var(--adflex-color-surface) therefore works in all three with no extra CSS and no conditional class. Build against the semantic tokens — never a literal colour — and this comes for free.",
+      "The emphasis band is a soft green-grey tint rather than a dark block. In a light design a band earns its separation by shifting tone slightly, not by inverting.",
       "The accent band is used once — the newsletter block that closes the home page. It inverts two tokens: primary becomes white and surface becomes the green, which turns .adflex-cta into a white button with green text without needing a variant.",
-      "A few things must stay fixed regardless of theme, because the supplied artwork is fixed. The ADFLEX logo file is opaque and has no alpha channel at all, so it is always given a white plate. The partner logos are drawn for a light ground, so their cards carry .adflex-light. The pilot icons are dark navy line art, so their tiles stay light for the same reason.",
-      ".adflex-light pins the whole palette back to the fixed --adflex-l-* values rather than the semantic ones, which is what lets it stay light even when dark mode is on. Pinning only the background would leave dark-theme text on a white ground.",
-    ],
-  },
-
-  themes: {
-    lead: "Dark mode is a rebinding of the same eleven semantic tokens, so it adds no new colours to keep in sync. The reader's choice is remembered; until they make one, the site follows the operating system.",
-    points: [
-      "The theme lives in one place: a data-adflex-theme attribute on the document element.",
-      "An inline script in the root layout sets that attribute during head parse, before the first paint. An effect or a deferred script would run after the page had already drawn, which is exactly the flash it exists to prevent.",
-      "The toggle holds no React state. It reads the attribute at click time, and its two labels are shown and hidden by CSS off that same attribute — so there is nothing for the server and the client to disagree about, and no flash of the wrong label.",
-      "The control is hidden until the inline script adds an adflex-js class, so a reader without JavaScript is never shown a button that cannot do anything.",
-      "color-scheme is set alongside the palette, so scrollbars and native form controls follow the theme too.",
+      "A few things must stay fixed regardless of the band around them, because the supplied artwork is fixed. The ADFLEX logo file is opaque and has no alpha channel at all, so it is always given a white plate. The partner logos are drawn for a light ground, so their cards carry .adflex-light. The pilot icons are dark navy line art, so their tiles are pinned light for the same reason.",
+      ".adflex-light pins the whole palette to the fixed --adflex-l-* values rather than the semantic ones, so no enclosing band can reach into it. Pinning only the background would leave band text colours on a white ground.",
     ],
   },
 
@@ -210,70 +199,6 @@ export const designSystemContent = {
       name: "Band strong border",
       hex: "#8FB3AD",
       usage: "Tag outlines on the band.",
-    },
-  ],
-
-  darkColours: [
-    {
-      token: "--adflex-d-background",
-      name: "Dark background",
-      hex: "#0E1614",
-      usage: "Page background in dark mode. Near-black with a green cast.",
-    },
-    {
-      token: "--adflex-d-surface",
-      name: "Dark surface",
-      hex: "#151F1D",
-      usage: "Cards, header and footer in dark mode.",
-    },
-    {
-      token: "--adflex-d-surface-soft",
-      name: "Dark soft surface",
-      hex: "#1D2926",
-      usage: "Secondary fills and tags in dark mode.",
-    },
-    {
-      token: "--adflex-d-border",
-      name: "Dark border",
-      hex: "#2A3835",
-      usage: "Card and divider hairlines in dark mode.",
-    },
-    {
-      token: "--adflex-d-border-strong",
-      name: "Dark strong border",
-      hex: "#5C726E",
-      usage: "Tag outlines and secondary buttons in dark mode. Roughly 3.3:1 on the dark surface.",
-    },
-    {
-      token: "--adflex-d-ink",
-      name: "Dark ink",
-      hex: "#F1F6F5",
-      usage: "Headings in dark mode.",
-    },
-    {
-      token: "--adflex-d-text",
-      name: "Dark text",
-      hex: "#D8E3E1",
-      usage: "Body copy in dark mode. Roughly 14:1 on the dark background.",
-    },
-    {
-      token: "--adflex-d-muted",
-      name: "Dark muted",
-      hex: "#9AABA7",
-      usage: "Supporting copy in dark mode. Roughly 7.7:1 on the dark background.",
-    },
-    {
-      token: "--adflex-d-primary",
-      name: "Light green",
-      hex: "#5FD3BD",
-      usage:
-        "Buttons, links, eyebrows and focus rings in dark mode. Roughly 10:1 on the dark background. Dark mode only — it has nowhere near enough contrast on white.",
-    },
-    {
-      token: "--adflex-d-primary-hover",
-      name: "Light green (hover)",
-      hex: "#8AE3D2",
-      usage: "Hover state for interactive elements in dark mode.",
     },
   ],
 

@@ -93,14 +93,6 @@ export default function DesignSystemPage() {
                 </div>
               </div>
 
-              <h3 className={styles.subhead}>Dark mode</h3>
-              <p className={styles.lead}>{ds.themes.lead}</p>
-              <ul className={styles.bullets}>
-                {ds.themes.points.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-
               <h3 className={styles.subhead}>Colour â€” page</h3>
               <ul className={styles.swatchGrid}>
                 {ds.colours.map((colour) => (
@@ -122,8 +114,7 @@ export default function DesignSystemPage() {
               <p className={styles.note}>
                 These are the values that <code className={styles.code}>.adflex-band</code>{" "}
                 rebinds the semantic tokens to. Components should not reference them directly,
-                with the deliberate exceptions noted above. Dark mode rebinds this set too, so
-                the swatches below follow whichever theme is on.
+                with the deliberate exceptions noted above.
               </p>
               <ul className={`${styles.swatchGrid} adflex-band ${styles.bandSwatches}`}>
                 {ds.bandColours.map((colour) => (
@@ -141,27 +132,6 @@ export default function DesignSystemPage() {
                 ))}
               </ul>
 
-              <h3 className={styles.subhead}>Colour â€” dark theme</h3>
-              <p className={styles.note}>
-                The fixed dark palette. These are what the semantic tokens point at while{" "}
-                <code className={styles.code}>data-adflex-theme=&quot;dark&quot;</code> is set,
-                so the hex values below are the same whichever theme you are reading this in.
-              </p>
-              <ul className={styles.swatchGrid}>
-                {ds.darkColours.map((colour) => (
-                  <li key={colour.token} className={styles.swatch}>
-                    <span
-                      className={styles.swatchChip}
-                      style={{ background: `var(${colour.token})` }}
-                      aria-hidden="true"
-                    />
-                    <span className={styles.swatchName}>{colour.name}</span>
-                    <code className={styles.code}>{colour.token}</code>
-                    <span className={styles.swatchHex}>{colour.hex}</span>
-                    <span className={styles.swatchUsage}>{colour.usage}</span>
-                  </li>
-                ))}
-              </ul>
 
               <h3 className={styles.subhead}>Typography</h3>
               <p className={styles.note}>{ds.typefaces.lead}</p>

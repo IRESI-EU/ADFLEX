@@ -313,13 +313,13 @@ colour of the supplied logo file, sampled from the file itself rather than picke
 `--adflex-color-primary` is a darkened version of it, because the raw logo green only reaches
 4.47:1 on white and interactive text needs 4.5:1.
 
-**One set of semantic token names, four things that rebind them** — dark mode, the emphasis
-band (`.adflex-band`), the accent band (`.adflex-accent`) and the forced-light island
-(`.adflex-light`). Nothing else should. One component therefore serves all four with no
+**One set of semantic token names, three things that rebind them** — the emphasis band
+(`.adflex-band`), the accent band (`.adflex-accent`) and the forced-light island
+(`.adflex-light`). Nothing else should. One component therefore serves all three with no
 conditional styling:
 
 ```css
-/* This card is correct in every band and in both themes. Nothing else is needed. */
+/* This card is correct in every band. Nothing else is needed. */
 .card {
   background: var(--adflex-color-surface);
   border: 1px solid var(--adflex-color-border);
@@ -327,23 +327,20 @@ conditional styling:
 ```
 
 Style components with the semantic `--adflex-color-*` tokens, never a literal colour. The
-exceptions — things that must stay light or stay dark whatever the theme — use the fixed
+exceptions — grounds that must stay fixed because the artwork on them is fixed — use the
 `--adflex-plate-*` values. See [docs/HANDOVER.md](docs/HANDOVER.md) for the full rules.
 
 Typography is **Sora** for headings and **Inter** for body, self-hosted by `next/font` at build
 time — no external requests and no CDN.
 
-Source values are kept separate from the semantic tokens that bind to them — `--adflex-l-*` and
-`--adflex-d-*` are the fixed light and dark palettes, `--adflex-color-*` is what components use.
-That is what lets a whole palette be rebound in one block. `.adflex-light` uses it to pin the
-light palette on the partner cards, whose logos cannot sit on a dark colour — and because it
-points at the fixed values rather than the semantic ones, it stays light even in dark mode.
+Source values are kept separate from the semantic tokens that bind to them — `--adflex-l-*` is
+the fixed palette, `--adflex-color-*` is what components use. That is what lets a whole palette
+be rebound in one block. `.adflex-light` uses it to pin the light values on the partner cards,
+whose logos cannot sit on a dark colour; because it points at the fixed values rather than the
+semantic ones, no enclosing band can reach into it.
 
-**Dark mode** is on, driven by a `data-adflex-theme` attribute on the document element. An
-inline script in the root layout sets it during head parse, before the first paint, so there is
-no flash. Until the reader picks a side the site follows `prefers-color-scheme`; once they use
-the header toggle their choice is remembered. Dark mode rebinds the same eleven semantic tokens
-and adds no new colours to keep in sync.
+The site is **light-only**. A dark mode has been built and removed twice at the client's
+request — see [docs/HANDOVER.md](docs/HANDOVER.md) before building a third one.
 
 Components use the token variables rather than repeating literal colours and spacing. There is
 no token generator, JSON pipeline or separate token package — this one CSS file is the source
@@ -365,7 +362,7 @@ reproducing them out of context would mean building a second copy of the product
 
 WordPress or any CMS, a database, authentication, user accounts, an admin area, a backend or
 APIs, contact-form processing, newsletter integration, analytics, a cookie banner, multilingual
-support, a news or events system, search, Storybook, a token generator, a separate
+support, a news or events system, search, dark mode, Storybook, a token generator, a separate
 design-system application, a UI component library, an external icon package, complex animation,
 video, social embeds, external stock imagery, deployment infrastructure and Docker.
 

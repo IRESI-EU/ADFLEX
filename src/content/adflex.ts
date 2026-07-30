@@ -199,20 +199,7 @@ export type AwaitingContentPage = {
 };
 
 export type AdflexContent = {
-  meta: {
-    title: string;
-    description: string;
-    skipLinkLabel: string;
-    /** Labels for the light/dark control in the header. */
-    theme: {
-      /** Accessible name of the control itself. */
-      label: string;
-      /** Announced and shown when activating it will switch to dark. */
-      toDark: string;
-      /** Announced and shown when activating it will switch back to light. */
-      toLight: string;
-    };
-  };
+  meta: { title: string; description: string; skipLinkLabel: string };
   brand: BrandAssets;
   navigation: readonly NavigationItem[];
   hero: HeroContent;
@@ -305,11 +292,6 @@ export const adflexContent = {
     description:
       "ADFLEX develops and validates a digital framework that helps Sustainable Energy Communities in mixed-use buildings provide flexibility and take part in local energy markets, piloted in Ringsend, Dublin.",
     skipLinkLabel: "Skip to main content",
-    theme: {
-      label: "Colour theme",
-      toDark: "Dark",
-      toLight: "Light",
-    },
   },
 
   brand: {
