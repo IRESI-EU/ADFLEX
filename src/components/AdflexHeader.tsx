@@ -2,12 +2,17 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import type { ImageAsset, NavigationItem } from "@/content/adflex";
+import { NavLink } from "./NavLink";
 import styles from "./AdflexHeader.module.css";
 
 type AdflexHeaderProps = {
   logo: ImageAsset;
-  /** Section anchors. When empty the header shows no collapsible menu. */
+  /**
+   * Navigation items with hrefs already resolved for the current route — see
+   * `resolveNavigation`. When empty the header shows no collapsible menu.
+   */
   navigation: readonly NavigationItem[];
   /** Where the logo links to. Anchor on the home page, `/` elsewhere. */
   homeHref?: string;
@@ -33,11 +38,34 @@ export function AdflexHeader({
   navLabel = "Primary",
 }: AdflexHeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  /**
+   * Which link represents the page you are on.
+   *
+   * Only route items qualify. The in-page anchors (Technologies, Consortium,
+   * Pilot) are all on the home page, so marking them by pathname would flag
+   * four links at once — knowing which section is in view needs scroll
+   * tracking, which is a different feature. "Home" is the exception: it is an
+   * anchor, but it is also what `/` means.
+   */
+  const isCurrent = (item: NavigationItem) => {
+    if (item.id === "home") return pathname === "/";
+    if (item.kind !== "route") return false;
+    return pathname === item.href;
+  };
 
   const items: NavigationItem[] = [
     ...navigation,
     ...(trailingLink
-      ? [{ id: "trailing", label: trailingLink.label, href: trailingLink.href }]
+      ? [
+          {
+            id: "trailing",
+            label: trailingLink.label,
+            kind: "route" as const,
+            href: trailingLink.href,
+          },
+        ]
       : []),
   ];
 
@@ -69,11 +97,19 @@ export function AdflexHeader({
           {isCollapsible ? (
             <button
               type="button"
-              className={styles.toggle}
+              className={`${styles.toggle} ${isOpen ? styles.toggleOpen : ""}`}
               aria-expanded={isOpen}
               aria-controls={MENU_ID}
               onClick={() => setIsOpen((open) => !open)}
             >
+              {/* Drawn in CSS rather than pulled from an icon package — three
+                  bars that fold into a cross. Decorative: the button's text
+                  carries the meaning. */}
+              <span className={styles.toggleIcon} aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </span>
               {isOpen ? "Close" : "Menu"}
             </button>
           ) : null}
@@ -88,17 +124,21 @@ export function AdflexHeader({
               .filter(Boolean)
               .join(" ")}
           >
-            {items.map((item) => (
-              <li key={item.id}>
-                <a
-                  className={styles.navLink}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
+            {items.map((item) => {
+              const current = isCurrent(item);
+              return (
+                <li key={item.id}>
+                  <NavLink
+                    className={`${styles.navLink} ${current ? styles.navLinkCurrent : ""}`}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    aria-current={current ? "page" : undefined}
+                  >
+                    {item.label}
+                  </NavLink>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </div>

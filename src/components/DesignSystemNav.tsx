@@ -13,10 +13,13 @@ type DesignSystemNavProps = {
  */
 export function DesignSystemNav({ title, sections }: DesignSystemNavProps) {
   return (
+    // The label is a paragraph, not a heading: the sidebar precedes the page
+    // content in the DOM, so a heading here would put an h2 before the h1.
+    // `aria-labelledby` still names the landmark from the visible text.
     <nav className={styles.nav} aria-labelledby="design-system-nav-title">
-      <h2 id="design-system-nav-title" className={styles.title}>
+      <p id="design-system-nav-title" className={styles.title}>
         {title}
-      </h2>
+      </p>
       <ul className={styles.list}>
         {sections.map((section) => (
           <li key={section.id}>

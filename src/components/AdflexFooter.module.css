@@ -1,22 +1,38 @@
+/* Always light: the supplied logo has an opaque white background and must never
+   sit directly on a dark colour, whatever band precedes the footer. */
 .footer {
+  position: relative;
   margin-top: auto;
-  /* Light surface: the supplied logo has an opaque white background and must
-     never sit directly on a dark colour. */
   background: var(--adflex-color-surface);
   border-top: 1px solid var(--adflex-color-border);
 }
 
+/* Brand rule across the top edge, closing the page the same way the header's
+   rule opens it. */
+.footer::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--adflex-color-brand),
+    var(--adflex-color-primary),
+    transparent 70%
+  );
+}
+
+/* Logo left, LinkedIn right, on one line. The footer no longer repeats the
+   navigation — every section is reachable from the header — so this row is all
+   the top of the footer needs. */
 .inner {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--adflex-space-6);
+  gap: var(--adflex-space-4) var(--adflex-space-6);
   padding-block: var(--adflex-space-6);
-}
-
-.brand {
-  display: grid;
-  gap: var(--adflex-space-4);
 }
 
 .logo {
@@ -24,48 +40,121 @@
   height: auto;
 }
 
-.email {
+/* --- LinkedIn ---------------------------------------------------------- */
+.social {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--adflex-space-3);
+  min-height: var(--adflex-target-min);
+  padding: var(--adflex-space-2) var(--adflex-space-5);
   font-size: var(--adflex-text-sm);
+  font-weight: 500;
+  color: var(--adflex-color-text);
+  text-decoration: none;
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: 999px;
 }
 
-.navTitle {
-  font-size: var(--adflex-text-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+.socialIcon {
+  flex: 0 0 auto;
+  color: var(--adflex-color-primary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .social,
+  .socialIcon {
+    transition:
+      color 140ms ease-out,
+      background-color 140ms ease-out,
+      border-color 140ms ease-out;
+  }
+}
+
+a.social:hover {
+  color: var(--adflex-color-primary);
+  border-color: var(--adflex-color-primary);
+  background: var(--adflex-color-surface-soft);
+}
+
+/* Rendered while no URL has been supplied. Muted and without the hover
+   affordance, so it does not read as a control that can be used. */
+.socialPending {
+  color: var(--adflex-color-muted);
+  border-style: dashed;
+}
+
+.socialPending .socialIcon {
   color: var(--adflex-color-muted);
 }
 
-.navList {
-  display: grid;
-  gap: var(--adflex-space-1);
-  margin-top: var(--adflex-space-3);
+/* --- Funding ----------------------------------------------------------- */
+/* Not rendered today: no funding statement or emblem has been supplied. Kept
+   styled so the row drops in without a redesign once one is approved. */
+.funding {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--adflex-space-4);
+  padding-block: var(--adflex-space-5);
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+  border-top: 1px solid var(--adflex-color-border);
+}
+
+.funding p {
+  max-width: 80ch;
+}
+
+.emblem {
+  width: 120px;
+  height: auto;
+  flex: 0 0 auto;
+}
+
+/* --- Legal row --------------------------------------------------------- */
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--adflex-space-1) var(--adflex-space-5);
+  padding-block: var(--adflex-space-2);
+  font-size: var(--adflex-text-xs);
+  color: var(--adflex-color-muted);
+  border-top: 1px solid var(--adflex-color-border);
+}
+
+.legalLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--adflex-space-1) var(--adflex-space-5);
   list-style: none;
 }
 
-.navLink {
+.legalLink {
   display: inline-flex;
   align-items: center;
   min-height: var(--adflex-target-min);
-  padding-right: var(--adflex-space-2);
-  font-size: var(--adflex-text-sm);
-  color: var(--adflex-color-text);
+  font-size: var(--adflex-text-xs);
+  color: var(--adflex-color-muted);
   text-decoration: none;
 }
 
-.navLink:hover {
+.legalLink:hover {
   color: var(--adflex-color-primary);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-/* Reserved row for funding and legal information once it is supplied. */
-.legal {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--adflex-space-2) var(--adflex-space-5);
-  padding-block: var(--adflex-space-4);
-  font-size: var(--adflex-text-xs);
-  color: var(--adflex-color-muted);
-  border-top: 1px solid var(--adflex-color-border);
+@media (max-width: 620px) {
+  .inner {
+    /* Logo above the LinkedIn button rather than a cramped row. */
+    justify-content: flex-start;
+  }
+
+  .legal {
+    justify-content: flex-start;
+    gap: 0;
+  }
 }

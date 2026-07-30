@@ -9,10 +9,23 @@ documentation. There is no CMS, no backend and no database.
 
 ## Routes
 
-| Route             | What it is                                                        |
-| ----------------- | ----------------------------------------------------------------- |
-| `/`               | The ADFLEX public website — one scrolling page                     |
-| `/design-system`  | Documentation of the tokens, components and rules used by `/`      |
+| Route                | What it is                                                     | Status |
+| -------------------- | -------------------------------------------------------------- | ------ |
+| `/`                  | The ADFLEX public website — one scrolling page of sections       | Live |
+| `/about`             | The full About ADFLEX content                                    | Live |
+| `/outputs`           | Project Outputs (navigation label: "Outputs")                    | Awaiting content |
+| `/contact`           | Contact details, plus a contact form template                    | Live (form inactive) |
+| `/news`              | News & Updates                                                   | Awaiting content |
+| `/events`            | Events                                                           | Awaiting content |
+| `/legal/privacy`     | Privacy Policy                                                   | Awaiting content |
+| `/legal/cookies`     | Cookie Policy                                                    | Awaiting content |
+| `/legal/terms`       | Terms of Use                                                     | Awaiting content |
+| `/design-system`     | Documentation of the tokens, components and rules used by the site | Live |
+
+**"Awaiting content" means the route, layout and components exist and are
+reviewable, but nothing is published there yet** — the page says so plainly
+instead of showing sample entries. See
+[docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md).
 
 ## Requirements
 
@@ -51,6 +64,18 @@ src/
     globals.css                  minimal reset + shared .adflex-* utility classes
     page.tsx                     the public website (/)
     home.module.css              home page layout grids
+    about/
+      page.tsx                   About ADFLEX (/about)
+      about.module.css
+    outputs/
+      page.tsx                   Project Outputs (/outputs)
+      outputs.module.css
+    contact/
+      page.tsx                   the contact page (/contact)
+      contact.module.css
+    news/page.tsx                News & Updates (/news)
+    events/page.tsx              Events (/events)
+    legal/[slug]/page.tsx        privacy, cookies and terms — one route for all three
     design-system/
       page.tsx                   the design-system page (/design-system)
       design-system.module.css
@@ -84,13 +109,16 @@ Edit the `contact` object in `src/content/adflex.ts`:
 contact: {
   title: "Contact",
   intro: "For questions about ADFLEX, please get in touch.",
+  pageDescription: "Contact details for the ADFLEX project at Maynooth University.",
   email: "info@iresi.eu",
   organisation: "Maynooth University",
   addressLines: ["Maynooth, Co. Kildare", "Ireland"],
 },
 ```
 
-The contact section and the footer email both read from here — there is nothing else to change.
+The `/contact` page and the "nothing published yet" pages all read from here — there is nothing
+else to change. The footer no longer shows contact details; it carries identity, the legal links
+and LinkedIn only.
 
 ### Add a technology
 
@@ -101,10 +129,27 @@ Append one item to `technologies.items`:
   id: "unique-slug",
   name: "Technology name",
   description: "Description from approved source material.",
+  image: {                                        // optional
+    src: "/images/technologies/unique-slug.jpg",
+    alt: "",                                      // see below
+    width: 1400,
+    height: 788,
+  },
 }
 ```
 
-The card, its number and the responsive grid follow automatically.
+The card, its number and the responsive grid follow automatically. `image` is optional, so a
+technology can be added before its artwork exists — the card simply renders without one.
+
+Notes on technology images:
+
+- 16:9 works best; the card reserves a 16:9 frame and uses `object-fit: cover`, so another
+  ratio will be cropped rather than distorted.
+- Keep them around 1400px wide. The card never renders wider than about 560 CSS px, so anything
+  larger is wasted bytes. Re-encode to JPEG — the supplied PNGs were ~2 MB each.
+- `alt` is empty because these illustrate a concept the card's own heading and description
+  already state in full. If a future image carries information that is **not** in the text, give
+  it real alt text instead.
 
 ### Add a partner
 
@@ -114,22 +159,129 @@ Append one item to `consortium.partners`:
 { id: "unique-slug", name: "Organisation name", initials: "XX" }
 ```
 
-`initials` are a decorative placeholder, not an official logo. Partner roles, descriptions,
-logos, URLs and countries must not be invented — see
-[docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md).
+`initials` are a decorative placeholder shown while no official logo is available — they are not
+a logo. Partner roles, descriptions, URLs and countries must not be invented.
 
-### Update the results section
+### Add or replace a partner logo
 
-Today `results` renders an intentional `EmptyState`, because findings are not final. When real
-publications exist, replace the empty state in `src/app/page.tsx` with a list rendered from a
-new `results.items` array in the content file. Until then, do not add placeholder publications,
-dates, DOIs or download buttons.
+All three current partners have logos. `PartnerCard` renders a logo when one is present and
+falls back to the initials when it is not, so a new partner can be added before its artwork
+arrives. Put the supplied file in `public/images/partners/` and add a `logo` to that partner:
+
+```ts
+{
+  id: "unique-slug",
+  name: "Organisation name",
+  initials: "XX",
+  logo: {
+    src: "/images/partners/organisation-name.png",
+    alt: "",       // empty on purpose — the name is already rendered as text
+    width: 1200,   // the file's intrinsic pixel size, so the ratio is preserved
+    height: 400,
+  },
+}
+```
+
+Notes:
+
+- Trim any blank canvas around the mark before adding the file. Logos arrive with wildly
+  different amounts of built-in margin, which makes them render at inconsistent visual sizes in
+  the same row.
+- `width`/`height` must be the file's real pixel size — the card fits the logo into a shared
+  200 × 64 box with `object-fit: contain`, so every lockup keeps its own aspect ratio.
+- Supply the largest version you can. The image optimizer caps its output at the source width,
+  so the source resolution is the ceiling on how sharp a logo can look on a high-DPI screen.
+
+Use only files supplied by the partner or the project coordinator. Never take a partner logo
+from a web search or a logo aggregator site — see [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) for
+each partner's rules.
+
+### Edit the About content
+
+`/about` shows every item in `about.items` in full. The home page shows a glimpse of **one** of
+them and links through.
+
+Each item has two text fields:
+
+- `summary` — the glimpse.
+- `body` — the full paragraph shown on `/about`.
+
+**`summary` must stay a verbatim prefix of `body`.** Shorten by cutting, never by rewriting.
+That keeps the home page and the About page from drifting apart and stops unapproved wording
+creeping in. Watch the punctuation at the cut — ending a glimpse with a full stop where the
+source has a comma already breaks it. To confirm, check that each `body` starts with its own
+`summary`.
+
+What the home page shows is controlled by `about.home`:
+
+```ts
+home: { heading: "Objective of ADFLEX", itemId: "objective" },
+```
+
+- `heading` — the section heading on the home page. It is deliberately separate from
+  `about.title` ("About ADFLEX"), which heads the `/about` page.
+- `itemId` — which item to glimpse. Point it at a different item and the home page follows; no
+  code changes. Every item keeps a `summary` so this stays a one-word change.
+
+The item's own title is not rendered on the home page, because the section heading already names
+it.
+
+### Add a pilot asset
+
+Append one item to `pilot.assets`. Only list assets and programmes that the supplied pilot
+description actually names:
+
+```ts
+{
+  id: "unique-slug",
+  label: "Asset name",
+  icon: {                                   // optional
+    src: "/images/pilot-icons/unique-slug.png",
+    alt: "",                                // the label sits beside it
+    width: 160,
+    height: 120,
+  },
+}
+```
+
+Icons sit in a fixed 56px dark tile with `object-fit: contain`, so each keeps its own aspect
+ratio. Trim transparent canvas and scale the longest side to about 160px before adding a new one
+— untrimmed icons render at visibly different sizes in the same list.
+
+### Update Project Outputs
+
+The content object is still keyed `results` in `src/content/adflex.ts`, but it is displayed as
+"Project Outputs" (page heading) and "Outputs" (navigation). Its `body` is supplied copy and
+still reads "Results and publications from ADFLEX…" — left verbatim on purpose.
+
+
+`/outputs` renders an intentional `EmptyState`, because findings are not final. When real
+publications exist, replace the empty state in [src/app/outputs/page.tsx](src/app/outputs/page.tsx)
+with a list rendered from a new `results.items` array in the content file. Until then, do not
+add placeholder publications, dates, DOIs or download buttons.
+
+The hero's "See Pilot Results" call to action points at this page — its target is
+`hero.cta.href` in the content file.
 
 ### Add or change a navigation item
 
-Navigation and section ids are centrally controlled by the `navigation` array in
-`src/content/adflex.ts`. Each entry's `id` must match the `id` given to its section in
-`src/app/page.tsx`, and the array order must match the visible order of the sections.
+Navigation is centrally controlled by the `navigation` array in `src/content/adflex.ts`. Each
+entry declares what kind of destination it is:
+
+```ts
+{ id: "technologies",  label: "Technologies",           kind: "section", href: "#technologies" }
+{ id: "publications",  label: "Outputs",                kind: "route",   href: "/outputs" }
+```
+
+- `kind: "section"` — an anchor on the home page. Its `id` must match the `id` given to that
+  section in `src/app/page.tsx`, and its position in the array must match the visible order of
+  the sections.
+- `kind: "route"` — a page of its own.
+
+Pages call `resolveNavigation(navigation, { onHome })` and pass the result to the header. That
+prefixes section anchors with `/` on every route other than `/`, so the same array drives the
+navigation everywhere without each page knowing the rules. The footer does not repeat these
+links — see [HANDOVER.md](docs/HANDOVER.md).
 
 ## Official assets
 
@@ -137,6 +289,10 @@ Navigation and section ids are centrally controlled by the `navigation` array in
 | -------------- | ------------------------------------------------ |
 | Logo           | `public/images/adflex/adflex-logo.png`           |
 | System diagram | `public/images/adflex/adflex-system-concept.png` |
+| Partner logos  | `public/images/partners/`                        |
+| Technology images | `public/images/technologies/`                 |
+| Pilot image    | `public/images/pilot/`                           |
+| Pilot asset icons | `public/images/pilot-icons/`                  |
 
 Both are copies of files supplied in `project-inputs/`. The originals are git-ignored and are
 never referenced at runtime.
@@ -149,8 +305,37 @@ things that must not be done to it — are on `/design-system` under **Logo & Im
 
 All tokens live in [`src/styles/adflex-tokens.css`](src/styles/adflex-tokens.css) and are
 declared on the `.adflex-scope` class, not on `:root`, so the ADFLEX brand cannot leak into
-anything else later hosted in the same application. The root layout wraps both routes in that
+anything else later hosted in the same application. The root layout wraps every route in that
 class.
+
+**The site has two bands.** Light sections carry reading-heavy copy; deep (dark navy) sections
+carry the supplied imagery, which is uniformly dark with cyan glows. The `.adflex-deep` class
+rebinds the same semantic token names to dark-band values, so one component serves both bands
+with no conditional styling:
+
+```css
+/* This card is correct in both bands. Nothing else is needed. */
+.card {
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+}
+```
+
+Style components with the semantic `--adflex-color-*` tokens, never a literal colour. The
+exceptions — things that must stay light or stay dark regardless of band — use the raw
+`--adflex-deep-*` values. See [docs/HANDOVER.md](docs/HANDOVER.md) for the full rules.
+
+Typography is **Sora** for headings and **Inter** for body, self-hosted by `next/font` at build
+time — no external requests and no CDN.
+
+Source values are kept separate from the semantic tokens that bind to them — `--adflex-light-*`
+and `--adflex-deep-*` are the raw palettes, `--adflex-color-*` is what components use. That is
+what lets a whole palette be rebound in one block. `.adflex-light` uses it to pin the light
+palette on the partner cards, whose logos cannot sit on a dark colour.
+
+There is **no dark mode**. One was built and removed at the client's request; see
+[docs/HANDOVER.md](docs/HANDOVER.md) for why the supplied logos make it awkward if it is ever
+revisited.
 
 Components use the token variables rather than repeating literal colours and spacing. There is
 no token generator, JSON pipeline or separate token package — this one CSS file is the source

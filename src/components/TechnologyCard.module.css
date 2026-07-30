@@ -1,24 +1,101 @@
+/* Colours come entirely from the semantic tokens, so this card inverts for
+   free when it sits inside a `.adflex-deep` band. */
 .card {
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  padding: var(--adflex-space-5);
+  /* Clips the image to the card's rounded top corners. */
+  overflow: hidden;
   background: var(--adflex-color-surface);
   border: 1px solid var(--adflex-color-border);
   border-radius: var(--adflex-radius-lg);
   box-shadow: var(--adflex-shadow-sm);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    transition:
+      border-color 160ms ease-out,
+      transform 160ms ease-out;
+  }
+}
+
+.card:hover {
+  border-color: var(--adflex-color-primary);
+  /* Picks up the glow that runs through the artwork. */
+  box-shadow:
+    var(--adflex-shadow-md),
+    0 0 0 1px var(--adflex-color-primary),
+    0 12px 40px -18px var(--adflex-color-primary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* Fixed 16:9 frame reserves the space before the image loads, so the card
+   never shifts. The images are dark, so a matching placeholder colour avoids a
+   white flash on slower connections. */
+.media {
+  aspect-ratio: 16 / 9;
+  background: var(--adflex-deep-background);
+  border-bottom: 1px solid var(--adflex-color-border);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  /* The supplied renders are all 16:9, so `cover` is a no-op today. It is here
+     so an image of another ratio fills the frame instead of distorting. */
+  object-fit: cover;
+}
+
+.body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--adflex-space-6);
+  overflow: hidden;
+}
+
+/* Oversized watermark numeral. Sits behind the copy at very low contrast — it
+   is texture, and the legible number is the small mark below. */
+.ghost {
+  position: absolute;
+  /* Sits fully inside the body. Clipping it against the image edge read as a
+     rendering fault rather than a design choice. */
+  top: 0;
+  right: 0.08em;
+  font-family: var(--adflex-font-display);
+  font-size: 6.5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--adflex-color-primary);
+  opacity: 0.1;
+  pointer-events: none;
+  user-select: none;
+}
+
 .mark {
+  position: relative;
+  font-family: var(--adflex-font-display);
   font-size: var(--adflex-text-sm);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--adflex-color-brand);
+  letter-spacing: var(--adflex-tracking-wide);
+  color: var(--adflex-color-primary);
 }
 
 .name {
-  margin-top: var(--adflex-space-2);
+  position: relative;
+  margin-top: var(--adflex-space-3);
 }
 
 .description {
+  position: relative;
   margin-top: var(--adflex-space-3);
   color: var(--adflex-color-muted);
 }

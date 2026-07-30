@@ -1,5 +1,7 @@
 import Image from "next/image";
 import type { HeroContent } from "@/content/adflex";
+import { GlossaryTerm } from "./GlossaryTerm";
+import { NavLink } from "./NavLink";
 import styles from "./AdflexHero.module.css";
 
 type AdflexHeroProps = {
@@ -8,13 +10,34 @@ type AdflexHeroProps = {
 };
 
 /**
+ * Splits the tagline around the first occurrence of the glossary term, so the
+ * term can be rendered as an interactive element without the copy being stored
+ * as pre-chopped fragments. Falls back to the plain tagline if the term is not
+ * found, so a content typo degrades to plain text rather than losing a sentence.
+ */
+function splitTagline(tagline: string, term: string) {
+  const start = tagline.indexOf(term);
+  if (start === -1) return null;
+  return {
+    before: tagline.slice(0, start),
+    after: tagline.slice(start + term.length),
+  };
+}
+
+/**
  * Hero: text, call to action, then the full-width project diagram with its
  * caption. The standalone logo is deliberately not repeated here — it is
  * already in the header and inside the diagram itself.
  */
 export function AdflexHero({ id, content }: AdflexHeroProps) {
+  const tagline = splitTagline(content.tagline, content.glossary.term);
+
   return (
-    <section id={id} aria-labelledby="hero-heading" className={styles.hero}>
+    <section
+      id={id}
+      aria-labelledby="hero-heading"
+      className={`${styles.hero} adflex-deep`}
+    >
       <div className="adflex-container">
         <ul className={`adflex-tag-list ${styles.tags}`}>
           {content.tags.map((tag) => (
@@ -27,13 +50,27 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
         <h1 id="hero-heading" className={styles.headline}>
           {content.headline}
         </h1>
-        <p className={styles.tagline}>{content.tagline}</p>
-        <p className={styles.explainer}>{content.explainer}</p>
+        <p className={styles.tagline}>
+          {tagline ? (
+            <>
+              {tagline.before}
+              <GlossaryTerm
+                term={content.glossary.term}
+                definition={content.glossary.definition}
+              />
+              {tagline.after}
+            </>
+          ) : (
+            content.tagline
+          )}
+        </p>
 
         <p className={styles.actions}>
-          <a className="adflex-cta" href={content.cta.href}>
+          {/* NavLink so the CTA works whether it points at a section anchor or
+              at a route of its own. */}
+          <NavLink className="adflex-cta" href={content.cta.href}>
             {content.cta.label}
-          </a>
+          </NavLink>
         </p>
       </div>
 
@@ -54,17 +91,6 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
             {content.diagram.caption}
           </figcaption>
         </figure>
-
-        {/* The diagram's labels also exist as real text, so the concepts are
-            never communicated by the image alone. */}
-        <h2 className={styles.conceptsTitle}>What the diagram shows</h2>
-        <ul className={styles.concepts}>
-          {content.diagram.concepts.map((concept) => (
-            <li key={concept} className={styles.concept}>
-              {concept}
-            </li>
-          ))}
-        </ul>
       </div>
     </section>
   );

@@ -1,0 +1,92 @@
+.wrap {
+  max-width: 60ch;
+  padding: var(--adflex-space-6);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+  box-shadow: var(--adflex-shadow-sm);
+}
+
+.title {
+  font-size: var(--adflex-text-xl);
+}
+
+/* Dashed edge alongside the wording, so the inactive state is not signalled by
+   styling alone. */
+.pending {
+  margin-top: var(--adflex-space-4);
+  padding: var(--adflex-space-4);
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+  background: var(--adflex-color-surface-soft);
+  border: 1px dashed var(--adflex-color-border-strong);
+  border-radius: var(--adflex-radius-md);
+}
+
+.form {
+  margin-top: var(--adflex-space-5);
+}
+
+.fields {
+  display: grid;
+  gap: var(--adflex-space-4);
+  border: 0;
+}
+
+/* The pending note above already explains the state in visible text; the legend
+   is here for structure, not for repeating it on screen. */
+.legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.field {
+  display: grid;
+  gap: var(--adflex-space-2);
+}
+
+.label {
+  font-size: var(--adflex-text-sm);
+  font-weight: 600;
+  color: var(--adflex-color-ink);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  min-height: var(--adflex-target-min);
+  padding: var(--adflex-space-3) var(--adflex-space-4);
+  font: inherit;
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-text);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: var(--adflex-radius-md);
+}
+
+.textarea {
+  resize: vertical;
+}
+
+/* Reads as unavailable rather than merely empty, so the disabled state is
+   visible as well as programmatic. */
+.input:disabled,
+.textarea:disabled {
+  background: var(--adflex-color-surface-soft);
+  cursor: not-allowed;
+}
+
+.actions {
+  margin-top: var(--adflex-space-2);
+}
+
+.fields:disabled .actions :global(.adflex-cta) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

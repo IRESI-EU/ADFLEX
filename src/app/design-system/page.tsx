@@ -6,6 +6,8 @@ import { designSystemContent } from "@/content/design-system";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { DesignSystemNav } from "@/components/DesignSystemNav";
+import { GlossaryTerm } from "@/components/GlossaryTerm";
+import { FigureText } from "@/components/FigureText";
 import { TechnologyCard } from "@/components/TechnologyCard";
 import { PartnerCard } from "@/components/PartnerCard";
 import { EmptyState } from "@/components/EmptyState";
@@ -13,7 +15,7 @@ import { ContactBlock } from "@/components/ContactBlock";
 import styles from "./design-system.module.css";
 
 export const metadata: Metadata = {
-  title: `${designSystemContent.meta.title} — ADFLEX`,
+  title: `${designSystemContent.meta.title} â€” ADFLEX`,
   description: designSystemContent.meta.description,
 };
 
@@ -27,7 +29,7 @@ const ds = designSystemContent;
  * scoped tokens as the public site. No component is duplicated for docs.
  */
 export default function DesignSystemPage() {
-  const { brand, hero, technologies, consortium, results, contact, footer } =
+  const { brand, hero, technologies, consortium, results, contact } =
     adflexContent;
 
   return (
@@ -57,7 +59,7 @@ export default function DesignSystemPage() {
               </p>
             </div>
 
-            {/* 1 — Introduction ------------------------------------- */}
+            {/* 1 â€” Introduction ------------------------------------- */}
             <Section id="introduction" title={ds.sections[0].title}>
               <p className={styles.lead}>{ds.introduction.lead}</p>
               <ul className={styles.bullets}>
@@ -67,9 +69,31 @@ export default function DesignSystemPage() {
               </ul>
             </Section>
 
-            {/* 2 — Brand & Foundations ------------------------------ */}
+            {/* 2 â€” Brand & Foundations ------------------------------ */}
             <Section id="brand-foundations" title={ds.sections[1].title}>
-              <h3 className={styles.subhead}>Colour</h3>
+              <h3 className={styles.subhead}>Light and deep bands</h3>
+              <p className={styles.lead}>{ds.bands.lead}</p>
+              <ul className={styles.bullets}>
+                {ds.bands.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+
+              {/* A live deep band, so the rebinding can be seen rather than
+                  only described. Everything inside uses the same production
+                  classes as the light examples. */}
+              <div className={`adflex-deep ${styles.bandDemo}`}>
+                <p className="adflex-eyebrow">Deep band</p>
+                <p className={styles.bandDemoTitle}>
+                  The same components, unchanged
+                </p>
+                <div className={styles.bandDemoRow}>
+                  <span className="adflex-cta">Primary action</span>
+                  <span className="adflex-tag">Tag</span>
+                </div>
+              </div>
+
+              <h3 className={styles.subhead}>Colour â€” light band</h3>
               <ul className={styles.swatchGrid}>
                 {ds.colours.map((colour) => (
                   <li key={colour.token} className={styles.swatch}>
@@ -86,11 +110,38 @@ export default function DesignSystemPage() {
                 ))}
               </ul>
 
-              <h3 className={styles.subhead}>Typography</h3>
+              <h3 className={styles.subhead}>Colour â€” deep band</h3>
               <p className={styles.note}>
-                One system-font stack, <code className={styles.code}>--adflex-font-sans</code>.
-                No web fonts are loaded.
+                These are the raw values that <code className={styles.code}>.adflex-deep</code>{" "}
+                rebinds the semantic tokens to. Components should not reference them directly,
+                with the deliberate exceptions noted above.
               </p>
+              <ul className={`${styles.swatchGrid} adflex-deep ${styles.deepSwatches}`}>
+                {ds.deepColours.map((colour) => (
+                  <li key={colour.token} className={styles.swatch}>
+                    <span
+                      className={styles.swatchChip}
+                      style={{ background: `var(${colour.token})` }}
+                      aria-hidden="true"
+                    />
+                    <span className={styles.swatchName}>{colour.name}</span>
+                    <code className={styles.code}>{colour.token}</code>
+                    <span className={styles.swatchHex}>{colour.hex}</span>
+                    <span className={styles.swatchUsage}>{colour.usage}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <h3 className={styles.subhead}>Typography</h3>
+              <p className={styles.note}>{ds.typefaces.lead}</p>
+              <ul className={styles.bullets}>
+                {ds.typefaces.faces.map((face) => (
+                  <li key={face.token}>
+                    <code className={styles.code}>{face.token}</code> â€” {face.name}.{" "}
+                    {face.usage}
+                  </li>
+                ))}
+              </ul>
               <div className={styles.specimenList}>
                 <p className={styles.specimen3xl}>Heading level 1</p>
                 <p className={styles.specimen2xl}>Heading level 2</p>
@@ -161,7 +212,7 @@ export default function DesignSystemPage() {
               />
             </Section>
 
-            {/* 3 — Logo & Imagery ----------------------------------- */}
+            {/* 3 â€” Logo & Imagery ----------------------------------- */}
             <Section id="logo-imagery" title={ds.sections[2].title}>
               <p className={styles.lead}>{ds.logoRules.intro}</p>
 
@@ -230,7 +281,7 @@ export default function DesignSystemPage() {
               </ul>
             </Section>
 
-            {/* 4 — Components --------------------------------------- */}
+            {/* 4 â€” Components --------------------------------------- */}
             <Section id="components" title={ds.sections[3].title}>
               <p className={styles.lead}>
                 Each example below is the production component or production CSS
@@ -239,25 +290,25 @@ export default function DesignSystemPage() {
 
               <Example
                 label="Primary call to action"
-                note=".adflex-cta — one primary action per view."
+                note=".adflex-cta â€” one primary action per view."
               >
-                <Link className="adflex-cta" href="/#results">
+                <Link className="adflex-cta" href="/outputs">
                   {hero.cta.label}
                 </Link>
               </Example>
 
               <Example
                 label="Text link"
-                note=".adflex-link — underlined, meaningful on its own."
+                note=".adflex-link â€” underlined, meaningful on its own."
               >
-                <Link className="adflex-link" href="/#contact">
+                <Link className="adflex-link" href="/contact">
                   Contact the ADFLEX team
                 </Link>
               </Example>
 
               <Example
                 label="Tags"
-                note=".adflex-tag inside .adflex-tag-list — labelling only, never interactive."
+                note=".adflex-tag inside .adflex-tag-list â€” labelling only, never interactive."
               >
                 <ul className="adflex-tag-list">
                   {hero.tags.map((tag) => (
@@ -269,17 +320,43 @@ export default function DesignSystemPage() {
               </Example>
 
               <Example
+                label="Inline glossary term"
+                note="Opens on hover, focus and tap; closes on Escape. Never hover-only â€” the definition is always in the accessibility tree."
+              >
+                <p>
+                  Turning community buildings into{" "}
+                  <GlossaryTerm
+                    term={hero.glossary.term}
+                    definition={hero.glossary.definition}
+                  />
+                  , prosumers and flexible energy users.
+                </p>
+              </Example>
+
+              <Example
                 label="TechnologyCard"
-                note="Numeric mark, name and description. The mark is decorative and hidden from assistive technology."
+                note="Optional 16:9 illustration, then a numeric mark, name and description. The mark is decorative and hidden from assistive technology, and the image's alt is empty because the text below already carries its meaning."
               >
                 <TechnologyCard technology={technologies.items[0]} index={1} />
               </Example>
 
               <Example
                 label="PartnerCard"
-                note="Name only. Roles, descriptions, logos and URLs have not been supplied; the initials are decorative."
+                note="Renders the partner's official logo when one has been supplied, and decorative initials until then. Roles, descriptions and URLs have not been supplied."
               >
                 <PartnerCard partner={consortium.partners[0]} />
+              </Example>
+
+              <Example
+                label="Figure in running text"
+                note="Picks out the number a sentence turns on. A plain span, not <strong> â€” the emphasis is visual, and the supplied copy does not mark the figure as important."
+              >
+                <p>
+                  <FigureText
+                    text={consortium.intro}
+                    figure={consortium.introFigure}
+                  />
+                </p>
               </Example>
 
               <Example
@@ -297,7 +374,7 @@ export default function DesignSystemPage() {
               </Example>
             </Section>
 
-            {/* 5 — Layout & Patterns -------------------------------- */}
+            {/* 5 â€” Layout & Patterns -------------------------------- */}
             <Section id="layout-patterns" title={ds.sections[4].title}>
               <p className={styles.lead}>
                 These patterns are page-level structures. They are described
@@ -317,7 +394,7 @@ export default function DesignSystemPage() {
               ))}
             </Section>
 
-            {/* 6 — Accessibility & Content Rules -------------------- */}
+            {/* 6 â€” Accessibility & Content Rules -------------------- */}
             <Section id="accessibility" title={ds.sections[5].title}>
               {ds.accessibilityRules.map((group) => (
                 <div key={group.title} className={styles.patternBlock}>
@@ -335,13 +412,7 @@ export default function DesignSystemPage() {
         </div>
       </main>
 
-      <AdflexFooter
-        logo={brand.logo}
-        navigation={adflexContent.navigation}
-        contact={contact}
-        labels={footer}
-        hrefPrefix="/"
-      />
+      <AdflexFooter logo={brand.logo} />
     </>
   );
 }

@@ -1,16 +1,38 @@
+/* Solid, not translucent: the supplied logo has an opaque white background, so
+   a see-through header would tint the bar grey while the logo stayed pure
+   white, turning it into a visible sticker every time a dark band scrolled
+   underneath. */
 .header {
   position: sticky;
   top: 0;
   z-index: 50;
   background: var(--adflex-color-surface);
-  border-bottom: 1px solid var(--adflex-color-border);
+}
+
+/* Brand rule along the bottom edge, mirroring the one across the top of the
+   footer — together they bracket the page. Replaces a plain 1px border. */
+.header::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--adflex-color-brand),
+    var(--adflex-color-primary) 35%,
+    var(--adflex-color-border) 75%,
+    var(--adflex-color-border)
+  );
 }
 
 .inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--adflex-space-5);
+  /* Wraps rather than overflowing if a route's header contents cannot fit —
+     the design-system header carries a longer trailing link than the others. */
+  flex-wrap: wrap;
+  gap: var(--adflex-space-4);
   min-height: var(--adflex-header-height);
   padding-block: var(--adflex-space-2);
 }
@@ -21,6 +43,9 @@
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
+  /* The logo shrinks on narrow screens, which would otherwise take this link
+     below the minimum target size. */
+  min-height: var(--adflex-target-min);
 }
 
 .logo {
@@ -28,9 +53,11 @@
   height: auto;
 }
 
+/* Pushes the navigation to the right of the logo. */
 .nav {
   display: flex;
   align-items: center;
+  margin-left: auto;
 }
 
 .navList {
@@ -42,26 +69,73 @@
 }
 
 .navLink {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: var(--adflex-target-min);
   padding: var(--adflex-space-2) var(--adflex-space-3);
   font-size: var(--adflex-text-sm);
-  font-weight: 600;
+  font-weight: 500;
   color: var(--adflex-color-text);
   text-decoration: none;
   border-radius: var(--adflex-radius-sm);
 }
 
-.navLink:hover {
-  color: var(--adflex-color-primary);
-  background: var(--adflex-color-surface-soft);
+/* Underline indicator rather than a filled pill: it marks the item without
+   boxing it, and it is the same shape the current-page state uses, so hover
+   previews where you are about to land. */
+.navLink::after {
+  content: "";
+  position: absolute;
+  left: var(--adflex-space-3);
+  right: var(--adflex-space-3);
+  bottom: 8px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0.4);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .navLink,
+  .navLink::after {
+    transition:
+      color 140ms ease-out,
+      opacity 140ms ease-out,
+      transform 160ms ease-out;
+  }
+}
+
+.navLink:hover {
+  color: var(--adflex-color-primary);
+}
+
+.navLink:hover::after {
+  opacity: 0.4;
+  transform: scaleX(1);
+}
+
+/* The page you are on. Carries `aria-current="page"` in the markup, so the
+   state is announced as well as drawn — colour and a rule alone would leave it
+   invisible to a screen reader. */
+.navLinkCurrent {
+  color: var(--adflex-color-primary);
+  font-weight: 600;
+}
+
+.navLinkCurrent::after,
+.navLinkCurrent:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
+  background: var(--adflex-color-primary);
+}
+
+/* --- Collapsed navigation ------------------------------------------- */
 .toggle {
   display: none;
   align-items: center;
-  justify-content: center;
+  gap: var(--adflex-space-3);
   min-height: var(--adflex-target-min);
   min-width: var(--adflex-target-min);
   padding: var(--adflex-space-2) var(--adflex-space-4);
@@ -71,11 +145,73 @@
   color: var(--adflex-color-ink);
   background: var(--adflex-color-surface);
   border: 1px solid var(--adflex-color-border-strong);
-  border-radius: var(--adflex-radius-sm);
+  border-radius: 999px;
   cursor: pointer;
 }
 
-@media (max-width: 940px) {
+.toggle:hover {
+  color: var(--adflex-color-primary);
+  border-color: var(--adflex-color-primary);
+}
+
+/* Three bars that fold into a cross. Decorative — the button's text carries the
+   meaning, so this is `aria-hidden` in the markup. */
+.toggleIcon {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+.toggleIcon > span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.toggleIcon > span:nth-child(1) {
+  top: 0;
+}
+
+.toggleIcon > span:nth-child(2) {
+  top: 5px;
+}
+
+.toggleIcon > span:nth-child(3) {
+  top: 10px;
+}
+
+.toggleOpen .toggleIcon > span:nth-child(1) {
+  top: 5px;
+  rotate: 45deg;
+}
+
+.toggleOpen .toggleIcon > span:nth-child(2) {
+  opacity: 0;
+}
+
+.toggleOpen .toggleIcon > span:nth-child(3) {
+  top: 5px;
+  rotate: -45deg;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toggleIcon > span {
+    transition:
+      top 160ms ease-out,
+      rotate 160ms ease-out,
+      opacity 120ms ease-out;
+  }
+}
+
+/* The navigation collapses at 1080px, not at a smaller width, because it now
+   carries nine items. Measured: they still fit on one line at 1100px and wrap
+   the header to double height by 1024px. Raise this again if items are added. */
+@media (max-width: 1080px) {
   .logo {
     width: 170px;
   }
@@ -89,14 +225,14 @@
     position: absolute;
     right: var(--adflex-space-4);
     left: var(--adflex-space-4);
-    top: 100%;
+    top: calc(100% + var(--adflex-space-2));
     flex-direction: column;
     align-items: stretch;
-    gap: 0;
-    padding: var(--adflex-space-2);
+    gap: var(--adflex-space-1);
+    padding: var(--adflex-space-3);
     background: var(--adflex-color-surface);
     border: 1px solid var(--adflex-color-border);
-    border-radius: var(--adflex-radius-md);
+    border-radius: var(--adflex-radius-lg);
     box-shadow: var(--adflex-shadow-md);
   }
 
@@ -106,12 +242,46 @@
 
   .navLink {
     justify-content: flex-start;
+    padding: var(--adflex-space-3) var(--adflex-space-4);
     font-size: var(--adflex-text-base);
+  }
+
+  /* In the dropdown the links are stacked and full width, so an underline
+     reads as a divider. A filled row and a left marker are clearer here. */
+  .navLink::after {
+    left: 0;
+    right: auto;
+    top: var(--adflex-space-2);
+    bottom: var(--adflex-space-2);
+    width: 3px;
+    height: auto;
+    transform: scaleY(0.4);
+  }
+
+  .navLink:hover {
+    background: var(--adflex-color-surface-soft);
+  }
+
+  .navLink:hover::after {
+    transform: scaleY(1);
+  }
+
+  .navLinkCurrent {
+    background: var(--adflex-color-surface-soft);
+  }
+
+  .navLinkCurrent::after,
+  .navLinkCurrent:hover::after {
+    transform: scaleY(1);
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
+  .inner {
+    gap: var(--adflex-space-3);
+  }
+
   .logo {
-    width: 150px;
+    width: 140px;
   }
 }

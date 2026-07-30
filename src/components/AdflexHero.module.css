@@ -1,7 +1,7 @@
+/* The hero is the first deep band. The supplied diagram is dark navy with cyan
+   glows, so it sits inside the band rather than on top of a light page. */
 .hero {
-  padding-block: var(--adflex-space-7) var(--adflex-space-6);
-  background: var(--adflex-color-surface);
-  border-bottom: 1px solid var(--adflex-color-border);
+  padding-block: var(--adflex-space-8);
   scroll-margin-top: calc(var(--adflex-header-height) + var(--adflex-space-4));
 }
 
@@ -10,83 +10,56 @@
 }
 
 .headline {
-  max-width: 22ch;
+  max-width: 24ch;
 }
 
 .tagline {
-  max-width: 62ch;
+  max-width: 56ch;
   margin-top: var(--adflex-space-5);
   font-size: var(--adflex-text-xl);
-  line-height: 1.45;
+  line-height: var(--adflex-leading-snug);
   color: var(--adflex-color-text);
 }
 
-.explainer {
-  max-width: 62ch;
-  margin-top: var(--adflex-space-3);
-  font-size: var(--adflex-text-sm);
-  color: var(--adflex-color-muted);
-}
-
 .actions {
-  margin-top: var(--adflex-space-5);
+  margin-top: var(--adflex-space-6);
 }
 
 .diagramWrap {
-  margin-top: var(--adflex-space-6);
+  margin-top: var(--adflex-space-7);
 }
 
 .figure {
-  padding: var(--adflex-space-4);
-  background: var(--adflex-color-surface);
-  border: 1px solid var(--adflex-color-border);
-  border-radius: var(--adflex-radius-lg);
-  box-shadow: var(--adflex-shadow-sm);
+  display: grid;
 }
 
-/* Full width, natural height: the whole panoramic diagram stays visible at
-   every viewport size and never overflows the page. */
+/* Full width, natural height: the whole diagram stays visible at every viewport
+   size and never overflows the page. The hairline picks up the cyan in the
+   artwork so the image reads as part of the band rather than pasted on. */
 .diagram {
   width: 100%;
   height: auto;
+  border: 1px solid var(--adflex-deep-border);
+  border-radius: var(--adflex-radius-xl);
+  box-shadow: var(--adflex-shadow-md);
 }
 
 .caption {
-  margin-top: var(--adflex-space-3);
+  margin-top: var(--adflex-space-4);
   font-size: var(--adflex-text-sm);
   color: var(--adflex-color-muted);
-}
-
-.conceptsTitle {
-  margin-top: var(--adflex-space-6);
-  font-size: var(--adflex-text-lg);
-}
-
-.concepts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--adflex-space-2);
-  margin-top: var(--adflex-space-3);
-  list-style: none;
-}
-
-.concept {
-  padding: var(--adflex-space-2) var(--adflex-space-3);
-  font-size: var(--adflex-text-sm);
-  background: var(--adflex-color-surface-soft);
-  border-radius: var(--adflex-radius-sm);
 }
 
 @media (max-width: 720px) {
   .hero {
-    padding-block: var(--adflex-space-6);
+    padding-block: var(--adflex-space-7);
   }
 
   .headline {
     max-width: none;
   }
 
-  .figure {
-    padding: var(--adflex-space-2);
+  .diagram {
+    border-radius: var(--adflex-radius-lg);
   }
 }

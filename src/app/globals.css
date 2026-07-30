@@ -68,28 +68,35 @@ a {
    A component's own class always wins without needing !important or deeper
    selectors. */
 :where(.adflex-scope) :where(h1, h2, h3) {
+  font-family: var(--adflex-font-display);
+  font-weight: 700;
   color: var(--adflex-color-ink);
   line-height: var(--adflex-leading-tight);
+  letter-spacing: var(--adflex-tracking-tight);
   text-wrap: balance;
 }
 
 :where(.adflex-scope) :where(h1) {
   font-size: var(--adflex-text-3xl);
-  letter-spacing: -0.015em;
 }
 
 :where(.adflex-scope) :where(h2) {
   font-size: var(--adflex-text-2xl);
-  letter-spacing: -0.01em;
 }
 
 :where(.adflex-scope) :where(h3) {
   font-size: var(--adflex-text-lg);
+  line-height: var(--adflex-leading-snug);
+  letter-spacing: -0.01em;
+}
+
+:where(.adflex-scope) :where(p, li) {
+  text-wrap: pretty;
 }
 
 .adflex-scope :where(a, button, summary):focus-visible {
   outline: 3px solid var(--adflex-color-primary);
-  outline-offset: 2px;
+  outline-offset: 3px;
   border-radius: var(--adflex-radius-sm);
 }
 
@@ -105,6 +112,78 @@ a {
   .adflex-container {
     padding-inline: var(--adflex-space-4);
   }
+}
+
+/* Deep band --------------------------------------------------------- */
+/* The token rebinding lives in adflex-tokens.css. This only adds the
+   atmosphere: a soft cyan bloom echoing the glow in the imagery. It is a
+   background layer, so it never sits over content. */
+.adflex-deep {
+  position: relative;
+  isolation: isolate;
+}
+
+.adflex-deep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    /* Node lattice. The supplied imagery is built on network graphics — the
+       pilot banner is literally an overlay of connected nodes — so the band
+       carries a faint version of the same motif. Kept very low contrast: it
+       should register as texture, never as content. */
+    radial-gradient(
+      circle at 1px 1px,
+      rgba(140, 227, 242, 0.18) 1px,
+      transparent 0
+    ),
+    /* Two soft blooms, echoing the cyan and teal glow in the artwork. */
+      radial-gradient(
+        70ch 40ch at 15% 0%,
+        rgba(79, 209, 232, 0.1),
+        transparent 70%
+      ),
+    radial-gradient(
+      60ch 40ch at 95% 100%,
+      rgba(8, 133, 123, 0.13),
+      transparent 70%
+    );
+  background-size:
+    32px 32px,
+    100% 100%,
+    100% 100%;
+  /* Fades the lattice out towards the middle so it never competes with copy. */
+  mask-image: radial-gradient(
+    120ch 70ch at 50% 50%,
+    transparent 10%,
+    #000 85%
+  );
+  pointer-events: none;
+}
+
+/* Hairline where a deep band meets a light one, so the seam reads as
+   deliberate rather than as two blocks butted together. */
+.adflex-deep::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(79, 209, 232, 0.4),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* Hairline between two adjacent deep bands, so they read as separate
+   sections rather than one long field. */
+.adflex-deep + .adflex-deep {
+  border-top: 1px solid var(--adflex-deep-border);
 }
 
 /* Skip link --------------------------------------------------------- */
@@ -128,6 +207,28 @@ a {
   transform: translateY(0);
 }
 
+/* Section eyebrow --------------------------------------------------- */
+/* Small uppercase label above a section heading. Decorative typography, not
+   a heading — it must never replace one. */
+.adflex-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--adflex-space-3);
+  font-size: var(--adflex-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--adflex-tracking-wide);
+  text-transform: uppercase;
+  color: var(--adflex-color-primary);
+}
+
+.adflex-eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
 /* Primary call to action -------------------------------------------- */
 .adflex-cta {
   display: inline-flex;
@@ -138,6 +239,9 @@ a {
   padding: var(--adflex-space-3) var(--adflex-space-5);
   font: inherit;
   font-weight: 600;
+  letter-spacing: -0.005em;
+  /* On the deep band both of these rebind, giving a cyan button with dark
+     text — no separate variant needed. */
   color: var(--adflex-color-surface);
   text-decoration: none;
   background: var(--adflex-color-primary);
@@ -148,6 +252,12 @@ a {
 
 .adflex-cta:hover {
   background: var(--adflex-color-primary-hover);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .adflex-cta {
+    transition: background-color 140ms ease-out;
+  }
 }
 
 /* Text link --------------------------------------------------------- */
@@ -161,7 +271,8 @@ a {
   color: var(--adflex-color-primary);
   font-weight: 600;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1.5px;
 }
 
 .adflex-link:hover {
@@ -172,10 +283,10 @@ a {
 .adflex-tag {
   display: inline-flex;
   align-items: center;
-  padding: var(--adflex-space-1) var(--adflex-space-3);
+  padding: var(--adflex-space-2) var(--adflex-space-4);
   font-size: var(--adflex-text-xs);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   color: var(--adflex-color-ink);
   background: var(--adflex-color-surface-soft);
   border: 1px solid var(--adflex-color-border-strong);
@@ -187,4 +298,14 @@ a {
   flex-wrap: wrap;
   gap: var(--adflex-space-2);
   list-style: none;
+}
+
+/* Card -------------------------------------------------------------- */
+/* Shared card shell. Components that need one should use this rather than
+   repeating the same five declarations. */
+.adflex-card {
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+  box-shadow: var(--adflex-shadow-sm);
 }

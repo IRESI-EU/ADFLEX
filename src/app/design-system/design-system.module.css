@@ -72,6 +72,37 @@
   overflow-wrap: anywhere;
 }
 
+/* Live deep band, so the token rebinding can be seen rather than only read
+   about. Everything inside uses production classes. */
+.bandDemo {
+  display: grid;
+  gap: var(--adflex-space-4);
+  padding: var(--adflex-space-6);
+  border-radius: var(--adflex-radius-lg);
+}
+
+.bandDemoTitle {
+  font-family: var(--adflex-font-display);
+  font-size: var(--adflex-text-xl);
+  font-weight: 700;
+  letter-spacing: var(--adflex-tracking-tight);
+  color: var(--adflex-color-ink);
+}
+
+.bandDemoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--adflex-space-4);
+}
+
+/* The deep swatch grid is itself a deep band, so the cards around each chip
+   invert too and the values are shown in the context they are used in. */
+.deepSwatches {
+  padding: var(--adflex-space-5);
+  border-radius: var(--adflex-radius-lg);
+}
+
 /* --- Colour swatches ------------------------------------------------ */
 .swatchGrid {
   display: grid;

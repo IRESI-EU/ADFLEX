@@ -1,7 +1,41 @@
 # Open items
 
-Things that are unresolved, unsupplied or deliberately outside this first release. Nothing in
-this list has been guessed at or filled in with placeholder content on the site.
+Things that are unresolved, unsupplied or deliberately outside this release. Nothing in this list
+has been guessed at or filled in with placeholder content on the site.
+
+## Structure built, content awaited
+
+These routes and controls now exist and can be reviewed. Each shows a visible empty or inactive
+state rather than sample content, and each becomes live by editing
+`src/content/adflex.ts` — no code change.
+
+| Item | Route / component | What is needed |
+| --- | --- | --- |
+| News & Updates | `/news` | Approved posts |
+| Events | `/events` | Confirmed events |
+| Privacy Policy | `/legal/privacy` | **Approved legal text.** A specimen policy must not be published — it would be a false statement about how personal data is handled |
+| Cookie Policy | `/legal/cookies` | Approved legal text. Tie this to the analytics decision below |
+| Terms of Use | `/legal/terms` | Approved legal text |
+| Contact form | `ContactForm` | A backend or form service. **All controls are disabled** until submissions have somewhere to go |
+| Newsletter sign-up | `NewsletterSignup` | A mailing-list provider **and** a published privacy policy. Button disabled until both exist |
+| LinkedIn link | `AdflexFooter` | **The page URL.** Set `footer.linkedin.href`. Until then the block renders as muted, dashed, non-interactive text rather than a dead link |
+| Funding row | `AdflexFooter` | Approved statement and emblem. Set `footer.funding`; the row is not rendered at all while it is `null`. See *Funding and legal* below |
+
+**The LinkedIn mark is drawn, not supplied.** The glyph in `AdflexFooter.tsx` is an inline SVG
+rendition, because an external icon package is out of scope for this build. LinkedIn publishes
+official brand assets and usage rules; if the project wants to follow them to the letter, supply
+the file alongside the URL and swap it in.
+
+**Both News and Events are in the main navigation.** That makes two empty pages reachable from
+every page of the site — fine while the team is reviewing, but before launch they need either
+real content or removal from `navigation`, otherwise public visitors hit dead ends from the
+header.
+
+**Dark mode was built and then removed** at the client's request on 29 July 2026. If it is
+revisited, note the blocker: the header, the footer and the partner cards cannot go dark, because
+the supplied logos are raster files with opaque light backgrounds. Transparent or reversed logo
+files would be needed first — see the brand assets section below and
+[HANDOVER.md](HANDOVER.md).
 
 ## Content and contact
 
@@ -9,8 +43,32 @@ this list has been guessed at or filled in with placeholder content on the site.
 | --- | --- |
 | Demo URL | **Not supplied.** The source copy lists a "Watch Demo (when available)" button. No real demo URL exists, so no such control was built. Add it to `hero` in `src/content/adflex.ts` when a URL is confirmed. |
 | Dedicated ADFLEX contact | **Not confirmed.** The site uses the standard IRESI contact block (`info@iresi.eu`, Maynooth University) exactly as supplied. The source copy notes a dedicated ADFLEX contact may replace it. |
-| Partner roles, descriptions, logos, URLs, countries | **Not supplied.** Partner cards show the organisation name only. The initials shown are decorative and must not be presented as official logos. |
-| Results and publications | **Not final.** The section renders an intentional empty state. No publications, deliverables, dates, DOIs, download links or statistics have been invented. |
+| Partner roles, descriptions, URLs, countries | **Not supplied.** Partner cards show the logo and the organisation name only. |
+| Partner logo clearance | **Not confirmed.** The logo files were supplied by the client on 28 July 2026 and are live on the site. Written confirmation from each partner that their mark may be used on the ADFLEX website has not been recorded here — worth closing off before launch. |
+| Partner logos in vector | **Not supplied.** All three are raster (PNG). Vector versions would be better for print and very high-DPI screens. |
+| Project outputs | **Not final.** `/outputs` renders an intentional empty state. No publications, deliverables, dates, DOIs, download links or statistics have been invented. |
+
+### Partner logo notes
+
+The files in `public/images/partners/` are raster PNGs at modest resolution (182–436px wide).
+The image optimizer caps its output at the source width, so that resolution is the ceiling on
+how sharp they can look on a high-DPI screen. UCD's crest in particular is only 182px wide. If
+any partner can supply SVG or a larger PNG, take it.
+
+Each partner controls its own mark, and the two universities publish rules that constrain use:
+
+- **Maynooth University** — [brand guidelines](https://www.maynoothuniversity.ie/sites/default/files/assets/document/M12454%20MU%20Brand%20Guidelines%202021%20AW.pdf)
+  state the crest and the wordmark are integral and cannot be separated. Master artwork comes
+  from the Communications & Marketing Office.
+- **University College Dublin** — the crest and lockups cannot be altered or redesigned; artwork
+  is issued via [UCD Brand Identity](https://www.ucd.ie/universityrelations/marketing/brandidentity/ucdbrandguidelines/)
+  / `communications@ucd.ie`.
+- **Arden Energy** — [ardenenergy.ie](https://www.ardenenergy.ie/).
+
+If a logo ever needs replacing, get the file from the partner or the project coordinator. **Do
+not** substitute one from a search result or a logo aggregator (Brandfetch, Seeklogo, Brands of
+the World and similar) — those are frequently the wrong lockup, out of date, or re-hosted
+without rights.
 
 ## Funding and legal
 
@@ -20,10 +78,12 @@ this list has been guessed at or filled in with placeholder content on the site.
 | Grant number | **Not supplied.** |
 | Funding disclaimer | **Not supplied.** No disclaimer text has been written or approved, so none is shown. |
 | EU emblem | **Not supplied.** The emblem has strict usage rules and no approved file was provided. |
-| Legal pages (privacy, cookies, terms) | **Not part of this first build.** No links to them exist, because linking to pages that do not exist would be a broken promise. |
+| Legal pages (privacy, cookies, terms) | **Routes built, text not written.** Linked from the footer; each page states that the policy is not published yet. See the table at the top. |
 
-The footer has a reserved bottom row for exactly this content. Funding and legal information can
-be added there without redesigning the footer.
+The footer now has a **dedicated funding row**, reserved and already styled, sitting between the
+logo row and the legal row. It renders nothing while `footer.funding` is `null`. Setting
+`{ statement, emblem? }` in `src/content/adflex.ts` publishes it with no layout change. Use the
+approved wording verbatim rather than a paraphrase.
 
 ## Brand assets
 

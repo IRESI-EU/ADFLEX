@@ -1,49 +1,43 @@
 /* Layout patterns for the home page. Cards themselves own their own styling. */
 
-.aboutGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--adflex-space-5);
+/* The home page shows a single About glimpse, so it reads better as a lead
+   paragraph at a comfortable measure than as a card. */
+/* Sits in the right-hand column of the Objective section's split layout, so it
+   needs no negative offset — the grid handles the alignment. */
+.aboutLead {
+  max-width: 56ch;
+  font-size: var(--adflex-text-xl);
+  line-height: var(--adflex-leading-snug);
+  color: var(--adflex-color-text);
 }
 
-.aboutCard {
-  height: 100%;
-  padding: var(--adflex-space-5);
-  background: var(--adflex-color-surface);
-  border: 1px solid var(--adflex-color-border);
-  border-radius: var(--adflex-radius-lg);
-  box-shadow: var(--adflex-shadow-sm);
-}
-
-.aboutBody {
-  margin-top: var(--adflex-space-3);
-  color: var(--adflex-color-muted);
+.aboutActions {
+  margin-top: var(--adflex-space-6);
 }
 
 /* Two-column card grid on desktop, single column on mobile. */
 .cardGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--adflex-space-5);
+  gap: var(--adflex-space-6);
 }
 
+/* Three partners, so the grid goes straight from three columns to one. A
+   two-column stage would leave the third card stranded on its own row. */
 .partnerGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--adflex-space-5);
 }
 
-@media (max-width: 900px) {
-  .aboutGrid,
-  .partnerGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 720px) {
+  .cardGrid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-@media (max-width: 720px) {
-  .aboutGrid,
-  .partnerGrid,
-  .cardGrid {
+@media (max-width: 620px) {
+  .partnerGrid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
