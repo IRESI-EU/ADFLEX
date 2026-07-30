@@ -34,7 +34,7 @@ export async function generateMetadata({
  * Privacy, cookies and terms.
  *
  * The wording is the supplied draft, reproduced verbatim from
- * `ADFLEX_Legal_Pages_Draft_v1.pdf` and held as structured blocks in
+ * `ADFLEX_Legal_Pages_Draft_v2.docx` and held as structured blocks in
  * `src/content/adflex.ts`. It is not ours to edit, shorten or tidy — including
  * the square-bracketed placeholders still in it, which are shown as supplied
  * rather than filled in with a guess.

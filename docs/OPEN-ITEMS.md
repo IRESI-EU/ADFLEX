@@ -129,7 +129,7 @@ without rights.
 | Grant number | **Not supplied.** |
 | Funding disclaimer | **Not supplied.** No disclaimer text has been written or approved, so none is shown. |
 | EU emblem | **Not supplied.** The emblem has strict usage rules and no approved file was provided. |
-| Legal pages (privacy, cookies, terms) | **Draft text published** 30 July 2026 from `ADFLEX_Legal_Pages_Draft_v1.pdf`. See *Legal pages* below for what is still open in it. |
+| Legal pages (privacy, cookies, terms) | **Draft text published** 30 July 2026 from `ADFLEX_Legal_Pages_Draft_v2.docx`. See *Legal pages* below for what is still open in it. |
 
 The footer now has a **dedicated funding row**, reserved and already styled, sitting between the
 logo row and the legal row. It renders nothing while `footer.funding` is `null`. Setting
@@ -138,34 +138,50 @@ approved wording verbatim rather than a paraphrase.
 
 ## Legal pages
 
-The three legal pages now carry the wording supplied in
-`ADFLEX Legal Pages/ADFLEX_Legal_Pages_Draft_v1.pdf` (30 July 2026), transcribed **verbatim** into
+The three legal pages carry the wording supplied in
+`ADFLEX Legal Pages/ADFLEX_Legal_Pages_Draft_v2.docx` (30 July 2026), transcribed **verbatim** into
 `legal.pages` in `src/content/adflex.ts`. Nothing was edited, shortened, reordered or tidied.
 
 Every page shows a notice above the text saying it is a draft, so no reader mistakes it for
 settled policy.
 
+**v1 → v2.** The pack was first supplied as `ADFLEX_Legal_Pages_Draft_v1.pdf` and replaced the same
+day by the v2 DOCX. Diffed string by string, **the only change is the cookies provider table** —
+Terms of Use and the Privacy Policy are identical in both. The table's two `TBC` placeholders are
+now filled in:
+
+| v1 | v2 |
+| --- | --- |
+| `Maynooth University (adflex.ie)` | `Maynooth University (adflex domain)` |
+| `[Analytics tool TBC]` · Visitor statistics; requires consent | **Matomo Analytics** · Visitor statistics and usage measurement; requires consent |
+| `[Any embedded platforms TBC, e.g. LinkedIn, YouTube]` · Embedded content functionality | **LinkedIn Ireland** · Enables interaction with embedded LinkedIn content |
+
 ### It is a draft, and it says so
 
-The file is named `Draft_v1` and the documents end "version 1.0". **Publishing this to a public
-URL publishes draft legal text.** That is a decision for whoever carries the liability, not a
-technical one. If it should not be public yet, say so and the pages go back to the empty state.
+The file is named `Draft_v2` and the documents still end "version 1.0". **Publishing this to a
+public URL publishes draft legal text.** That is a decision for whoever carries the liability, not
+a technical one. If it should not be public yet, say so and the pages go back to the empty state.
 
-### Placeholders left exactly as supplied
+### Placeholders still left exactly as supplied
 
-The source contains square-bracketed placeholders. They are rendered as-is rather than guessed at,
-and the renderer deliberately **does not turn anything inside brackets into a link** — an
-unconfirmed domain must not become a live link:
+Two remain. They are rendered as-is rather than guessed at, and the renderer deliberately **does
+not turn anything inside brackets into a link** — an unconfirmed domain must not become a live
+link:
 
 | Placeholder | Where | Needed |
 | --- | --- | --- |
 | `[www.adflex.ie / adflex domain TBC]` | Terms of Use, Purpose | The confirmed public domain |
 | `[month/year]` | Privacy and Cookies, "Last reviewed" | The review date, twice |
-| `[Analytics tool TBC]` | Cookies, provider table | The analytics tool, once chosen |
-| `[Any embedded platforms TBC, e.g. LinkedIn, YouTube]` | Cookies, provider table | Whichever platforms actually get embedded |
 
 Terms of Use has **no "Last reviewed" line at all**, where Privacy and Cookies both do. That is how
 the source reads; it was not added.
+
+### One inconsistency inside v2 itself
+
+The Cookies Policy's prose still reads *"(Tool to be confirmed once the site is built, e.g. Matomo
+or Google Analytics — to be listed here by name once chosen…)"*, while the table two paragraphs
+later names **Matomo Analytics** outright. The table was updated in v2 and that sentence was not.
+Both are reproduced as supplied; the sentence is the client's to remove.
 
 ### Where the draft does not match the site as built
 
@@ -175,19 +191,28 @@ the project to, so each needs a decision.
 
 | The draft says | The site actually |
 | --- | --- |
-| Cookies Policy: "When you first visit the Site, a cookie notice lets you accept all cookies, or click Configure…" | Has **no cookie banner** and sets **no cookies at all**. There is no analytics, no embedded content and no consent mechanism. |
-| Cookies Policy describes analytics and embedded-content cookies | Neither exists. The table rows for both are `TBC` placeholders. |
+| Cookies Policy: "When you first visit the Site, a cookie notice lets you accept all cookies, or click Configure…" | Has **no cookie banner** and sets **no cookies at all**. There is no consent mechanism of any kind. |
+| Cookies Policy names **Matomo Analytics** as a provider whose cookies require consent | **Matomo is not installed.** No analytics of any kind runs on the site. |
+| Cookies Policy names **LinkedIn Ireland** for "embedded LinkedIn content" | **There is no embedded LinkedIn content.** The footer's LinkedIn block is not even a link yet — its URL has not been supplied. |
 | Privacy Policy 2.2: "Newsletter subscription: we ask only for your email address" | Has **no newsletter**. The sign-up block was removed on 30 July 2026 at the team's request. |
 | Privacy Policy 3.2: "Inform you of project news… if you have subscribed to updates" | There is nothing to subscribe to. |
 | Privacy Policy 2.1: "we collect your email address, name, subject, and message content" via the contact form | The contact form is a **disabled template** with no backend. It cannot collect or send anything. |
 
-The cleanest reading is that the draft describes the site as it is *intended* to be rather than as
-it is *today*. That may be fine if the policies are published at launch alongside a cookie banner,
-analytics and a working form. It is **not** fine if they go public now, because a privacy policy
-describing collection that does not happen is inaccurate in the direction that matters.
+**v2 made this sharper, not softer.** Where v1 said "analytics tool TBC", v2 names Matomo and
+LinkedIn specifically. A policy that names the exact tools setting cookies on a site that sets none
+is a more concrete claim than a placeholder was.
 
-Two ways forward, both the client's call: hold the pages back until the site catches up, or have
-the wording adjusted to describe the site as built.
+The cleanest reading is that the pack describes the site as it is *intended* to be rather than as
+it is *today*. That is fine if the policies go live at launch alongside a cookie banner, Matomo and
+whatever LinkedIn embed is planned. It is **not** fine if they go public now, because a privacy
+policy describing collection that does not happen is inaccurate in the direction that matters.
+
+Three ways forward, all the client's call:
+
+1. Hold the legal pages back until the site catches up.
+2. Have the wording adjusted to describe the site as built.
+3. Build what the policy describes — a cookie banner, Matomo behind consent, and the LinkedIn
+   embed — so the document becomes true. That is a real piece of work and has not been scoped.
 
 ## Brand assets
 

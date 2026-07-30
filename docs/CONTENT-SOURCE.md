@@ -41,11 +41,11 @@ WebP.
 | Four technology images | **Supplied by the client on 28 July 2026**, placed directly in `public/images/technologies/`. See "Technology images" below. |
 | One pilot image | **Supplied by the client on 28 July 2026**, placed directly in `public/images/pilot/`. See "Pilot image" below. |
 | Seven pilot asset icons | **Supplied by the client on 28 July 2026**, placed directly in `public/images/pilot-icons/`. See "Pilot asset icons" below. |
-| `ADFLEX Legal Pages/ADFLEX_Legal_Pages_Draft_v1.pdf` | **Supplied by the client on 30 July 2026.** Terms of Use, Privacy Policy and Cookies Policy. See "Legal pages" below. |
+| `ADFLEX Legal Pages/ADFLEX_Legal_Pages_Draft_v2.docx` | **Supplied by the client on 30 July 2026**, replacing a v1 PDF the same day. Terms of Use, Privacy Policy and Cookies Policy. See "Legal pages" below. |
 
 ## Legal pages
 
-Three documents in one PDF, transcribed **verbatim** into `legal.pages` in
+Three documents in one file, transcribed **verbatim** into `legal.pages` in
 `src/content/adflex.ts` on 30 July 2026:
 
 | Document | Route |
@@ -54,10 +54,21 @@ Three documents in one PDF, transcribed **verbatim** into `legal.pages` in
 | Privacy Policy | `/legal/privacy` |
 | Cookies Policy | `/legal/cookies` |
 
-Nothing was edited, shortened, reordered, re-worded or tidied. The square-bracketed placeholders in
-the source (`[www.adflex.ie / adflex domain TBC]`, `[month/year]`, `[Analytics tool TBC]`,
-`[Any embedded platforms TBC…]`) are reproduced exactly, so they stay visible as open questions
-rather than being quietly filled in.
+Nothing was edited, shortened, reordered, re-worded or tidied. The square-bracketed placeholders
+still in the source (`[www.adflex.ie / adflex domain TBC]` and `[month/year]`) are reproduced
+exactly, so they stay visible as open questions rather than being quietly filled in.
+
+**Two versions were supplied on the same day.** `ADFLEX_Legal_Pages_Draft_v1.pdf` came first and
+was replaced by `ADFLEX_Legal_Pages_Draft_v2.docx`. Both were transcribed and diffed string by
+string rather than assumed equivalent: **the only difference is the cookies provider table**, where
+v2 replaces the two `TBC` rows with Matomo Analytics and LinkedIn Ireland, and changes
+"Maynooth University (adflex.ie)" to "Maynooth University (adflex domain)". Terms of Use and the
+Privacy Policy are identical in both.
+
+A note on extraction, since it mattered: the v1 PDF used subset fonts that dropped whole phrases
+from a naive text extract. That was caught by checking for gaps rather than trusting the output,
+and the text was re-extracted properly. The v2 DOCX was read from its `word/document.xml`, which
+preserves headings, list levels and table cells directly.
 
 Two things were decided about presentation, neither of which changes a word:
 
@@ -68,8 +79,9 @@ Two things were decided about presentation, neither of which changes a word:
    placeholder. Linking `[www.adflex.ie / adflex domain TBC]` would have published a live link to a
    domain that is explicitly not confirmed.
 
-Each page carries a visible notice that it is a draft. The documents are marked `Draft_v1` and
-"version 1.0", and several passages describe behaviour the site does not yet have — see
+Each page carries a visible notice that it is a draft. The file is marked `Draft_v2` and the
+documents still end "version 1.0", and several passages describe behaviour the site does not yet
+have — see
 [OPEN-ITEMS.md](OPEN-ITEMS.md) for the specific mismatches, which need a client decision.
 
 **The source PDF is not committed.** It sits in `ADFLEX Legal Pages/` alongside the repository, the

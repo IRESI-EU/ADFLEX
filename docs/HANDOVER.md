@@ -30,7 +30,7 @@ discards messages loses real enquiries silently.
 ### The legal pages
 
 `/legal/privacy`, `/legal/cookies` and `/legal/terms` carry the wording supplied in
-`ADFLEX_Legal_Pages_Draft_v1.pdf`, transcribed **verbatim** into `legal.pages` in
+`ADFLEX_Legal_Pages_Draft_v2.docx`, transcribed **verbatim** into `legal.pages` in
 `src/content/adflex.ts` on 30 July 2026.
 
 **That wording is not yours to edit.** Do not shorten it, re-word it, fix its grammar or fill in
@@ -49,7 +49,7 @@ Three decisions worth knowing:
    `[www.adflex.ie / adflex domain TBC]` would publish a live link to a domain that is explicitly
    unconfirmed.
 3. **Every page says it is a draft**, above the text, via `page.status`. The documents are marked
-   `Draft_v1` / "version 1.0", so no reader should mistake them for settled policy.
+   `Draft_v2` and still end "version 1.0", so no reader should mistake them for settled policy.
 - **Styling:** one global token file plus one CSS Module per component. No CSS-in-JS, no
   preprocessor, no utility framework.
 - **Client JavaScript:** two client components — `AdflexHeader` for the mobile menu toggle and

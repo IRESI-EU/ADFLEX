@@ -260,7 +260,7 @@ export type AdflexContent = {
   /**
    * Privacy, cookies and terms. Rendered by the `/legal/[slug]` route.
    *
-   * Filled on 30 July 2026 from the supplied ADFLEX_Legal_Pages_Draft_v1.pdf.
+   * Filled on 30 July 2026 from the supplied ADFLEX_Legal_Pages_Draft_v2.docx.
    * The wording is reproduced verbatim, including its square-bracketed
    * placeholders — see docs/OPEN-ITEMS.md for what is still outstanding in it.
    */
@@ -638,12 +638,13 @@ export const adflexContent = {
     body: "This is where ADFLEX will publish project news and updates, and list events, talks and workshops. Nothing has been published or scheduled so far — entries will appear here as the project progresses.",
   },
 
-  // Transcribed verbatim from ADFLEX_Legal_Pages_Draft_v1.pdf, supplied by the
-  // client on 30 July 2026. Wording is not ours to edit. The square-bracketed
-  // placeholders below ([www.adflex.ie / adflex domain TBC], [month/year],
-  // [Analytics tool TBC], [Any embedded platforms TBC…]) are in the source and
-  // are left exactly as they are, so they stay visible rather than being
-  // quietly filled in with a guess. See docs/OPEN-ITEMS.md.
+  // Transcribed verbatim from ADFLEX_Legal_Pages_Draft_v2.docx, supplied by the
+  // client on 30 July 2026 (replacing a v1 PDF the same day; the only change
+  // between them is the cookies provider table). Wording is not ours to edit.
+  // The square-bracketed placeholders still in it ([www.adflex.ie / adflex
+  // domain TBC] and [month/year]) are left exactly as they are, so they stay
+  // visible rather than being quietly filled in with a guess.
+  // See docs/OPEN-ITEMS.md.
   legal: {
     eyebrow: "Legal",
     pages: [
@@ -654,7 +655,7 @@ export const adflexContent = {
         pageDescription:
           "How the ADFLEX project website handles personal data.",
         status:
-          "Draft v1.0, supplied by the project team. Not yet finalised — some details are still marked as to be confirmed.",
+          "Draft v2, supplied by the project team. Not yet finalised — the site address and the review date are still marked as to be confirmed.",
         blocks: [
           { kind: "heading", text: "1. Introduction" },
           {
@@ -776,7 +777,7 @@ export const adflexContent = {
         pageDescription:
           "How the ADFLEX project website uses cookies and similar technologies.",
         status:
-          "Draft v1.0, supplied by the project team. Not yet finalised — some details are still marked as to be confirmed.",
+          "Draft v2, supplied by the project team. Not yet finalised — the site address and the review date are still marked as to be confirmed.",
         blocks: [
           {
             kind: "paragraph",
@@ -811,19 +812,19 @@ export const adflexContent = {
             head: ["Provider", "Type", "Purpose"],
             rows: [
               [
-                "Maynooth University (adflex.ie)",
+                "Maynooth University (adflex domain)",
                 "Technical/Necessary",
                 "Core site functionality; excluded from consent requirement",
               ],
               [
-                "[Analytics tool TBC]",
+                "Matomo Analytics",
                 "Analytics",
-                "Visitor statistics; requires consent",
+                "Visitor statistics and usage measurement; requires consent",
               ],
               [
-                "[Any embedded platforms TBC, e.g. LinkedIn, YouTube]",
+                "LinkedIn Ireland",
                 "External/Social",
-                "Embedded content functionality; requires consent",
+                "Enables interaction with embedded LinkedIn content; requires consent",
               ],
             ],
           },
@@ -855,7 +856,7 @@ export const adflexContent = {
         title: "Terms of Use",
         pageDescription: "Terms of use for the ADFLEX project website.",
         status:
-          "Draft v1.0, supplied by the project team. Not yet finalised — some details are still marked as to be confirmed.",
+          "Draft v2, supplied by the project team. Not yet finalised — the site address and the review date are still marked as to be confirmed.",
         blocks: [
           { kind: "heading", text: "Purpose" },
           {
