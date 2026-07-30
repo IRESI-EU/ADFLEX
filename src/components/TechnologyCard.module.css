@@ -36,11 +36,11 @@
 }
 
 /* Fixed 16:9 frame reserves the space before the image loads, so the card
-   never shifts. The images are dark, so a matching placeholder colour avoids a
-   white flash on slower connections. */
+   never shifts. These images are still dark artwork, so a matching dark
+   placeholder avoids a white flash on slower connections. */
 .media {
   aspect-ratio: 16 / 9;
-  background: var(--adflex-plate-media);
+  background: var(--adflex-plate-media-dark);
   border-bottom: 1px solid var(--adflex-color-border);
 }
 

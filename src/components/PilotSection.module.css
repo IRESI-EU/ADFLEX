@@ -18,11 +18,12 @@
 }
 
 /* Fixed 16:9 frame reserves the space before the image loads, so nothing
-   shifts. Dark placeholder because the image is a dusk scene. */
+   shifts. Light placeholder because the supplied photograph is a bright
+   daylight scene — a dark one would flash before it paints. */
 .banner {
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: var(--adflex-plate-media);
+  background: var(--adflex-plate-media-light);
   border: 1px solid var(--adflex-color-border);
   border-radius: var(--adflex-radius-lg);
   box-shadow: var(--adflex-shadow-md);

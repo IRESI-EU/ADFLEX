@@ -1,5 +1,4 @@
-/* The hero is the first deep band. The supplied diagram is dark navy with cyan
-   glows, so it sits inside the band rather than on top of a light page. */
+/* The hero is the first emphasis band. */
 .hero {
   padding-block: var(--adflex-space-8);
   scroll-margin-top: calc(var(--adflex-header-height) + var(--adflex-space-4));
@@ -34,8 +33,8 @@
 }
 
 /* Full width, natural height: the whole diagram stays visible at every viewport
-   size and never overflows the page. The hairline picks up the cyan in the
-   artwork so the image reads as part of the band rather than pasted on. */
+   size and never overflows the page. The hairline separates the diagram's own
+   pale ground from the band behind it, which is a similar tone. */
 .diagram {
   width: 100%;
   height: auto;

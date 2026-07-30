@@ -44,12 +44,17 @@ WebP.
 
 ## Pilot image
 
-Supplied as `pilot.png` (1672 × 941, 2.5 MB). Renamed to `ringsend-pilot.jpg` and re-encoded as
-JPEG at quality 88 (406 KB). Kept at its full source width, because it renders at the full
-container width — unlike the technology cards there is no resolution headroom to give away. It
-was not cropped, rescaled or recoloured.
+**Replaced on 30 July 2026** with a daylight version, as part of the move to the lighter palette.
+The current file is `ringsend-pilot.png` (1672 × 941, 2.65 MB), used as supplied — not cropped,
+rescaled or recoloured. It is kept at its full source width, because it renders at the full
+container width; unlike the technology cards there is no resolution headroom to give away.
 
-It shows a mixed residential and commercial neighbourhood at dusk with rooftop solar PV, heat
+The previous version was a dusk scene, supplied as `pilot.png` and re-encoded as JPEG at quality
+88 (406 KB) to cut the source weight. The replacement has not been re-encoded, because that is a
+decision about a supplied asset rather than a code change — see the note in
+[OPEN-ITEMS.md](OPEN-ITEMS.md).
+
+It shows a mixed residential and commercial neighbourhood in daylight with rooftop solar PV, heat
 pumps, EV chargers and EVs, overlaid with a connected-network graphic.
 
 **It is an illustration, not a photograph of the pilot site.** This one needs watching more

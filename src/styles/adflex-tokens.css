@@ -111,10 +111,13 @@
      light tile and must not follow a band that could darken. */
   --adflex-plate-icon: #eef2f4;
   --adflex-plate-icon-border: #cdd8dc;
-  /* Placeholder behind the supplied photography, which is uniformly dark. It is
-     only ever visible for the moment before a dark image paints, and a light
-     placeholder would flash white there. */
-  --adflex-plate-media: #10201d;
+  /* Placeholders behind photography. Each is only ever visible for the moment
+     before its image paints, so it should match that image's own tone —
+     a mismatched placeholder is a visible flash on a slow connection.
+     Measure the artwork before changing these; the technology images sit at a
+     mean luminance of 28-36 out of 255, the pilot photograph at 148. */
+  --adflex-plate-media-dark: #10201d;
+  --adflex-plate-media-light: #dfe8ec;
 
   /* --- Semantic tokens, bound light by default -------------------------- */
   /* These are what components use. */

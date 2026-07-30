@@ -42,14 +42,24 @@ would be better solved with a new file.
 
 | Asset | Problem now | What would fix it |
 | --- | --- | --- |
-| `adflex-system-concept.png` | Dark navy artwork on an opaque background. On a light page it reads as a heavy dark plate in the middle of the layout. It is framed deliberately so it looks intentional rather than broken. | **A light-background version** of the same diagram, with the same labels and the same red/blue arrow meanings. This is the highest-impact image change. |
+| `adflex-system-concept.png` | ✅ **Resolved 30 July 2026.** Replaced with a light-background version (1134 × 561, was 1916 × 821 dark navy). The declared dimensions and the alt text were updated to match — see the note below. | — |
 | `adflex-logo.png` | **Opaque white background, no alpha channel at all.** It cannot sit on any colour, so the header and footer give it a white plate. Harmless today, because those surfaces are white anyway. | A **transparent PNG or SVG**. Then the plate can be deleted and the mark can sit directly on any surface. |
 | `pilot-icons/*.png` | Dark navy line art (measured mean luminance 54–106 of 255). They need a light ground, so their tiles are pinned light. | Fine as they are. Only revisit if a light-on-dark icon set is supplied, in which case the tile pinning must be revisited too. |
-| `technologies/*.jpg`, `pilot/ringsend-pilot.jpg` | Dark photography, framed as images. These work as they are. | — |
+| `pilot/ringsend-pilot.png` | ✅ **Replaced 30 July 2026** with a daylight version, which suits the lighter palette. Two follow-ons were handled: the reference was updated from `.jpg` to `.png`, and its loading placeholder was switched from dark to light so it no longer flashes dark before painting. | Optional: it is a **2.65 MB PNG**. `next/image` re-encodes it to WebP so visitors never download that, but it is heavy in the repository and at build time. The previous dusk version was re-encoded to a 406 KB JPEG for exactly this reason. |
+| `technologies/*.jpg` | Still dark artwork (mean luminance 28–36 of 255), so they keep the dark loading placeholder. They read as framed images on the light page. | Light versions, if the team wants them to match the new diagram and pilot photo. Not required. |
 
 When the new images arrive, the fixed grounds to revisit are the `--adflex-plate-*` tokens in
 `src/styles/adflex-tokens.css`. They exist precisely so this is a token change rather than a hunt
 through component CSS.
+
+**Swapping an image is not only a file swap.** `next/image` needs the real pixel dimensions, and
+they are declared in `src/content/adflex.ts`, not read from the file. If a replacement has a
+different aspect ratio and the declared `width`/`height` are left alone, the image is drawn
+distorted and the space reserved for it is wrong. Check the alt text at the same time: for the
+system diagram the alt **is** the content, because the diagram's own labels are not legible at
+phone width and are not repeated as visible text. When the diagram was replaced on 30 July its
+labels changed — thermal storage became an immersion heater, and the solar PV gained a battery —
+so the alt text was rewritten to match what the new artwork actually shows.
 
 **Dark mode has been built and removed twice** — 29 July and again 30 July 2026, both at the
 client's request. The site is light-only. If it is asked for a third time, read the dark mode

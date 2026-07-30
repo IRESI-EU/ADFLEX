@@ -325,7 +325,7 @@ export const designSystemContent = {
       "The technology card images and the pilot banner are illustrations, not project evidence. They are not photographs of the pilot and not diagrams of the ADFLEX architecture. Their alt text is empty because the surrounding heading and description already carry the meaning.",
       "Give image frames a fixed aspect-ratio so space is reserved before the image loads and the layout never shifts.",
       "The pilot asset icons sit in a fixed 56px tile with object-fit: contain, so each keeps its own aspect ratio and the rows align. The tile is a fixed light colour in both themes, because the icons are dark navy line art — measured mean luminance 54 to 106 out of 255 — and would lose their edges on a dark ground. Two of them depict ESB Networks and Arden Energy but are illustrations, not those organisations' logos.",
-      "The system diagram is dark artwork on an opaque background, so in the light theme it reads as a dark plate rather than as part of the page. It is framed deliberately for that reason. A light-background version is listed in OPEN-ITEMS.md.",
+      "The system diagram is supplied on its own pale ground, which is close in tone to the band behind it. It therefore carries a hairline border and a radius, so it reads as a deliberate figure rather than as a patch of slightly different background.",
     ],
   },
 

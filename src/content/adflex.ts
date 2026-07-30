@@ -352,9 +352,9 @@ export const adflexContent = {
       // imagery: this diagram carries fine light text on a dark background,
       // where JPEG ringing would show. next/image still serves it as WebP.
       src: "/images/adflex/adflex-system-concept.png",
-      alt: "ADFLEX system concept showing a community building with solar PV, heat pump, thermal storage and EV charging connected through Digital Spine middleware and a digital twin to aggregators, ESB Networks and the main grid. Red arrows show power flow and blue arrows show data and control signals.",
-      width: 1916,
-      height: 821,
+      alt: "ADFLEX system concept. Digital Spine middleware sits at the centre, linked to rooftop solar PV and battery, a heat pump, an immersion heater and an EV charger, and to a digital twin, an aggregator in a market role, ESB Networks as distribution system operator, and the main grid. Red arrows show power flow and blue arrows show data and control signals.",
+      width: 1134,
+      height: 561,
       caption:
         "Red arrows represent power flow. Blue arrows represent data and control signals.",
     },
@@ -562,7 +562,7 @@ export const adflexContent = {
       },
     ],
     image: {
-      src: "/images/pilot/ringsend-pilot.jpg",
+      src: "/images/pilot/ringsend-pilot.png",
       alt: "",
       width: 1672,
       height: 941,
