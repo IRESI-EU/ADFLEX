@@ -65,34 +65,35 @@ if that inference is unwanted, replace it with a genuine photograph of the pilot
 
 ## Pilot asset icons
 
-Seven icons supplied for the "Assets and programmes involved" list, one per item. Each was
-1024 × 1024 PNG at roughly 1.5 MB — about **10.4 MB in total** for artwork that renders at 48 CSS
-pixels.
+Seven images supplied for the "Assets and programmes involved" list, one per item, keeping the
+kebab-case filenames established for the previous set:
 
-| File as supplied | Renamed to | Asset |
-| --- | --- | --- |
-| `heat pumps.png` | `heat-pumps.png` | Heat pumps |
-| `electric vehicles and ev charging.png` | `ev-charging.png` | Electric vehicles and EV charging |
-| `solar pv.png` | `solar-pv.png` | Solar PV |
-| `combined heat and power.png` | `combined-heat-and-power.png` | Combined heat and power |
-| `digital spine.png` | `digital-spine.png` | Digital Spine |
-| `arden's energy platform.png` | `arden-energy-platform.png` | Arden Energy's platform |
-| `esb networks.png` | `esb-networks.png` | ESB Networks' Beat the Peak programme |
+| File | Asset |
+| --- | --- |
+| `heat-pumps.png` | Heat pumps |
+| `ev-charging.png` | Electric vehicles and EV charging |
+| `solar-pv.png` | Solar PV |
+| `combined-heat-and-power.png` | Combined heat and power |
+| `digital-spine.png` | Digital Spine |
+| `arden-energy-platform.png` | Arden Energy's platform |
+| `esb-networks.png` | ESB Networks' Beat the Peak programme |
 
-Processing, all mechanical:
+**Replaced on 30 July 2026.** The replacements are **not icons**: each is a 1536 × 1024
+illustration on its own opaque ground, roughly 2.2 MB (15.6 MB in total). The previous set was
+small trimmed glyphs on transparency, downscaled to a 160 px longest side (284 KB in total).
 
-1. **Renamed** to kebab-case matching the asset `id`. The originals contained spaces and an
-   apostrophe, which make for awkward URLs.
-2. **Transparent canvas trimmed.** Content filled anywhere from 51% to 89% of each canvas, which
-   would have rendered them at visibly different sizes in the same list. Cropped to the content
-   bounding box.
-3. **Downscaled** so the longest side is 160px, ample for a 48px render on a high-DPI screen.
+That difference forced a layout change rather than a file swap. The old list put a 56 px square
+tile beside each label; a 3:2 illustration in a square tile letterboxes to an unreadable sliver,
+and these carry their own dark grounds so the light tile was wrong as well. The asset list is now
+a card grid with the illustration above the label, at the artwork's own 3:2 ratio. They are used
+exactly as supplied — not cropped, trimmed, downscaled or recoloured.
 
-Total is now **284 KB**. Nothing was recoloured or redrawn.
+They render about 270 px wide, so 2.2 MB of source produces a ~20 KB served image. See the
+source-weight note in [OPEN-ITEMS.md](OPEN-ITEMS.md).
 
-They are illustrative, and each `alt` is empty because the asset name sits beside the icon. Note
-the ESB Networks and Arden Energy icons are generic illustrations — **neither is that
-organisation's logo**, and neither should be presented as one.
+They are illustrative, and each `alt` is empty because the asset name sits directly under the
+image. Note the ESB Networks and Arden Energy images are generic illustrations — **neither is
+that organisation's logo**, and neither should be presented as one.
 
 ## Technology images
 
@@ -107,10 +108,18 @@ the mapping:
 | `3.png` | Smart tariffs and dynamic pricing | Phone showing a price gauge, a demand curve and per-device sliders |
 | `4.png` | Shared data standards and data spaces | Shield and padlock over a cloud, with homes, grid and analysts exchanging data |
 
-They were renamed to the technology `id` and re-encoded: **1672 × 941 PNG (~2 MB each, 8 MB
-total) → 1400 × 788 JPEG at quality 88 (~780 KB total)**. Downscaling is safe because the widest
-the card ever renders is about 560 CSS px. The images themselves were not cropped, recoloured or
-otherwise edited. Originals are unmodified in the client's own source.
+**Replaced on 30 July 2026** with light-toned versions, as part of the move to the lighter
+palette. The current files are 1672 × 941 PNGs (~2 MB each, 7.9 MB total), used exactly as
+supplied — not cropped, rescaled, recoloured or re-encoded.
+
+The aspect ratio is unchanged from the previous set, so only the file extension and the declared
+dimensions in `src/content/adflex.ts` had to change. Their loading placeholder was switched from
+dark to light, because the new artwork is light (mean luminance 198–225 of 255) and a dark
+placeholder would have flashed before each image painted.
+
+The previous set was the same four subjects in dark tones, downscaled and re-encoded to
+1400 × 788 JPEG at quality 88 (~780 KB total) to cut source weight. The replacements have not
+been re-encoded — see the source-weight note in [OPEN-ITEMS.md](OPEN-ITEMS.md).
 
 These are **illustrations, not project evidence**. They depict generic energy-system concepts and
 must not be read as photographs of the Ringsend pilot or as diagrams of the ADFLEX architecture —

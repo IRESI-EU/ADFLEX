@@ -107,16 +107,15 @@
   /* The logo PNG has an opaque white background, so it always needs white
      under it, whatever surface it is placed on. */
   --adflex-plate-logo: #ffffff;
-  /* The pilot icons are dark navy line art on transparency, so they need a
-     light tile and must not follow a band that could darken. */
-  --adflex-plate-icon: #eef2f4;
-  --adflex-plate-icon-border: #cdd8dc;
-  /* Placeholders behind photography. Each is only ever visible for the moment
+  /* Placeholders behind artwork. Each is only ever visible for the moment
      before its image paints, so it should match that image's own tone —
      a mismatched placeholder is a visible flash on a slow connection.
-     Measure the artwork before changing these; the technology images sit at a
-     mean luminance of 28-36 out of 255, the pilot photograph at 148. */
-  --adflex-plate-media-dark: #10201d;
+
+     Measure the artwork before changing these. As supplied on 30 July 2026:
+     the technology images and the system diagram are light (mean luminance
+     198-225 of 255), the pilot photograph is mid (148), and the pilot asset
+     illustrations carry their own dark grounds (141-226 over a grey field). */
+  --adflex-plate-media-dark: #2b3234;
   --adflex-plate-media-light: #dfe8ec;
 
   /* --- Semantic tokens, bound light by default -------------------------- */

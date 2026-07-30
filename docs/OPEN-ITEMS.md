@@ -31,26 +31,46 @@ every page of the site — fine while the team is reviewing, but before launch t
 real content or removal from `navigation`, otherwise public visitors hit dead ends from the
 header.
 
-## Imagery that does not fit the lighter palette
+## Imagery
 
-The palette moved to white, mild grey and the logo green on 30 July 2026. The supplied artwork
-was drawn for the previous dark-navy design, so some of it now sits awkwardly on a light page.
-None of this blocks review — each is handled deliberately rather than left broken — but each
-would be better solved with a new file.
+The palette moved to white, mild grey and the logo green on 30 July 2026, and the artwork was
+replaced the same day to suit it. Almost everything is now resolved.
 
-**This is the list to work from when generating replacement images.**
-
-| Asset | Problem now | What would fix it |
+| Asset | Status | Outstanding |
 | --- | --- | --- |
-| `adflex-system-concept.png` | ✅ **Resolved 30 July 2026.** Replaced with a light-background version (1134 × 561, was 1916 × 821 dark navy). The declared dimensions and the alt text were updated to match — see the note below. | — |
+| `adflex-system-concept.png` | ✅ **Replaced.** Light background, 1134 × 561 (was 1916 × 821 dark navy). Declared dimensions and alt text updated to match. | — |
+| `technologies/*.png` | ✅ **Replaced.** Light artwork, 1672 × 941 (was 1400 × 788 dark JPEGs). Same 16:9 ratio, so only the extension and the declared dimensions changed. Loading placeholder switched dark → light. | — |
+| `pilot-icons/*.png` | ✅ **Replaced.** These are no longer icons: 1536 × 1024 illustrations on their own opaque grounds. The asset list was rebuilt from glyph-beside-label rows into cards with a 3:2 image above the label, because a 56 px square tile letterboxed them into an unreadable sliver. | — |
+| `pilot/ringsend-pilot.png` | ✅ **Replaced.** Daylight version. Reference updated `.jpg` → `.png`, placeholder switched dark → light. | — |
 | `adflex-logo.png` | **Opaque white background, no alpha channel at all.** It cannot sit on any colour, so the header and footer give it a white plate. Harmless today, because those surfaces are white anyway. | A **transparent PNG or SVG**. Then the plate can be deleted and the mark can sit directly on any surface. |
-| `pilot-icons/*.png` | Dark navy line art (measured mean luminance 54–106 of 255). They need a light ground, so their tiles are pinned light. | Fine as they are. Only revisit if a light-on-dark icon set is supplied, in which case the tile pinning must be revisited too. |
-| `pilot/ringsend-pilot.png` | ✅ **Replaced 30 July 2026** with a daylight version, which suits the lighter palette. Two follow-ons were handled: the reference was updated from `.jpg` to `.png`, and its loading placeholder was switched from dark to light so it no longer flashes dark before painting. | Optional: it is a **2.65 MB PNG**. `next/image` re-encodes it to WebP so visitors never download that, but it is heavy in the repository and at build time. The previous dusk version was re-encoded to a 406 KB JPEG for exactly this reason. |
-| `technologies/*.jpg` | Still dark artwork (mean luminance 28–36 of 255), so they keep the dark loading placeholder. They read as framed images on the light page. | Light versions, if the team wants them to match the new diagram and pilot photo. Not required. |
 
-When the new images arrive, the fixed grounds to revisit are the `--adflex-plate-*` tokens in
-`src/styles/adflex-tokens.css`. They exist precisely so this is a token change rather than a hunt
-through component CSS.
+The fixed grounds behind artwork are the `--adflex-plate-*` tokens in
+`src/styles/adflex-tokens.css`. They exist precisely so a future swap is a token change rather
+than a hunt through component CSS.
+
+### Source image weight — worth a decision
+
+`public/images/` is now **28 MB**, almost all of it artwork that renders small:
+
+| Folder | Files | Source | Rendered at | Served to a visitor |
+| --- | --- | --- | --- | --- |
+| `pilot-icons/` | 7 | **15.6 MB** | ~270 px wide | ~20 KB each |
+| `technologies/` | 4 | **7.9 MB** | ~560 px wide | ~147 KB each |
+| `pilot/` | 2 | 3.1 MB | ~620 px wide | ~154 KB |
+| `adflex/` | 2 | 1.4 MB | full width | ~259 KB |
+
+**Visitors are not affected.** `next/image` re-encodes everything to WebP at the size actually
+needed, so nobody downloads a 2.2 MB PNG. The cost lands on the repository, on clone time and on
+every Netlify build.
+
+The pilot icons are the clear outlier: 2.2 MB of source each to produce a 20 KB rendered image.
+Re-encoding those alone would recover roughly 15 MB. It has not been done, because re-encoding a
+supplied asset is a decision about someone else's file rather than a code change — ask first.
+
+**There is also an unused file.** `public/images/pilot/ringsend-pilot2.jpg` (405 KB, the dusk
+version) sits beside the daylight image that is actually in use. It is deliberately left
+uncommitted. Either delete it or commit it as a documented alternative, but it should not stay an
+untracked stray.
 
 **Swapping an image is not only a file swap.** `next/image` needs the real pixel dimensions, and
 they are declared in `src/content/adflex.ts`, not read from the file. If a replacement has a

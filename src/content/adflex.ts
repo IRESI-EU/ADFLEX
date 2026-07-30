@@ -410,10 +410,10 @@ export const adflexContent = {
         description:
           "The data backbone of the project. It connects heat pumps, EV chargers, batteries and PV systems to grid stakeholders through standards-based, interoperable data exchange, so devices from different manufacturers can be coordinated without custom integration work for each one.",
         image: {
-          src: "/images/technologies/digital-spine.jpg",
+          src: "/images/technologies/digital-spine.png",
           alt: "",
-          width: 1400,
-          height: 788,
+          width: 1672,
+          height: 941,
         },
       },
       {
@@ -422,10 +422,10 @@ export const adflexContent = {
         description:
           "A virtual replica of the pilot buildings and local network, used to model how changes in heating, charging or storage behaviour affect both resident comfort and grid load, before those changes are rolled out physically.",
         image: {
-          src: "/images/technologies/digital-twin.jpg",
+          src: "/images/technologies/digital-twin.png",
           alt: "",
-          width: 1400,
-          height: 788,
+          width: 1672,
+          height: 941,
         },
       },
       {
@@ -434,10 +434,10 @@ export const adflexContent = {
         description:
           "Pricing mechanisms that let flexibility translate into a tangible benefit for residents, giving communities a reason to shift consumption in response to grid conditions rather than just a technical capability to do so.",
         image: {
-          src: "/images/technologies/smart-tariffs.jpg",
+          src: "/images/technologies/smart-tariffs.png",
           alt: "",
-          width: 1400,
-          height: 788,
+          width: 1672,
+          height: 941,
         },
       },
       {
@@ -446,10 +446,10 @@ export const adflexContent = {
         description:
           "ADFLEX uses data spaces, secure, agreed environments for exchanging energy data, so information from the pilot can be trusted, compared and reused by other communities, grid operators and researchers working on flexibility elsewhere.",
         image: {
-          src: "/images/technologies/data-spaces.jpg",
+          src: "/images/technologies/data-spaces.png",
           alt: "",
-          width: 1400,
-          height: 788,
+          width: 1672,
+          height: 941,
         },
       },
     ],
@@ -518,17 +518,17 @@ export const adflexContent = {
       {
         id: "heat-pumps",
         label: "Heat pumps",
-        icon: { src: "/images/pilot-icons/heat-pumps.png", alt: "", width: 153, height: 160 },
+        icon: { src: "/images/pilot-icons/heat-pumps.png", alt: "", width: 1536, height: 1024 },
       },
       {
         id: "ev-charging",
         label: "Electric vehicles and EV charging",
-        icon: { src: "/images/pilot-icons/ev-charging.png", alt: "", width: 160, height: 75 },
+        icon: { src: "/images/pilot-icons/ev-charging.png", alt: "", width: 1536, height: 1024 },
       },
       {
         id: "solar-pv",
         label: "Solar PV",
-        icon: { src: "/images/pilot-icons/solar-pv.png", alt: "", width: 154, height: 160 },
+        icon: { src: "/images/pilot-icons/solar-pv.png", alt: "", width: 1536, height: 1024 },
       },
       {
         id: "combined-heat-and-power",
@@ -536,14 +536,14 @@ export const adflexContent = {
         icon: {
           src: "/images/pilot-icons/combined-heat-and-power.png",
           alt: "",
-          width: 160,
-          height: 158,
+          width: 1536,
+          height: 1024,
         },
       },
       {
         id: "digital-spine",
         label: "Digital Spine",
-        icon: { src: "/images/pilot-icons/digital-spine.png", alt: "", width: 160, height: 115 },
+        icon: { src: "/images/pilot-icons/digital-spine.png", alt: "", width: 1536, height: 1024 },
       },
       {
         id: "arden-energy-platform",
@@ -551,14 +551,14 @@ export const adflexContent = {
         icon: {
           src: "/images/pilot-icons/arden-energy-platform.png",
           alt: "",
-          width: 160,
-          height: 130,
+          width: 1536,
+          height: 1024,
         },
       },
       {
         id: "esb-networks",
         label: "ESB Networks’ Beat the Peak programme",
-        icon: { src: "/images/pilot-icons/esb-networks.png", alt: "", width: 160, height: 146 },
+        icon: { src: "/images/pilot-icons/esb-networks.png", alt: "", width: 1536, height: 1024 },
       },
     ],
     image: {

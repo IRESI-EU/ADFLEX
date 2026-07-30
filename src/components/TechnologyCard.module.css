@@ -36,11 +36,12 @@
 }
 
 /* Fixed 16:9 frame reserves the space before the image loads, so the card
-   never shifts. These images are still dark artwork, so a matching dark
-   placeholder avoids a white flash on slower connections. */
+   never shifts. The replacement artwork is light (mean luminance 198–225 of
+   255), so the placeholder is light too — a dark one would flash before it
+   paints. */
 .media {
   aspect-ratio: 16 / 9;
-  background: var(--adflex-plate-media-dark);
+  background: var(--adflex-plate-media-light);
   border-bottom: 1px solid var(--adflex-color-border);
 }
 

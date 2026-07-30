@@ -64,17 +64,18 @@ export function PilotSection({ id, content }: PilotSectionProps) {
           {content.assets.map((asset) => (
             <li key={asset.id} className={styles.asset}>
               {asset.icon ? (
-                // Dark tile: these icons are drawn as luminous marks, so their
-                // glows read on ink and wash out on white. alt is empty — the
-                // label sits right beside it.
-                <span className={styles.iconTile}>
+                // A 3:2 illustration above the label, not a small icon beside
+                // it: the supplied files are 1536×1024 artworks on their own
+                // opaque grounds, which collapse into an unreadable sliver in a
+                // square glyph tile. alt is empty — the label sits under it.
+                <span className={styles.assetMedia}>
                   <Image
-                    className={styles.icon}
+                    className={styles.assetImage}
                     src={asset.icon.src}
                     alt={asset.icon.alt}
                     width={asset.icon.width}
                     height={asset.icon.height}
-                    sizes="56px"
+                    sizes="(max-width: 620px) 100vw, (max-width: 1080px) 45vw, 270px"
                   />
                 </span>
               ) : null}

@@ -130,10 +130,10 @@ Append one item to `technologies.items`:
   name: "Technology name",
   description: "Description from approved source material.",
   image: {                                        // optional
-    src: "/images/technologies/unique-slug.jpg",
+    src: "/images/technologies/unique-slug.png",
     alt: "",                                      // see below
-    width: 1400,
-    height: 788,
+    width: 1672,                                  // the file's real pixel size
+    height: 941,                                  // — not read from the file
   },
 }
 ```

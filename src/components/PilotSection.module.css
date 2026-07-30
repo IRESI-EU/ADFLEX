@@ -56,11 +56,12 @@
   color: var(--adflex-color-primary);
 }
 
-/* A grid across the full width rather than a narrow sidebar list. Seven items
-   land as four then three, which reads fine and gives each icon real room. */
+/* A grid across the full width rather than a narrow sidebar list. The cards
+   carry a 3:2 illustration each, so they need more width than the old glyph
+   rows did — seven items land as four then three at desktop width. */
 .assetGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--adflex-space-4);
   margin-top: var(--adflex-space-5);
   list-style: none;
@@ -68,45 +69,47 @@
 
 .asset {
   display: flex;
-  align-items: center;
-  gap: var(--adflex-space-4);
-  padding: var(--adflex-space-3) var(--adflex-space-4);
+  flex-direction: column;
+  /* Equal-height cards whatever the label wraps to, so the grid stays even. */
+  height: 100%;
+  overflow: hidden;
   background: var(--adflex-color-surface);
   border: 1px solid var(--adflex-color-border);
   border-radius: var(--adflex-radius-md);
 }
 
-.iconTile {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  /* These are detailed illustrations rather than simple glyphs — below roughly
-     this size they collapse into an unreadable smudge. */
-  width: 56px;
-  height: 56px;
-  padding: var(--adflex-space-1);
-  /* A fixed light tile, not a semantic token. The supplied icons are dark navy
-     line art on transparency — measured mean luminance 54–106 out of 255 — so
-     they need a light ground to keep their edges, in either theme. Letting this
-     follow the theme would dissolve them in dark mode. */
-  background: var(--adflex-plate-icon);
-  border: 1px solid var(--adflex-plate-icon-border);
-  border-radius: var(--adflex-radius-md);
+/* Fixed 3:2 frame matching the supplied 1536×1024 artwork, so the space is
+   reserved before the image loads and nothing shifts. The placeholder is dark
+   because these illustrations carry their own dark grounds — a light one would
+   flash before they paint. */
+.assetMedia {
+  display: block;
+  aspect-ratio: 3 / 2;
+  background: var(--adflex-plate-media-dark);
+  border-bottom: 1px solid var(--adflex-color-border);
 }
 
-/* `contain` inside a fixed box, so each icon keeps its own aspect ratio and
-   none is stretched or cropped. */
-.icon {
+/* `cover` rather than `contain`: the frame is already the artwork's own 3:2
+   ratio, so nothing is cropped in practice, and cover guarantees the image
+   fills the frame edge to edge if a future file differs slightly. */
+.assetImage {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
+/* Fills the space under the image so every card's label block is the same
+   height and the bottom edges line up across a row. */
 .assetLabel {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
   min-width: 0;
+  padding: var(--adflex-space-3) var(--adflex-space-4);
   font-size: var(--adflex-text-sm);
+  font-weight: 600;
   line-height: var(--adflex-leading-snug);
+  color: var(--adflex-color-ink);
 }
 
 @media (max-width: 900px) {

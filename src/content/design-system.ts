@@ -324,7 +324,7 @@ export const designSystemContent = {
       "Partner logos are third-party trademarks. Only use a file supplied by the partner or the project coordinator — never one taken from a web search, a logo aggregator, or traced by hand. Each is fitted into a shared box with object-fit: contain, so every lockup keeps its own aspect ratio.",
       "The technology card images and the pilot banner are illustrations, not project evidence. They are not photographs of the pilot and not diagrams of the ADFLEX architecture. Their alt text is empty because the surrounding heading and description already carry the meaning.",
       "Give image frames a fixed aspect-ratio so space is reserved before the image loads and the layout never shifts.",
-      "The pilot asset icons sit in a fixed 56px tile with object-fit: contain, so each keeps its own aspect ratio and the rows align. The tile is a fixed light colour in both themes, because the icons are dark navy line art — measured mean luminance 54 to 106 out of 255 — and would lose their edges on a dark ground. Two of them depict ESB Networks and Arden Energy but are illustrations, not those organisations' logos.",
+      "The pilot assets are cards with a 3:2 illustration above the label, not glyphs beside it. The supplied files are 1536 by 1024 artworks on their own opaque grounds, and a square glyph tile letterboxed them into an unreadable sliver. Two of them depict ESB Networks and Arden Energy but are illustrations, not those organisations' logos.",
       "The system diagram is supplied on its own pale ground, which is close in tone to the band behind it. It therefore carries a hairline border and a radius, so it reads as a deliberate figure rather than as a patch of slightly different background.",
     ],
   },
