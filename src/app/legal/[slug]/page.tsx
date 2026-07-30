@@ -4,9 +4,9 @@ import { adflexContent, resolveNavigation } from "@/content/adflex";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { PageHero } from "@/components/PageHero";
-import { AwaitingContent } from "@/components/AwaitingContent";
+import { LegalDocument } from "@/components/LegalDocument";
 
-const { brand, navigation, legal, contact } = adflexContent;
+const { brand, navigation, legal } = adflexContent;
 
 type LegalPageProps = {
   params: Promise<{ slug: string }>;
@@ -33,10 +33,14 @@ export async function generateMetadata({
 /**
  * Privacy, cookies and terms.
  *
- * Every one is deliberately empty. Legal text has to be written or approved by
- * whoever carries the liability for it — publishing specimen wording on an
- * EU-funded project site would be worse than publishing nothing, because a
- * reader has no way to tell it is not the real policy.
+ * The wording is the supplied draft, reproduced verbatim from
+ * `ADFLEX_Legal_Pages_Draft_v1.pdf` and held as structured blocks in
+ * `src/content/adflex.ts`. It is not ours to edit, shorten or tidy — including
+ * the square-bracketed placeholders still in it, which are shown as supplied
+ * rather than filled in with a guess.
+ *
+ * Each page states above the text that it is a draft, so a reader is never left
+ * to assume they are looking at settled policy.
  */
 export default async function LegalPage({ params }: LegalPageProps) {
   const { slug } = await params;
@@ -51,7 +55,7 @@ export default async function LegalPage({ params }: LegalPageProps) {
 
       <main id="main-content">
         <PageHero eyebrow={page.eyebrow} title={page.title} />
-        <AwaitingContent page={page} contact={contact} />
+        <LegalDocument status={page.status} blocks={page.blocks} />
       </main>
 
       <AdflexFooter logo={brand.logo} />

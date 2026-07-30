@@ -41,6 +41,39 @@ WebP.
 | Four technology images | **Supplied by the client on 28 July 2026**, placed directly in `public/images/technologies/`. See "Technology images" below. |
 | One pilot image | **Supplied by the client on 28 July 2026**, placed directly in `public/images/pilot/`. See "Pilot image" below. |
 | Seven pilot asset icons | **Supplied by the client on 28 July 2026**, placed directly in `public/images/pilot-icons/`. See "Pilot asset icons" below. |
+| `ADFLEX Legal Pages/ADFLEX_Legal_Pages_Draft_v1.pdf` | **Supplied by the client on 30 July 2026.** Terms of Use, Privacy Policy and Cookies Policy. See "Legal pages" below. |
+
+## Legal pages
+
+Three documents in one PDF, transcribed **verbatim** into `legal.pages` in
+`src/content/adflex.ts` on 30 July 2026:
+
+| Document | Route |
+| --- | --- |
+| Terms of Use | `/legal/terms` |
+| Privacy Policy | `/legal/privacy` |
+| Cookies Policy | `/legal/cookies` |
+
+Nothing was edited, shortened, reordered, re-worded or tidied. The square-bracketed placeholders in
+the source (`[www.adflex.ie / adflex domain TBC]`, `[month/year]`, `[Analytics tool TBC]`,
+`[Any embedded platforms TBC…]`) are reproduced exactly, so they stay visible as open questions
+rather than being quietly filled in.
+
+Two things were decided about presentation, neither of which changes a word:
+
+1. **The text is structured, not markup.** Each document is a list of typed blocks — heading,
+   paragraph, list, table — so the wording stays plain data that can be diffed against the source
+   line by line. There is no Markdown or HTML parsing anywhere in the pipeline.
+2. **Only email addresses and bare `www.` domains become links,** and never inside a square-bracket
+   placeholder. Linking `[www.adflex.ie / adflex domain TBC]` would have published a live link to a
+   domain that is explicitly not confirmed.
+
+Each page carries a visible notice that it is a draft. The documents are marked `Draft_v1` and
+"version 1.0", and several passages describe behaviour the site does not yet have — see
+[OPEN-ITEMS.md](OPEN-ITEMS.md) for the specific mismatches, which need a client decision.
+
+**The source PDF is not committed.** It sits in `ADFLEX Legal Pages/` alongside the repository, the
+same way the other supplied working files are treated.
 
 ## Pilot image
 

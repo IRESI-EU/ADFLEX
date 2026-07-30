@@ -8,23 +8,48 @@ shaped this way, and how to extend it without breaking the parts that matter.
 - **Framework:** Next.js 16 (App Router), React 19, TypeScript, ESLint. Created with
   `create-next-app`, `src/` directory, no Tailwind, no UI library.
 - **Rendering:** every route is fully static. `npm run build` prerenders `/`, `/about`,
-  `/outputs`, `/contact`, `/news`, `/events`, the three `/legal/[slug]` pages and
-  `/design-system`; there is no server logic, no API route and no data fetching.
+  `/outputs`, `/contact`, `/news`, the three `/legal/[slug]` pages and `/design-system`; there is
+  no server logic, no API route and no data fetching.
 
 ### Routes that exist but have no content
 
-`/news`, `/events` and the three legal pages are **structure without content**, on purpose. Each
-renders a visible empty state saying nothing is published yet.
+`/news` is **structure without content**, on purpose. It renders a visible empty state saying
+nothing is published yet.
 
-Do not fill them with sample entries. A placeholder news post, a specimen privacy policy or an
-invented event date reads as real the moment someone lands on it, and on an EU-funded project
-site that is a false statement rather than a design detail — the legal pages especially, since a
-specimen policy would be a claim about how personal data is handled. Add real content by editing
-`src/content/adflex.ts`; the empty state disappears when there is something to show.
+Do not fill it with sample entries. A placeholder news post or an invented event date reads as
+real the moment someone lands on it, and on an EU-funded project site that is a false statement
+rather than a design detail. Add real content by editing `src/content/adflex.ts`; the empty state
+disappears when there is something to show.
 
-The same rule governs the contact form and the newsletter button, both of which are **disabled**.
-A form that looks live but discards messages loses real enquiries silently, and a sign-up that
-collected addresses would be doing so with no privacy policy published.
+News and Events were two routes until 30 July 2026, when they were merged. Both were empty, so
+the navigation offered a visitor two dead ends instead of one.
+
+The same rule governs the contact form, which is **disabled**: a form that looks live but
+discards messages loses real enquiries silently.
+
+### The legal pages
+
+`/legal/privacy`, `/legal/cookies` and `/legal/terms` carry the wording supplied in
+`ADFLEX_Legal_Pages_Draft_v1.pdf`, transcribed **verbatim** into `legal.pages` in
+`src/content/adflex.ts` on 30 July 2026.
+
+**That wording is not yours to edit.** Do not shorten it, re-word it, fix its grammar or fill in
+its square-bracketed placeholders. If something in it is wrong, out of date or does not match the
+site, that is a question for whoever carries the liability — see [OPEN-ITEMS.md](OPEN-ITEMS.md),
+which lists the specific mismatches already found.
+
+Three decisions worth knowing:
+
+1. **Structured blocks, not markup.** Each document is a list of typed blocks — `heading`,
+   `paragraph`, `list`, `table` — so the wording stays plain data that can be diffed against the
+   source line by line. Nothing parses Markdown or HTML, which also means there is no injection
+   surface in the one place on the site where exact wording matters most.
+2. **Linking is deliberately narrow.** `LegalDocument` links email addresses and bare `www.`
+   domains and nothing else, and **never inside a square-bracket placeholder**. Linking
+   `[www.adflex.ie / adflex domain TBC]` would publish a live link to a domain that is explicitly
+   unconfirmed.
+3. **Every page says it is a draft**, above the text, via `page.status`. The documents are marked
+   `Draft_v1` / "version 1.0", so no reader should mistake them for settled policy.
 - **Styling:** one global token file plus one CSS Module per component. No CSS-in-JS, no
   preprocessor, no utility framework.
 - **Client JavaScript:** two client components — `AdflexHeader` for the mobile menu toggle and
@@ -48,9 +73,9 @@ collected addresses would be doing so with no privacy policy published.
 | `AdflexFooter` | Footer on a white surface, deliberately small: logo and LinkedIn on one row, then a bottom row with the year and the three legal links. Between them sits a **reserved funding row** that renders nothing while `footer.funding` is `null`. Takes only a `logo` prop and reads the rest from content. |
 | `DesignSystemNav` | Section navigation for `/design-system`: sticky sidebar on desktop, wrapping anchor list on mobile. |
 | `GlossaryTerm` | A term inside running text that reveals its definition. A real `<button>`, so it works by hover, focus and tap; the definition is always in the accessibility tree via `aria-describedby`. Client component. |
-| `AwaitingContent` | Body for a route that exists but has no approved content yet — News, Events and the three legal pages. States plainly that nothing is published rather than showing sample entries. |
+| `AwaitingContent` | Body for a route that exists but has no approved content yet — News & Events. States plainly that nothing is published rather than showing sample entries. |
+| `LegalDocument` | Renders one legal document from structured blocks. Handles the draft notice, headings, lists and the cookies table, and does the narrow email/URL linking. See *The legal pages*. |
 | `ContactForm` | Contact form template. **Every control is `disabled`** — there is no backend, and a form that silently discards messages is worse than no form. |
-| `NewsletterSignup` | Sign-up block on the home page. **Button disabled** — no mailing list exists, and collecting addresses with no privacy policy published would be worse still. |
 | `PageHero` | Opening emphasis band for the simple routes — About, Contact, Project Outputs. Carries the page's single `h1`. Shared so the three cannot drift apart, and a band rather than the plain page colour so a visitor landing on a sub-page arrives in the same site rather than on a blank white page. |
 | `NavLink` | Small internal helper, not a UI-library component. Renders a plain `<a>` for same-page anchors so the browser's scroll behaviour and the reduced-motion rules still apply, and `next/link` for real routes. Shared by the header and footer. |
 
@@ -201,13 +226,12 @@ has caught me out twice on this project.
 
 The single most important thing to understand before changing any CSS.
 
-Components only ever use the semantic `--adflex-color-*` names. Three things rebind them, and
+Components only ever use the semantic `--adflex-color-*` names. Two things rebind them, and
 nothing else should:
 
 | | |
 |---|---|
 | `.adflex-band` | an emphasis band inside the page |
-| `.adflex-accent` | the single saturated call-to-action band |
 | `.adflex-light` | a forced-light island |
 
 ```css
@@ -219,16 +243,15 @@ nothing else should:
 }
 ```
 
-So a card written as `background: var(--adflex-color-surface)` works in all three with no extra
-CSS, no conditional class and no duplicated component. `.adflex-cta` needs no variant on the
-accent band: its background and its text colour both rebind, turning a green-on-white button
-into a white button with green text.
+So a card written as `background: var(--adflex-color-surface)` works in both with no extra CSS,
+no conditional class and no duplicated component.
 
 `.adflex-band` is a soft green-grey tint rather than a dark block. In a light design a band earns
 its separation by shifting tone slightly, not by inverting.
 
-`.adflex-accent` is a saturated brand green, used once, for the newsletter block that closes the
-home page.
+There was a third, `.adflex-accent` — a saturated green call-to-action band. It existed only for
+the newsletter block, which was removed on 30 July 2026, so the band went with it rather than
+staying as an unused palette.
 
 **Rules that follow from this:**
 
@@ -352,15 +375,17 @@ Navigation lives in one array, `adflexContent.navigation`, and each item declare
 - **`kind: "route"`** — its own page. `href` is absolute, e.g. `/contact`.
 
 Today `home`, `technologies`, `consortium` and `pilot` are sections on the home page, while
-`about`, `outputs`, `news`, `events` and `contact` are routes of their own — nine items in all.
+`about`, `outputs`, `news` and `contact` are routes of their own — eight items in all.
 
-**The navigation collapses at 1080px, not at a smaller width, because of that count.** Measured:
-nine items still fit on one line at 1100px and wrap the header to double height by 1024px. If you
-add a tenth, re-measure and raise the breakpoint in `AdflexHeader.module.css` — nothing warns you
-otherwise, the header just silently doubles in height at some widths.
+**The navigation collapses at 1080px.** That breakpoint was measured against nine items, which is
+what the header carried until News and Events were merged on 30 July 2026; at eight it now has
+room to spare. If you add items back, re-measure — nine still fit on one line at 1100px and wrap
+the header to double height by 1024px, so a tenth needs the breakpoint raised in
+`AdflexHeader.module.css`. Nothing warns you otherwise; the header just silently doubles in
+height at some widths.
 
-The News and Events labels are deliberately short ("News", "Events") while their pages are headed
-"News & Updates" and "Events", for the same reason.
+The News label is deliberately short ("News") while the page is headed "News & Events", for the
+same reason.
 
 **The footer does not repeat the navigation.** It once carried all nine items plus a
 design-system link, which at the site's 44px minimum target height was a 480px tower and made the

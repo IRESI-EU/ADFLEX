@@ -264,6 +264,26 @@ a {
   color: var(--adflex-color-primary-hover);
 }
 
+/* Inline link ------------------------------------------------------- */
+/* For a link inside running text — an email address in a legal paragraph, for
+   example. Deliberately not `.adflex-link`: that one is inline-flex with a
+   44px minimum height, which inside a sentence would break the line box.
+   A link within a sentence is the recognised exception to the target-size
+   rule, the same exception the inline glossary term relies on. */
+.adflex-inline-link {
+  color: var(--adflex-color-primary);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  /* Long addresses and URLs must not push the page sideways. */
+  overflow-wrap: anywhere;
+}
+
+.adflex-inline-link:hover {
+  color: var(--adflex-color-primary-hover);
+}
+
 /* Tag --------------------------------------------------------------- */
 .adflex-tag {
   display: inline-flex;

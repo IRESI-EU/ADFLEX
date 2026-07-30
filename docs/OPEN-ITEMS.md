@@ -11,13 +11,11 @@ state rather than sample content, and each becomes live by editing
 
 | Item | Route / component | What is needed |
 | --- | --- | --- |
-| News & Updates | `/news` | Approved posts |
-| Events | `/events` | Confirmed events |
-| Privacy Policy | `/legal/privacy` | **Approved legal text.** A specimen policy must not be published — it would be a false statement about how personal data is handled |
-| Cookie Policy | `/legal/cookies` | Approved legal text. Tie this to the analytics decision below |
-| Terms of Use | `/legal/terms` | Approved legal text |
+| News & Events | `/news` | Approved posts and confirmed events. One route since 30 July 2026 — News and Events were merged, because two empty pages in the navigation gave a visitor two dead ends instead of one |
+| Privacy Policy | `/legal/privacy` | ✅ Draft text published 30 July 2026. **Still a draft** — see *Legal pages* below |
+| Cookies Policy | `/legal/cookies` | ✅ Draft text published 30 July 2026. **Still a draft** — see *Legal pages* below |
+| Terms of Use | `/legal/terms` | ✅ Draft text published 30 July 2026. **Still a draft** — see *Legal pages* below |
 | Contact form | `ContactForm` | A backend or form service. **All controls are disabled** until submissions have somewhere to go |
-| Newsletter sign-up | `NewsletterSignup` | A mailing-list provider **and** a published privacy policy. Button disabled until both exist |
 | LinkedIn link | `AdflexFooter` | **The page URL.** Set `footer.linkedin.href`. Until then the block renders as muted, dashed, non-interactive text rather than a dead link |
 | Funding row | `AdflexFooter` | Approved statement and emblem. Set `footer.funding`; the row is not rendered at all while it is `null`. See *Funding and legal* below |
 
@@ -26,10 +24,14 @@ rendition, because an external icon package is out of scope for this build. Link
 official brand assets and usage rules; if the project wants to follow them to the letter, supply
 the file alongside the URL and swap it in.
 
-**Both News and Events are in the main navigation.** That makes two empty pages reachable from
-every page of the site — fine while the team is reviewing, but before launch they need either
-real content or removal from `navigation`, otherwise public visitors hit dead ends from the
-header.
+**News & Events is in the main navigation and is still empty.** That makes one empty page
+reachable from every page of the site — fine while the team is reviewing, but before launch it
+needs either real content or removal from `navigation`, otherwise public visitors hit a dead end
+from the header.
+
+**The newsletter sign-up was removed on 30 July 2026** at the team's request. The block, its
+content and the `.adflex-accent` band it was the only user of are all gone. Note that the
+supplied Privacy Policy still describes newsletter subscription — see below.
 
 ## Imagery
 
@@ -127,12 +129,65 @@ without rights.
 | Grant number | **Not supplied.** |
 | Funding disclaimer | **Not supplied.** No disclaimer text has been written or approved, so none is shown. |
 | EU emblem | **Not supplied.** The emblem has strict usage rules and no approved file was provided. |
-| Legal pages (privacy, cookies, terms) | **Routes built, text not written.** Linked from the footer; each page states that the policy is not published yet. See the table at the top. |
+| Legal pages (privacy, cookies, terms) | **Draft text published** 30 July 2026 from `ADFLEX_Legal_Pages_Draft_v1.pdf`. See *Legal pages* below for what is still open in it. |
 
 The footer now has a **dedicated funding row**, reserved and already styled, sitting between the
 logo row and the legal row. It renders nothing while `footer.funding` is `null`. Setting
 `{ statement, emblem? }` in `src/content/adflex.ts` publishes it with no layout change. Use the
 approved wording verbatim rather than a paraphrase.
+
+## Legal pages
+
+The three legal pages now carry the wording supplied in
+`ADFLEX Legal Pages/ADFLEX_Legal_Pages_Draft_v1.pdf` (30 July 2026), transcribed **verbatim** into
+`legal.pages` in `src/content/adflex.ts`. Nothing was edited, shortened, reordered or tidied.
+
+Every page shows a notice above the text saying it is a draft, so no reader mistakes it for
+settled policy.
+
+### It is a draft, and it says so
+
+The file is named `Draft_v1` and the documents end "version 1.0". **Publishing this to a public
+URL publishes draft legal text.** That is a decision for whoever carries the liability, not a
+technical one. If it should not be public yet, say so and the pages go back to the empty state.
+
+### Placeholders left exactly as supplied
+
+The source contains square-bracketed placeholders. They are rendered as-is rather than guessed at,
+and the renderer deliberately **does not turn anything inside brackets into a link** — an
+unconfirmed domain must not become a live link:
+
+| Placeholder | Where | Needed |
+| --- | --- | --- |
+| `[www.adflex.ie / adflex domain TBC]` | Terms of Use, Purpose | The confirmed public domain |
+| `[month/year]` | Privacy and Cookies, "Last reviewed" | The review date, twice |
+| `[Analytics tool TBC]` | Cookies, provider table | The analytics tool, once chosen |
+| `[Any embedded platforms TBC, e.g. LinkedIn, YouTube]` | Cookies, provider table | Whichever platforms actually get embedded |
+
+Terms of Use has **no "Last reviewed" line at all**, where Privacy and Cookies both do. That is how
+the source reads; it was not added.
+
+### Where the draft does not match the site as built
+
+These are factual mismatches between the supplied wording and what the site actually does. None is
+a code problem — the text is the client's to change — but each is a statement a reader could hold
+the project to, so each needs a decision.
+
+| The draft says | The site actually |
+| --- | --- |
+| Cookies Policy: "When you first visit the Site, a cookie notice lets you accept all cookies, or click Configure…" | Has **no cookie banner** and sets **no cookies at all**. There is no analytics, no embedded content and no consent mechanism. |
+| Cookies Policy describes analytics and embedded-content cookies | Neither exists. The table rows for both are `TBC` placeholders. |
+| Privacy Policy 2.2: "Newsletter subscription: we ask only for your email address" | Has **no newsletter**. The sign-up block was removed on 30 July 2026 at the team's request. |
+| Privacy Policy 3.2: "Inform you of project news… if you have subscribed to updates" | There is nothing to subscribe to. |
+| Privacy Policy 2.1: "we collect your email address, name, subject, and message content" via the contact form | The contact form is a **disabled template** with no backend. It cannot collect or send anything. |
+
+The cleanest reading is that the draft describes the site as it is *intended* to be rather than as
+it is *today*. That may be fine if the policies are published at launch alongside a cookie banner,
+analytics and a working form. It is **not** fine if they go public now, because a privacy policy
+describing collection that does not happen is inaccurate in the direction that matters.
+
+Two ways forward, both the client's call: hold the pages back until the site catches up, or have
+the wording adjusted to describe the site as built.
 
 ## Brand assets
 

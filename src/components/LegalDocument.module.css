@@ -1,0 +1,142 @@
+.section {
+  padding-block: var(--adflex-space-7) var(--adflex-space-8);
+}
+
+/* A single measured column. Legal text is long and unbroken, so the line length
+   matters more here than anywhere else on the site. */
+.inner {
+  max-width: 78ch;
+  margin-inline: auto;
+}
+
+/* The draft notice. Given a real edge rather than italics, because a reader
+   skimming to the first heading should still catch it. */
+.status {
+  padding: var(--adflex-space-4) var(--adflex-space-5);
+  margin-bottom: var(--adflex-space-7);
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+  background: var(--adflex-color-surface-soft);
+  border-left: 3px solid var(--adflex-color-brand);
+  border-radius: 0 var(--adflex-radius-sm) var(--adflex-radius-sm) 0;
+}
+
+.body {
+  /* The document's own rhythm. Every child sets its own top margin, so the
+     spacing between a heading and its first paragraph differs from the spacing
+     between two paragraphs. */
+  color: var(--adflex-color-text);
+}
+
+.heading {
+  margin-top: var(--adflex-space-7);
+  margin-bottom: var(--adflex-space-4);
+  font-size: var(--adflex-text-xl);
+}
+
+/* No leading gap above the first block, whatever kind it is. */
+.body > *:first-child {
+  margin-top: 0;
+}
+
+.paragraph {
+  margin-top: var(--adflex-space-4);
+  line-height: var(--adflex-leading-normal);
+}
+
+.list,
+.orderedList {
+  margin-top: var(--adflex-space-4);
+  /* Room for the marker outside the text column, so wrapped lines align with
+     the first line rather than sitting under the bullet. */
+  padding-left: var(--adflex-space-5);
+}
+
+.list {
+  list-style: disc;
+}
+
+.orderedList {
+  list-style: decimal;
+}
+
+.listItem {
+  margin-top: var(--adflex-space-2);
+  padding-left: var(--adflex-space-2);
+  line-height: var(--adflex-leading-normal);
+}
+
+.listItem::marker {
+  color: var(--adflex-color-primary);
+}
+
+/* --- Table ----------------------------------------------------------- */
+
+/* Scrolls within itself so three columns of prose never widen the page. */
+.tableWrap {
+  margin-top: var(--adflex-space-5);
+  overflow-x: auto;
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--adflex-text-sm);
+  /* Keeps the three columns readable rather than crushing them; the wrapper
+     scrolls when there is not room. */
+  min-width: 34rem;
+}
+
+/* Visible rather than hidden: it names what the table is for, which the
+   surrounding heading only implies. */
+.tableCaption {
+  padding: var(--adflex-space-3) var(--adflex-space-4);
+  font-size: var(--adflex-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--adflex-tracking-wide);
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--adflex-color-muted);
+  border-bottom: 1px solid var(--adflex-color-border);
+}
+
+.th,
+.rowHead,
+.td {
+  padding: var(--adflex-space-3) var(--adflex-space-4);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--adflex-color-border);
+}
+
+.th {
+  font-weight: 600;
+  color: var(--adflex-color-ink);
+  background: var(--adflex-color-surface-soft);
+}
+
+.rowHead {
+  font-weight: 600;
+  color: var(--adflex-color-ink);
+}
+
+.td {
+  color: var(--adflex-color-text);
+}
+
+.table tbody tr:last-child .rowHead,
+.table tbody tr:last-child .td {
+  border-bottom: 0;
+}
+
+@media (max-width: 720px) {
+  .section {
+    padding-block: var(--adflex-space-6) var(--adflex-space-7);
+  }
+
+  .heading {
+    margin-top: var(--adflex-space-6);
+  }
+}

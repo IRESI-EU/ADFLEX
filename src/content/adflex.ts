@@ -198,6 +198,43 @@ export type AwaitingContentPage = {
   body: string;
 };
 
+/**
+ * One block of a legal document.
+ *
+ * Legal text is structured rather than stored as one blob of markup, so the
+ * supplied wording stays plain data that can be checked against the source
+ * document line by line. There is no Markdown or HTML parsing anywhere in this
+ * file: a string here is exactly the string that renders.
+ *
+ * Email addresses and bare `www.` domains inside `text` are turned into links
+ * at render time — see `LegalDocument`. Nothing else is interpreted.
+ */
+export type LegalBlock =
+  | { kind: "heading"; text: string }
+  | { kind: "paragraph"; text: string }
+  /** Bulleted where `ordered` is absent, numbered where it is true. */
+  | { kind: "list"; ordered?: boolean; items: readonly string[] }
+  | { kind: "table"; caption: string; head: readonly string[]; rows: readonly (readonly string[])[] };
+
+/**
+ * A legal page whose wording has been supplied.
+ *
+ * `blocks` must reproduce the supplied document verbatim. Wording here is not
+ * ours to edit, shorten or tidy: if something in it is wrong or out of date,
+ * that is a question for whoever carries the liability, not a code change.
+ * Square-bracketed placeholders in the source are left exactly as supplied so
+ * they stay visible rather than being quietly invented — see docs/OPEN-ITEMS.md.
+ */
+export type LegalPage = {
+  slug: string;
+  eyebrow: string;
+  title: string;
+  pageDescription: string;
+  /** Shown above the text, naming the source document and its status. */
+  status: string;
+  blocks: readonly LegalBlock[];
+};
+
 export type AdflexContent = {
   meta: { title: string; description: string; skipLinkLabel: string };
   brand: BrandAssets;
@@ -218,30 +255,18 @@ export type AdflexContent = {
   pilot: PilotContent;
   results: ResultsContent;
   contact: ContactDetails;
+  /** News and events, on one route. Merged from two on 30 July 2026. */
   news: AwaitingContentPage;
-  events: AwaitingContentPage;
   /**
    * Privacy, cookies and terms. Rendered by the `/legal/[slug]` route.
    *
-   * Deliberately empty: legal text has to be written or approved by whoever
-   * carries the liability. Publishing specimen wording would be worse than
-   * publishing nothing.
+   * Filled on 30 July 2026 from the supplied ADFLEX_Legal_Pages_Draft_v1.pdf.
+   * The wording is reproduced verbatim, including its square-bracketed
+   * placeholders — see docs/OPEN-ITEMS.md for what is still outstanding in it.
    */
   legal: {
     eyebrow: string;
-    pages: readonly AwaitingContentPage[];
-  };
-  /**
-   * Newsletter sign-up. No provider has been chosen, so the control is present
-   * but inactive — see the note in `AwaitingAction`.
-   */
-  newsletter: {
-    eyebrow: string;
-    title: string;
-    body: string;
-    buttonLabel: string;
-    /** Shown beside the control, explaining that it is not live yet. */
-    pendingNote: string;
+    pages: readonly LegalPage[];
   };
   /**
    * Contact form. Built as a reviewable template; there is no backend, so the
@@ -322,10 +347,9 @@ export const adflexContent = {
       kind: "route",
       href: "/outputs",
     },
-    // Short labels on purpose: the pages are headed "News & Updates" and
-    // "Events", but nine navigation items have to fit on one line.
+    // Short label on purpose: the page is headed "News & Events", but the
+    // navigation items have to fit on one line.
     { id: "news", label: "News", kind: "route", href: "/news" },
-    { id: "events", label: "Events", kind: "route", href: "/events" },
     { id: "contact", label: "Contact", kind: "route", href: "/contact" },
   ],
 
@@ -601,26 +625,25 @@ export const adflexContent = {
   // Everything below renders a visible empty state rather than sample items.
   // See docs/OPEN-ITEMS.md.
 
+  // News and events were two routes until 30 July 2026. They were merged into
+  // one, because both were empty and two empty pages in the navigation gave a
+  // visitor two dead ends instead of one.
   news: {
     slug: "news",
     eyebrow: "Project updates",
-    title: "News & Updates",
+    title: "News & Events",
     pageDescription:
-      "News and updates from the ADFLEX project, published as the work progresses.",
-    heading: "No updates published yet",
-    body: "This is where ADFLEX will publish project news and updates. Nothing has been published so far — entries will appear here as the project progresses.",
+      "News, updates and events from the ADFLEX project, published as the work progresses.",
+    heading: "Nothing published yet",
+    body: "This is where ADFLEX will publish project news and updates, and list events, talks and workshops. Nothing has been published or scheduled so far — entries will appear here as the project progresses.",
   },
 
-  events: {
-    slug: "events",
-    eyebrow: "Talks and workshops",
-    title: "Events",
-    pageDescription:
-      "Events, talks and workshops involving the ADFLEX project team.",
-    heading: "No events listed yet",
-    body: "This is where ADFLEX will list events, talks and workshops. Nothing has been scheduled and published so far — entries will appear here once dates are confirmed.",
-  },
-
+  // Transcribed verbatim from ADFLEX_Legal_Pages_Draft_v1.pdf, supplied by the
+  // client on 30 July 2026. Wording is not ours to edit. The square-bracketed
+  // placeholders below ([www.adflex.ie / adflex domain TBC], [month/year],
+  // [Analytics tool TBC], [Any embedded platforms TBC…]) are in the source and
+  // are left exactly as they are, so they stay visible rather than being
+  // quietly filled in with a guess. See docs/OPEN-ITEMS.md.
   legal: {
     eyebrow: "Legal",
     pages: [
@@ -630,36 +653,286 @@ export const adflexContent = {
         title: "Privacy Policy",
         pageDescription:
           "How the ADFLEX project website handles personal data.",
-        heading: "This policy has not been published yet",
-        body: "A privacy policy for the ADFLEX website is being prepared and has to be approved before it is published. Until it appears here, no approved statement exists about how this site handles personal data. For any question in the meantime, please use the project contact address.",
+        status:
+          "Draft v1.0, supplied by the project team. Not yet finalised — some details are still marked as to be confirmed.",
+        blocks: [
+          { kind: "heading", text: "1. Introduction" },
+          {
+            kind: "paragraph",
+            text: "This Privacy Policy explains what information the ADFLEX project website collects, why, how it is treated, where it may be transferred to, and how you can access, update or delete it. Our aim is to comply with the General Data Protection Regulation (Regulation (EU) 2016/679, “GDPR”). This Policy covers all users residing in the European Economic Area or elsewhere.",
+          },
+          {
+            kind: "paragraph",
+            text: "ADFLEX is a research project funded by SEAI under the National Energy RD&D Funding Programme, coordinated by Maynooth University in partnership with University College Dublin and Arden Energy.",
+          },
+
+          { kind: "heading", text: "2. Data collection" },
+          {
+            kind: "paragraph",
+            text: "We collect information about you at the following points when you use the ADFLEX website:",
+          },
+          {
+            kind: "list",
+            ordered: true,
+            items: [
+              "When you send a message through the contact form or by direct email",
+              "When you subscribe to the project newsletter or updates, if offered",
+              "When you visit and browse the website",
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "2.1 Contact form / email: we collect your email address, name, subject, and message content. We usually retain these messages for archive and follow-up purposes.",
+          },
+          {
+            kind: "paragraph",
+            text: "2.2 Newsletter subscription: we ask only for your email address.",
+          },
+          {
+            kind: "paragraph",
+            text: "2.3 Website visits: information is collected via cookies, described in the Cookies Policy.",
+          },
+
+          { kind: "heading", text: "3. How we use your data" },
+          { kind: "paragraph", text: "We may use your information to:" },
+          {
+            kind: "list",
+            ordered: true,
+            items: [
+              "Respond to your enquiry",
+              "Inform you of project news, results, or relevant events, if you have subscribed to updates",
+              "Provide any other service you have specifically requested",
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "Your information is used only for purposes directly related to the ADFLEX project and website, and is never shared with third parties for marketing purposes.",
+          },
+
+          { kind: "heading", text: "4. Legal basis" },
+          { kind: "paragraph", text: "Your data is processed only where:" },
+          {
+            kind: "list",
+            ordered: true,
+            items: [
+              "You have given consent, by sending a message or submitting a form, or",
+              "Processing is required to comply with a legal obligation (for example, reporting requirements under ADFLEX’s SEAI funding agreement, using aggregated, non-identifying statistics only)",
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "Your data will not be used for other purposes without informing you in advance or, where required, obtaining your consent.",
+          },
+
+          { kind: "heading", text: "5. Data retention" },
+          {
+            kind: "paragraph",
+            text: "Your personal data is kept only for as long as necessary for the purposes described above. As a general rule, this is the duration of the ADFLEX project plus one additional year. ADFLEX runs for 36 months, so data is retained for approximately 4 years from collection, unless a shorter period applies or you request earlier deletion. After this period, your data is removed.",
+          },
+
+          { kind: "heading", text: "6. Sharing your information" },
+          {
+            kind: "paragraph",
+            text: "Your information is shared only where required by law, for example if requested by police or a supervisory authority investigating a suspected illegal act, or where SEAI requires aggregated, anonymised reporting on website engagement as part of ADFLEX’s funding obligations.",
+          },
+
+          { kind: "heading", text: "7. Your rights" },
+          { kind: "paragraph", text: "At any time, you can request:" },
+          {
+            kind: "list",
+            ordered: true,
+            items: [
+              "Access to your personal data",
+              "Correction of your personal data",
+              "Objection to, restriction of, or cancellation of processing",
+              "Portability of your data, in a structured, readable format",
+              "Deletion of your data (“right to be forgotten”)",
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "To exercise these rights, contact Ann McKeon, Data Protection Officer, at ann.mckeon@mu.ie (or dataprotection@mu.ie). You will be asked to confirm your identity. You will be informed of the outcome of your request within 30 days.",
+          },
+          {
+            kind: "paragraph",
+            text: "You also have the right to complain to the Data Protection Commission (www.dataprotection.ie) if you are unhappy with how your data has been handled.",
+          },
+
+          { kind: "heading", text: "8. Contact" },
+          {
+            kind: "paragraph",
+            text: "ADFLEX’s Data Protection Officer is Ann McKeon (ann.mckeon@mu.ie). If you have questions about this Policy or wish to exercise your rights, please get in touch.",
+          },
+          {
+            kind: "paragraph",
+            text: "Last reviewed: [month/year] — version 1.0",
+          },
+        ],
       },
       {
         slug: "cookies",
         eyebrow: "Legal",
-        title: "Cookie Policy",
+        title: "Cookies Policy",
         pageDescription:
           "How the ADFLEX project website uses cookies and similar technologies.",
-        heading: "This policy has not been published yet",
-        body: "A cookie policy for the ADFLEX website is being prepared and has to be approved before it is published. The site does not currently use analytics, advertising or tracking cookies. For any question in the meantime, please use the project contact address.",
+        status:
+          "Draft v1.0, supplied by the project team. Not yet finalised — some details are still marked as to be confirmed.",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "This document explains the technologies (“Trackers”) used on the ADFLEX website to help it function and, where you consent, to help us understand how it is used.",
+          },
+
+          {
+            kind: "heading",
+            text: "What type of cookies are used, and why?",
+          },
+          {
+            kind: "paragraph",
+            text: "This Website uses its own (“first-party”) cookies, set by Maynooth University, and may use third-party cookies where content from other services is embedded (for example, an embedded video or social media post).",
+          },
+          {
+            kind: "paragraph",
+            text: "Technical (necessary): cookies that let you browse the Site and use its features, such as session identification, security, and remembering your cookie preferences. These are necessary and are not subject to consent.",
+          },
+          {
+            kind: "paragraph",
+            text: "Analytics: cookies that let us count visitors and understand how the Site’s content is used, so we can improve it. These require your consent. (Tool to be confirmed once the site is built, e.g. Matomo or Google Analytics — to be listed here by name once chosen, following the same practice as ADFLEX’s sister project RESSKILL.)",
+          },
+          {
+            kind: "paragraph",
+            text: "External social networks / embedded content: cookies set by third parties if social media posts or videos are embedded on the Site (for example LinkedIn or YouTube). These require your consent and are only present if such content is actually embedded.",
+          },
+
+          { kind: "heading", text: "Who sets cookies on this website?" },
+          {
+            kind: "table",
+            caption: "Cookie providers, types and purposes",
+            head: ["Provider", "Type", "Purpose"],
+            rows: [
+              [
+                "Maynooth University (adflex.ie)",
+                "Technical/Necessary",
+                "Core site functionality; excluded from consent requirement",
+              ],
+              [
+                "[Analytics tool TBC]",
+                "Analytics",
+                "Visitor statistics; requires consent",
+              ],
+              [
+                "[Any embedded platforms TBC, e.g. LinkedIn, YouTube]",
+                "External/Social",
+                "Embedded content functionality; requires consent",
+              ],
+            ],
+          },
+
+          { kind: "heading", text: "Managing your cookie preferences" },
+          {
+            kind: "paragraph",
+            text: "When you first visit the Site, a cookie notice lets you accept all cookies, or click Configure to choose which categories to accept or reject. Necessary cookies cannot be rejected. You can also manage or delete cookies through your browser settings at any time.",
+          },
+
+          { kind: "heading", text: "International data transfers" },
+          {
+            kind: "paragraph",
+            text: "If any third-party tool used on the Site (for example certain analytics or embedded content providers) transfers data outside the European Economic Area, this will be disclosed here once the specific tools are confirmed, along with the safeguard relied upon (e.g. user consent, or an EU adequacy decision).",
+          },
+          {
+            kind: "paragraph",
+            text: "For further information not specific to cookies, see the ADFLEX Privacy Policy.",
+          },
+          {
+            kind: "paragraph",
+            text: "Last reviewed: [month/year] — version 1.0",
+          },
+        ],
       },
       {
         slug: "terms",
         eyebrow: "Legal",
         title: "Terms of Use",
         pageDescription: "Terms of use for the ADFLEX project website.",
-        heading: "These terms have not been published yet",
-        body: "Terms of use for the ADFLEX website are being prepared and have to be approved before they are published. For any question in the meantime, please use the project contact address.",
+        status:
+          "Draft v1.0, supplied by the project team. Not yet finalised — some details are still marked as to be confirmed.",
+        blocks: [
+          { kind: "heading", text: "Purpose" },
+          {
+            kind: "paragraph",
+            text: "These Terms of Use (hereinafter “Policy” or “Terms”) regulate the terms and conditions under which any user may access and use the website with the URL [www.adflex.ie / adflex domain TBC] (hereinafter “Site” or “Website”), owned by Maynooth University (hereinafter “MU”), coordinator of the ADFLEX project.",
+          },
+          {
+            kind: "paragraph",
+            text: "Any individual who accesses and views the contents and services of the Site will be considered a user of this website, if they are over eighteen years old and are not incapable of accepting and committing to these terms and conditions. MU will not be liable for any actions taken on this Site by any person who is under age or legally incapacitated.",
+          },
+
+          { kind: "heading", text: "Acceptance of this Policy" },
+          {
+            kind: "paragraph",
+            text: "The user who accesses and uses this Website does so under their sole and exclusive responsibility, and by viewing the information and content hosted on the Site and browsing it, the user accepts these Terms. Where this Policy is replaced by another, in whole or in part, the new terms will be understood to have been accepted in the same way. The user should periodically check this Policy for updates.",
+          },
+
+          { kind: "heading", text: "Rights and obligations of the user" },
+          { kind: "paragraph", text: "The user may:" },
+          {
+            kind: "list",
+            items: [
+              "Access the contents and services of the website free of charge and without prior registration, provided they have an internet connection and a browser",
+              "Use the services and content available for exclusive private use",
+              "Download a single copy of the Site for offline viewing for personal, non-commercial purposes",
+              "Make correct and lawful use of the Site, in accordance with current legislation, morality, good customs and public order",
+            ],
+          },
+          { kind: "paragraph", text: "The user may not:" },
+          {
+            kind: "list",
+            items: [
+              "Access or use the Site’s services and content for illegal actions, or in a manner contrary to this Policy, current legislation, or the rights of MU or third parties",
+              "Use the services and content to promote, sell, hire or disclose advertising or information about themselves or third parties without MU’s prior written permission",
+              "Use any computer virus, code, or software that may damage or alter the Site’s content, programs or systems",
+              "Reproduce, distribute, copy, publicly communicate or transform this Website, in whole or in part, without MU’s prior written consent",
+              "Use ADFLEX’s name, logo, or any identifying sign subject to intellectual or industrial property rights without prior written permission",
+            ],
+          },
+
+          { kind: "heading", text: "Rights of MU" },
+          { kind: "paragraph", text: "MU reserves the right to:" },
+          {
+            kind: "list",
+            items: [
+              "Modify or remove, unilaterally and without notice, the content, services, or access conditions of this Site",
+              "Determine the language(s) in which the Site is available",
+              "End the provision of any service or content on the Site",
+              "Seek compensation for improper or illegal use of the Site",
+              "Take legal action to protect the rights of MU or third parties providing content through the Site",
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "MU is not liable for damages arising from connectivity issues, interruptions to the Site, or the quality, availability or content of third-party services linked from the Site, including where caused by force majeure.",
+          },
+
+          { kind: "heading", text: "Intellectual property" },
+          {
+            kind: "paragraph",
+            text: "The content and services offered through this Website, including text, graphics, images, diagrams, videos and website code, are protected by intellectual and industrial property law. Copyright and economic exploitation rights belong to MU or, where applicable, to third parties (including project partners UCD and Arden Energy, and funder SEAI). Use of the Site does not transfer, waive or assign any of these rights.",
+          },
+
+          { kind: "heading", text: "Hyperlinks" },
+          {
+            kind: "paragraph",
+            text: "Links to this Website may only be made to the Site’s home page, must not “frame” or distort the Site’s presentation, and must not imply any relationship, sponsorship or endorsement by MU unless explicitly agreed in writing.",
+          },
+
+          { kind: "heading", text: "Duration" },
+          {
+            kind: "paragraph",
+            text: "Access to and content on this Website is offered for an indefinite duration, but MU may suspend or terminate access, services or content at any time.",
+          },
+        ],
       },
     ],
-  },
-
-  newsletter: {
-    eyebrow: "Stay informed",
-    title: "Follow the project",
-    body: "ADFLEX plans to share progress, findings and events by email as the project develops.",
-    buttonLabel: "Sign up for updates",
-    pendingNote:
-      "Sign-up is not open yet — no mailing list has been set up. The button is inactive until one is.",
   },
 
   contactForm: {

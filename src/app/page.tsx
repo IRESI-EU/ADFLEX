@@ -6,7 +6,6 @@ import { SectionShell } from "@/components/SectionShell";
 import { TechnologyCard } from "@/components/TechnologyCard";
 import { PartnerCard } from "@/components/PartnerCard";
 import { PilotSection } from "@/components/PilotSection";
-import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import styles from "./home.module.css";
 
@@ -19,16 +18,8 @@ import styles from "./home.module.css";
  * `src/content/adflex.ts`. All copy comes from that file.
  */
 export default function HomePage() {
-  const {
-    brand,
-    navigation,
-    hero,
-    about,
-    technologies,
-    consortium,
-    pilot,
-    newsletter,
-  } = adflexContent;
+  const { brand, navigation, hero, about, technologies, consortium, pilot } =
+    adflexContent;
 
   const nav = resolveNavigation(navigation, { onHome: true });
   const aboutGlimpse = about.items.find((item) => item.id === about.home.itemId);
@@ -101,8 +92,6 @@ export default function HomePage() {
         </SectionShell>
 
         <PilotSection id="pilot" content={pilot} />
-
-        <NewsletterSignup newsletter={newsletter} />
       </main>
       <AdflexFooter logo={brand.logo} />
     </>

@@ -13,10 +13,12 @@ export const metadata: Metadata = {
 };
 
 /**
- * News & Updates.
+ * News & Events.
  *
- * The route and layout exist so the team can review them; there is nothing to
- * publish yet, so the page says so rather than showing sample posts.
+ * One route, not two. News and Events were separate pages until 30 July 2026;
+ * both were empty, so the navigation offered a visitor two dead ends instead of
+ * one. The route and layout exist so the team can review them; there is nothing
+ * to publish yet, so the page says so rather than showing sample entries.
  */
 export default function NewsPage() {
   const nav = resolveNavigation(navigation, { onHome: false });

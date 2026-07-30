@@ -8,7 +8,7 @@ This deployment is a temporary public team-review environment for:
 - `/design-system`
 
 Both routes are served from a single Netlify project. The rest of the site
-(`/about`, `/news`, `/events`, `/outputs`, `/contact`, `/legal/*`) builds and
+(`/about`, `/news`, `/outputs`, `/contact`, `/legal/*`) builds and
 deploys alongside them, because they are part of the same Next.js application.
 The two routes above are the ones the team is being asked to review.
 

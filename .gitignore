@@ -42,5 +42,7 @@ next-env.d.ts
 
 # supplied source materials (see docs/CONTENT-SOURCE.md)
 # These are working inputs only. Production copies of the approved assets live
-# in public/images/adflex/ and are committed.
+# in public/images/adflex/ and are committed, and supplied copy is transcribed
+# into src/content/adflex.ts.
 /project-inputs/
+/ADFLEX Legal Pages/

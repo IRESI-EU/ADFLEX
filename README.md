@@ -15,11 +15,10 @@ documentation. There is no CMS, no backend and no database.
 | `/about`             | The full About ADFLEX content                                    | Live |
 | `/outputs`           | Project Outputs (navigation label: "Outputs")                    | Awaiting content |
 | `/contact`           | Contact details, plus a contact form template                    | Live (form inactive) |
-| `/news`              | News & Updates                                                   | Awaiting content |
-| `/events`            | Events                                                           | Awaiting content |
-| `/legal/privacy`     | Privacy Policy                                                   | Awaiting content |
-| `/legal/cookies`     | Cookie Policy                                                    | Awaiting content |
-| `/legal/terms`       | Terms of Use                                                     | Awaiting content |
+| `/news`              | News & Events — one route since 30 July 2026, merged from two    | Awaiting content |
+| `/legal/privacy`     | Privacy Policy                                                   | Live (draft text) |
+| `/legal/cookies`     | Cookies Policy                                                   | Live (draft text) |
+| `/legal/terms`       | Terms of Use                                                     | Live (draft text) |
 | `/design-system`     | Documentation of the tokens, components and rules used by the site | Live |
 
 **"Awaiting content" means the route, layout and components exist and are
@@ -73,8 +72,7 @@ src/
     contact/
       page.tsx                   the contact page (/contact)
       contact.module.css
-    news/page.tsx                News & Updates (/news)
-    events/page.tsx              Events (/events)
+    news/page.tsx                News & Events (/news)
     legal/[slug]/page.tsx        privacy, cookies and terms — one route for all three
     design-system/
       page.tsx                   the design-system page (/design-system)
@@ -313,10 +311,9 @@ colour of the supplied logo file, sampled from the file itself rather than picke
 `--adflex-color-primary` is a darkened version of it, because the raw logo green only reaches
 4.47:1 on white and interactive text needs 4.5:1.
 
-**One set of semantic token names, three things that rebind them** — the emphasis band
-(`.adflex-band`), the accent band (`.adflex-accent`) and the forced-light island
-(`.adflex-light`). Nothing else should. One component therefore serves all three with no
-conditional styling:
+**One set of semantic token names, two things that rebind them** — the emphasis band
+(`.adflex-band`) and the forced-light island (`.adflex-light`). Nothing else should. One
+component therefore serves both with no conditional styling:
 
 ```css
 /* This card is correct in every band. Nothing else is needed. */

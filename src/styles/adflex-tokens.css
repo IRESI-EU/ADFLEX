@@ -6,17 +6,20 @@
  * application. Every route is wrapped in this class by the root layout.
  *
  * ---------------------------------------------------------------------------
- * ONE SET OF TOKEN NAMES, THREE CONTEXTS
+ * ONE SET OF TOKEN NAMES, TWO CONTEXTS
  * ---------------------------------------------------------------------------
- * Components only ever use the semantic `--adflex-color-*` names. Three things
+ * Components only ever use the semantic `--adflex-color-*` names. Two things
  * rebind them, and nothing else should:
  *
  *   .adflex-band     an emphasis band inside the page
- *   .adflex-accent   the single saturated call-to-action band
  *   .adflex-light    a forced-light island (see below)
  *
  * A card that says `background: var(--adflex-color-surface)` therefore works in
- * every one of them with no extra CSS and no conditional class.
+ * both of them with no extra CSS and no conditional class.
+ *
+ * There was a third, `.adflex-accent` — a saturated green call-to-action band.
+ * It existed for the newsletter block, which was removed on 30 July 2026, so
+ * the band went with it rather than staying as an unused palette.
  *
  * The site is light-only. A dark mode was built twice and removed twice at the
  * client's request — see docs/HANDOVER.md before building a third one.
@@ -89,16 +92,6 @@
   /* Tint used for the band's faint lattice texture. */
   --adflex-band-texture: rgba(8, 134, 122, 0.16);
   --adflex-band-seam: rgba(8, 134, 122, 0.35);
-
-  /* --- Accent band ------------------------------------------------------ */
-  /* The one saturated moment on the page. */
-  --adflex-accent-background: #076f66;
-  --adflex-accent-surface-soft: #0a8479;
-  --adflex-accent-border: #2b8b81;
-  --adflex-accent-border-strong: #5aa79f;
-  --adflex-accent-ink: #ffffff;
-  --adflex-accent-text: #eaf6f4;
-  --adflex-accent-muted: #cbe7e2;
 
   /* --- Image grounds ---------------------------------------------------- */
   /* Several supplied assets are opaque or drawn for one ground only, so they
@@ -209,37 +202,6 @@
 
   color: var(--adflex-color-text);
   background-color: var(--adflex-band-background);
-}
-
-/*
- * Accent band. A saturated brand green, for a call to action that should read
- * as an interruption rather than as another content section.
- *
- * Note the inversion: `primary` becomes white and `surface` becomes the green,
- * which turns `.adflex-cta` into a white button with green text without needing
- * a variant.
- */
-.adflex-accent {
-  --adflex-color-ink: var(--adflex-accent-ink);
-  --adflex-color-text: var(--adflex-accent-text);
-  --adflex-color-muted: var(--adflex-accent-muted);
-
-  /* Inverted: the button is white on green, not green on white. */
-  --adflex-color-primary: #ffffff;
-  --adflex-color-primary-hover: var(--adflex-accent-text);
-  --adflex-color-brand: #ffffff;
-
-  --adflex-color-background: var(--adflex-accent-background);
-  --adflex-color-surface: var(--adflex-accent-background);
-  --adflex-color-surface-soft: var(--adflex-accent-surface-soft);
-  --adflex-color-border: var(--adflex-accent-border);
-  --adflex-color-border-strong: var(--adflex-accent-border-strong);
-
-  --adflex-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --adflex-shadow-md: 0 18px 48px -16px rgba(0, 0, 0, 0.45);
-
-  color: var(--adflex-color-text);
-  background-color: var(--adflex-accent-background);
 }
 
 /*
