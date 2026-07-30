@@ -125,7 +125,8 @@ without rights.
 
 | Item | Status |
 | --- | --- |
-| Funding programme | **Not confirmed.** The supplied copy tags the project as "EU-Funded Project" and that tag is shown, but no programme is named anywhere on the site. |
+| Funder | ✅ **Confirmed 30 July 2026: SEAI.** The hero tag now reads "SEAI-Funded Project". It previously read "EU-Funded Project", which was wrong — the supplied legal text states the project is "funded by SEAI under the National Energy RD&D Funding Programme". |
+| Funding programme | **Named in the legal text** as the National Energy RD&D Funding Programme, but not yet shown anywhere on the site. It belongs in the footer funding statement, which needs approved wording rather than a sentence assembled from the privacy policy. |
 | Grant number | **Not supplied.** |
 | Funding disclaimer | **Not supplied.** No disclaimer text has been written or approved, so none is shown. |
 | EU emblem | **Not supplied.** The emblem has strict usage rules and no approved file was provided. |

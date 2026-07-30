@@ -30,7 +30,7 @@ export default function AboutPage() {
 
       <main id="main-content">
         <PageHero
-          eyebrow="About the project"
+          eyebrow={about.eyebrow}
           title={about.title}
           lead={about.pageDescription}
         />

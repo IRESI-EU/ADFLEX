@@ -14,7 +14,7 @@ type AwaitingContentProps = {
  *
  * It states plainly that nothing is published rather than showing sample
  * entries. A placeholder news post or a specimen privacy policy reads as real
- * the moment someone lands on it, and on an EU-funded project site that is a
+ * the moment someone lands on it, and on a publicly funded project site that is a
  * false statement, not a design detail.
  *
  * The `h2` sits directly under the page `h1` from `PageHero`, so `EmptyState`

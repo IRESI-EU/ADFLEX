@@ -38,7 +38,7 @@ export default function HomePage() {
             width empty under a single paragraph. */}
         <SectionShell
           id={about.home.itemId}
-          eyebrow="About the project"
+          eyebrow={about.eyebrow}
           title={about.home.heading}
           layout="split"
         >

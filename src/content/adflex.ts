@@ -68,6 +68,11 @@ export type AboutItem = {
 };
 
 export type AboutContent = {
+  /**
+   * Small uppercase label above the heading on /about. Stored in sentence case;
+   * `.adflex-eyebrow` applies the uppercasing.
+   */
+  eyebrow: string;
   /** Heading for the /about page. */
   title: string;
   /** Meta description for the /about route. */
@@ -98,6 +103,12 @@ export type Technology = {
 export type Partner = {
   id: string;
   name: string;
+  /**
+   * One line on what this partner does in ADFLEX, supplied by the project team.
+   * Optional, so a partner can be listed before its role has been confirmed —
+   * a role must never be inferred from the organisation's general reputation.
+   */
+  role?: string;
   /** Decorative initials, shown only while no official logo is available. */
   initials: string;
   /**
@@ -182,8 +193,8 @@ export type BrandAssets = {
  *
  * These render a visible, deliberate empty state — never dummy items. A
  * placeholder news post or a specimen privacy policy is a false statement about
- * an EU-funded project the moment anyone reads it, so the page says plainly
- * that the content is not published rather than pretending it is.
+ * a publicly funded research project the moment anyone reads it, so the page
+ * says plainly that the content is not published rather than pretending it is.
  */
 export type AwaitingContentPage = {
   slug: string;
@@ -347,14 +358,18 @@ export const adflexContent = {
       kind: "route",
       href: "/outputs",
     },
-    // Short label on purpose: the page is headed "News & Events", but the
-    // navigation items have to fit on one line.
-    { id: "news", label: "News", kind: "route", href: "/news" },
+    // The label matches the page heading. It is the longest item in the bar, so
+    // re-measure the 1080px collapse breakpoint in AdflexHeader.module.css if
+    // anything else is added.
+    { id: "news", label: "News and Events", kind: "route", href: "/news" },
     { id: "contact", label: "Contact", kind: "route", href: "/contact" },
   ],
 
   hero: {
-    tags: ["EU-Funded Project", "Energy Flexibility", "Digital Integration"],
+    // SEAI, not EU. The supplied legal text states it plainly: "ADFLEX is a
+    // research project funded by SEAI under the National Energy RD&D Funding
+    // Programme". The earlier "EU-Funded Project" tag was wrong.
+    tags: ["SEAI-Funded Project", "Energy Flexibility", "Digital Integration"],
     headline:
       "ADFLEX — Advanced Demonstrators for Flexibility and Local Energy Exchange in Sustainable Energy Communities",
     tagline:
@@ -377,8 +392,8 @@ export const adflexContent = {
       // where JPEG ringing would show. next/image still serves it as WebP.
       src: "/images/adflex/adflex-system-concept.png",
       alt: "ADFLEX system concept. Digital Spine middleware sits at the centre, linked to rooftop solar PV and battery, a heat pump, an immersion heater and an EV charger, and to a digital twin, an aggregator in a market role, ESB Networks as distribution system operator, and the main grid. Red arrows show power flow and blue arrows show data and control signals.",
-      width: 1134,
-      height: 561,
+      width: 1672,
+      height: 941,
       caption:
         "Red arrows represent power flow. Blue arrows represent data and control signals.",
     },
@@ -392,9 +407,12 @@ export const adflexContent = {
   // summary is the verbatim opening sentence of its own `body`: shorten by
   // cutting, never by rewriting.
   about: {
+    // Rendered uppercase by `.adflex-eyebrow`, so it is stored in sentence case
+    // like every other eyebrow on the site.
+    eyebrow: "The project",
     title: "About ADFLEX",
     pageDescription:
-      "What ADFLEX sets out to do, the impact it aims for, and the Digital Spine and digital twin at the core of the project.",
+      "What ADFLEX sets out to do, the impact it aims for, and the Digital Spine and digital twin that make it possible.",
     home: { heading: "Objective of ADFLEX", itemId: "objective" },
     cta: { label: "Know more about ADFLEX", href: "/about" },
     items: [
@@ -484,8 +502,9 @@ export const adflexContent = {
     intro:
       "ADFLEX brings together three partners spanning research, technical delivery and energy market expertise:",
     introFigure: "three partners",
-    // Partner roles, descriptions, URLs and countries have not been supplied.
-    // Do not add them here without approved source material.
+    // `role` is the one-line description supplied by the project team on
+    // 30 July 2026. Partner descriptions, URLs and countries beyond these lines
+    // have not been supplied — do not add them without approved source material.
     //
     // Logos live in public/images/partners/ and were supplied for the project.
     // `width`/`height` are each file's intrinsic pixel size, so the aspect
@@ -498,6 +517,7 @@ export const adflexContent = {
       {
         id: "maynooth-university",
         name: "Maynooth University",
+        role: "Project coordinator, building the Digital Spine middleware",
         initials: "MU",
         logo: {
           src: "/images/partners/maynooth-university.png",
@@ -509,6 +529,7 @@ export const adflexContent = {
       {
         id: "university-college-dublin",
         name: "University College Dublin (UCD)",
+        role: "Modelling the Digital Twin and Communication gateway in the lab",
         initials: "UCD",
         logo: {
           src: "/images/partners/university-college-dublin.png",
@@ -520,6 +541,7 @@ export const adflexContent = {
       {
         id: "arden-energy",
         name: "Arden Energy",
+        role: "Implementing flexibility on the ground in the Ringsend pilot",
         initials: "AE",
         logo: {
           src: "/images/partners/arden-energy.png",

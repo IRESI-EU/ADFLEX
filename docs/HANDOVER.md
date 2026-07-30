@@ -17,7 +17,7 @@ shaped this way, and how to extend it without breaking the parts that matter.
 nothing is published yet.
 
 Do not fill it with sample entries. A placeholder news post or an invented event date reads as
-real the moment someone lands on it, and on an EU-funded project site that is a false statement
+real the moment someone lands on it, and on a publicly funded project site that is a false statement
 rather than a design detail. Add real content by editing `src/content/adflex.ts`; the empty state
 disappears when there is something to show.
 

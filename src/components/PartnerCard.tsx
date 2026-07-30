@@ -7,16 +7,15 @@ type PartnerCardProps = {
 };
 
 /**
- * Partner card: a logo plate above the organisation name.
+ * Partner card: a logo plate, the organisation name, and its role in ADFLEX.
  *
  * The three supplied logos are very different shapes — two wide wordmarks and
  * one tall crest — so the plate is a fixed box that each logo is fitted into.
  * That is what keeps a row of them optically level; sizing to the artwork
  * instead would leave them at three different visual weights.
  *
- * Shows decorative initials when a partner has no logo yet. Partner roles,
- * descriptions, URLs and countries have not been supplied and must not be
- * invented.
+ * Shows decorative initials when a partner has no logo yet. `role` is optional
+ * and renders only when supplied — a partner's role must never be inferred.
  */
 export function PartnerCard({ partner }: PartnerCardProps) {
   return (
@@ -45,6 +44,7 @@ export function PartnerCard({ partner }: PartnerCardProps) {
       </div>
 
       <h3 className={styles.name}>{partner.name}</h3>
+      {partner.role ? <p className={styles.role}>{partner.role}</p> : null}
     </article>
   );
 }

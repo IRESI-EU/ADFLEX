@@ -105,6 +105,18 @@
   border-top: 1px solid var(--adflex-color-border);
 }
 
+/* The partner's role in ADFLEX. `margin-top: auto` is deliberate: it pushes the
+   role to the bottom of the card, so across a row the three roles sit on the
+   same baseline even when one name wraps to two lines and the others do not. */
+.role {
+  margin-top: auto;
+  padding-top: var(--adflex-space-3);
+  font-size: var(--adflex-text-sm);
+  line-height: var(--adflex-leading-snug);
+  color: var(--adflex-color-muted);
+  text-wrap: pretty;
+}
+
 @media (max-width: 620px) {
   .card {
     padding: var(--adflex-space-5) var(--adflex-space-4);
