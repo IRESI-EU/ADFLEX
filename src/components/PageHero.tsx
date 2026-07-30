@@ -19,7 +19,7 @@ type PageHeroProps = {
  */
 export function PageHero({ eyebrow, title, lead }: PageHeroProps) {
   return (
-    <div className={`${styles.hero} adflex-deep`}>
+    <div className={`${styles.hero} adflex-band`}>
       <div className="adflex-container">
         {eyebrow ? <p className="adflex-eyebrow">{eyebrow}</p> : null}
         <h1 className={styles.title}>{title}</h1>

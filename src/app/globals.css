@@ -114,16 +114,19 @@ a {
   }
 }
 
-/* Deep band --------------------------------------------------------- */
+/* Emphasis band ----------------------------------------------------- */
 /* The token rebinding lives in adflex-tokens.css. This only adds the
-   atmosphere: a soft cyan bloom echoing the glow in the imagery. It is a
-   background layer, so it never sits over content. */
-.adflex-deep {
+   atmosphere. It is a background layer, so it never sits over content.
+
+   Both the texture tint and the seam are tokens, so the band carries a green
+   cast in the light theme and the same motif in the dark one without any
+   theme-specific rule here. */
+.adflex-band {
   position: relative;
   isolation: isolate;
 }
 
-.adflex-deep::before {
+.adflex-band::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -133,26 +136,8 @@ a {
        pilot banner is literally an overlay of connected nodes — so the band
        carries a faint version of the same motif. Kept very low contrast: it
        should register as texture, never as content. */
-    radial-gradient(
-      circle at 1px 1px,
-      rgba(140, 227, 242, 0.18) 1px,
-      transparent 0
-    ),
-    /* Two soft blooms, echoing the cyan and teal glow in the artwork. */
-      radial-gradient(
-        70ch 40ch at 15% 0%,
-        rgba(79, 209, 232, 0.1),
-        transparent 70%
-      ),
-    radial-gradient(
-      60ch 40ch at 95% 100%,
-      rgba(8, 133, 123, 0.13),
-      transparent 70%
-    );
-  background-size:
-    32px 32px,
-    100% 100%,
-    100% 100%;
+    radial-gradient(circle at 1px 1px, var(--adflex-band-texture) 1px, transparent 0);
+  background-size: 32px 32px;
   /* Fades the lattice out towards the middle so it never competes with copy. */
   mask-image: radial-gradient(
     120ch 70ch at 50% 50%,
@@ -162,9 +147,9 @@ a {
   pointer-events: none;
 }
 
-/* Hairline where a deep band meets a light one, so the seam reads as
-   deliberate rather than as two blocks butted together. */
-.adflex-deep::after {
+/* Hairline where a band meets the page, so the seam reads as deliberate
+   rather than as two blocks butted together. */
+.adflex-band::after {
   content: "";
   position: absolute;
   inset-inline: 0;
@@ -174,16 +159,16 @@ a {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(79, 209, 232, 0.4),
+    var(--adflex-band-seam),
     transparent
   );
   pointer-events: none;
 }
 
-/* Hairline between two adjacent deep bands, so they read as separate
-   sections rather than one long field. */
-.adflex-deep + .adflex-deep {
-  border-top: 1px solid var(--adflex-deep-border);
+/* Hairline between two adjacent bands, so they read as separate sections
+   rather than one long field. */
+.adflex-band + .adflex-band {
+  border-top: 1px solid var(--adflex-band-border);
 }
 
 /* Skip link --------------------------------------------------------- */

@@ -36,7 +36,7 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
     <section
       id={id}
       aria-labelledby="hero-heading"
-      className={`${styles.hero} adflex-deep`}
+      className={`${styles.hero} adflex-band`}
     >
       <div className="adflex-container">
         <ul className={`adflex-tag-list ${styles.tags}`}>

@@ -37,12 +37,19 @@
   padding-block: var(--adflex-space-2);
 }
 
-/* The supplied logo has an opaque white background, so it always sits on the
-   white header surface and is never recoloured, cropped or distorted. */
+/* The supplied logo file has an opaque white background — it has no alpha
+   channel at all — so it can never sit directly on a dark surface. Rather than
+   recolouring or cropping the mark, it is always given a white plate.
+   In the light theme that plate is invisible against the white header; in dark
+   mode it becomes a deliberate white badge instead of a stray white rectangle.
+   Replacing the file with a transparent one is tracked in OPEN-ITEMS.md. */
 .logoLink {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
+  padding: var(--adflex-space-1) var(--adflex-space-2);
+  background: var(--adflex-plate-logo);
+  border-radius: var(--adflex-radius-sm);
   /* The logo shrinks on narrow screens, which would otherwise take this link
      below the minimum target size. */
   min-height: var(--adflex-target-min);
@@ -53,7 +60,12 @@
   height: auto;
 }
 
-/* Pushes the navigation to the right of the logo. */
+/* Pushes the navigation, and the theme control after it, to the right of the
+   logo.
+
+   Deliberately not `position: relative`: the collapsed menu below is absolutely
+   positioned against the sticky header so it spans the full width, and giving
+   this element a containing block would shrink it onto the nav. */
 .nav {
   display: flex;
   align-items: center;

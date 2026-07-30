@@ -1,5 +1,5 @@
-/* Colours come entirely from the semantic tokens, so this card inverts for
-   free when it sits inside a `.adflex-deep` band. */
+/* Colours come entirely from the semantic tokens, so this card rebinds for
+   free inside an `.adflex-band` band and in dark mode. */
 .card {
   display: flex;
   flex-direction: column;
@@ -40,7 +40,7 @@
    white flash on slower connections. */
 .media {
   aspect-ratio: 16 / 9;
-  background: var(--adflex-deep-background);
+  background: var(--adflex-plate-media);
   border-bottom: 1px solid var(--adflex-color-border);
 }
 

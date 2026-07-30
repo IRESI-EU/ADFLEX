@@ -6,81 +6,145 @@
  * application. Every route is wrapped in this class by the root layout.
  *
  * ---------------------------------------------------------------------------
- * TWO BANDS, ONE SET OF TOKEN NAMES
+ * ONE SET OF TOKEN NAMES, FOUR CONTEXTS
  * ---------------------------------------------------------------------------
- * The site alternates between light sections and deep (dark) sections. Rather
- * than every component learning about both, `.adflex-deep` REBINDS the same
- * semantic token names to dark-band values. A card that says
- * `background: var(--adflex-color-surface)` therefore works in both bands with
- * no extra CSS and no conditional class.
+ * Components only ever use the semantic `--adflex-color-*` names. Four things
+ * rebind them, and nothing else should:
  *
- * When adding a component, use the semantic tokens — never a literal colour —
- * and it will invert correctly for free.
+ *   [data-adflex-theme="dark"]  the whole page, when dark mode is on
+ *   .adflex-band                an emphasis band inside the page
+ *   .adflex-accent              the single saturated call-to-action band
+ *   .adflex-light               a forced-light island (see below)
+ *
+ * A card that says `background: var(--adflex-color-surface)` therefore works in
+ * every one of them with no extra CSS and no conditional class.
+ *
+ * ---------------------------------------------------------------------------
+ * PALETTE
+ * ---------------------------------------------------------------------------
+ * White, mild grey and the green taken from the logo. The greens below are not
+ * invented: #08867a is the dominant colour of the supplied logo mark, sampled
+ * from the file itself. `primary` is a darkened version of it, because the raw
+ * logo green only reaches 4.47:1 on white and interactive text needs 4.5:1.
+ *
+ * Every foreground/background pair used by the site was checked against WCAG AA
+ * before these values were committed.
  */
 
 .adflex-scope {
-  /* --- Light source values --------------------------------------------- */
-  /* Referenced by the semantic bindings below and by `.adflex-light`.
-     Components should not use these directly. */
+  /* --- Brand constants -------------------------------------------------- */
+  /* Sampled from public/images/adflex/adflex-logo.png. These never rebind:
+     they are the brand, not a theme. */
 
-  /* Very dark navy from the ADFLEX wordmark. Headings. */
-  --adflex-light-ink: #091320;
-  /* Body text. */
-  --adflex-light-text: #1b2733;
-  /* Secondary / supporting text. ~7.0:1 on white. */
-  --adflex-light-muted: #4a5a6a;
-  /* Interaction teal. White text on this colour is ~6.4:1. Used for buttons,
-     links and focus rings. Deliberately darker than the logo teal. */
-  --adflex-light-primary: #006b63;
-  --adflex-light-primary-hover: #00544e;
-  /* Logo teal (~4.5:1 on white). Decorative use: rules, marks, accents. */
-  --adflex-light-brand: #08857b;
-  --adflex-light-background: #f4f8f8;
-  --adflex-light-surface: #ffffff;
-  --adflex-light-surface-soft: #e9f1f0;
-  --adflex-light-border: #dde7e6;
-  --adflex-light-border-strong: #bccecb;
-  --adflex-light-shadow-sm: 0 1px 2px rgba(9, 19, 32, 0.05),
-    0 6px 16px -10px rgba(9, 19, 32, 0.18);
-  --adflex-light-shadow-md: 0 10px 34px -12px rgba(9, 19, 32, 0.24);
+  /* The logo green. Decorative use — rules, marks, accents. 4.47:1 on white,
+     so it clears AA for large text and non-text, but not for body copy. */
+  --adflex-brand-green: #08867a;
+  /* Pale blue-grey from the logo tagline. Decorative only, never body text. */
+  --adflex-brand-slate: #8aa4bc;
+  /* Energy yellow from the logo bolt. 1.65:1 on white — decorative only, and
+     never as small text on a light ground. */
+  --adflex-brand-yellow: #fec003;
 
-  /* Pale blue-grey from the logo tagline. Decorative only — never body text. */
-  --adflex-color-brand-soft: #8ea8c1;
-  /* Energy yellow from the logo bolt. Decorative accent only — never small
-     text on white. */
-  --adflex-color-accent: #fec003;
+  /* Kept under their previous names so existing components keep working. */
+  --adflex-color-brand-soft: var(--adflex-brand-slate);
+  --adflex-color-accent: var(--adflex-brand-yellow);
+
+  /* --- Fixed light palette ---------------------------------------------- */
+  /* Always light, in both themes. `.adflex-light` pins to these, which is what
+     makes a forced-light island possible inside a dark page. Components should
+     not use them directly. */
+  --adflex-l-ink: #0d1a18;
+  --adflex-l-text: #1f2b29;
+  --adflex-l-muted: #54625f;
+  --adflex-l-primary: #046b60;
+  --adflex-l-primary-hover: #03554c;
+  --adflex-l-brand: var(--adflex-brand-green);
+  --adflex-l-background: #f6f8f7;
+  --adflex-l-surface: #ffffff;
+  --adflex-l-surface-soft: #eef1f0;
+  --adflex-l-border: #e0e5e3;
+  --adflex-l-border-strong: #8d9c98;
+  --adflex-l-shadow-sm: 0 1px 2px rgba(13, 26, 24, 0.05),
+    0 6px 16px -10px rgba(13, 26, 24, 0.16);
+  --adflex-l-shadow-md: 0 10px 34px -12px rgba(13, 26, 24, 0.22);
+
+  /* --- Fixed dark palette ----------------------------------------------- */
+  /* Near-black with a green cast rather than a blue one, so dark mode reads as
+     the same brand rather than a different site. */
+  --adflex-d-ink: #f1f6f5;
+  --adflex-d-text: #d8e3e1;
+  --adflex-d-muted: #9aaba7;
+  --adflex-d-primary: #5fd3bd;
+  --adflex-d-primary-hover: #8ae3d2;
+  --adflex-d-brand: #5fd3bd;
+  --adflex-d-background: #0e1614;
+  --adflex-d-surface: #151f1d;
+  --adflex-d-surface-soft: #1d2926;
+  --adflex-d-border: #2a3835;
+  --adflex-d-border-strong: #5c726e;
+  --adflex-d-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --adflex-d-shadow-md: 0 18px 48px -16px rgba(0, 0, 0, 0.75);
+
+  /* --- Emphasis band ---------------------------------------------------- */
+  /* Referenced by `.adflex-band`. In the light theme this is a soft green-grey
+     tint, not a dark block: the band exists to give the page rhythm, and in a
+     light design it does that by shifting tone slightly rather than inverting.
+     Dark mode rebinds it below. */
+  --adflex-band-background: #e9f2f0;
+  --adflex-band-surface: #ffffff;
+  --adflex-band-surface-soft: #dfece9;
+  --adflex-band-border: #cadedb;
+  --adflex-band-border-strong: #8fb3ad;
+  --adflex-band-ink: var(--adflex-l-ink);
+  --adflex-band-text: var(--adflex-l-text);
+  --adflex-band-muted: var(--adflex-l-muted);
+  --adflex-band-primary: var(--adflex-l-primary);
+  --adflex-band-primary-hover: var(--adflex-l-primary-hover);
+  --adflex-band-shadow-sm: var(--adflex-l-shadow-sm);
+  --adflex-band-shadow-md: var(--adflex-l-shadow-md);
+  /* Tint used for the band's faint lattice texture. */
+  --adflex-band-texture: rgba(8, 134, 122, 0.16);
+  --adflex-band-seam: rgba(8, 134, 122, 0.35);
+
+  /* --- Accent band ------------------------------------------------------ */
+  /* The one saturated moment on the page. */
+  --adflex-accent-background: #076f66;
+  --adflex-accent-surface-soft: #0a8479;
+  --adflex-accent-border: #2b8b81;
+  --adflex-accent-border-strong: #5aa79f;
+  --adflex-accent-ink: #ffffff;
+  --adflex-accent-text: #eaf6f4;
+  --adflex-accent-muted: #cbe7e2;
+
+  /* --- Image grounds ---------------------------------------------------- */
+  /* Several supplied assets are opaque or drawn for one ground only, so they
+     need a plate rather than the page colour underneath. See the notes at each
+     use site. */
+  /* The logo PNG has an opaque white background, so it always needs white
+     under it — including in dark mode. */
+  --adflex-plate-logo: #ffffff;
+  /* The pilot icons are dark navy line art on transparency, so they need a
+     light tile in both themes. */
+  --adflex-plate-icon: #eef2f4;
+  --adflex-plate-icon-border: #cdd8dc;
+  /* Placeholder behind the supplied photography, which is uniformly dark. It
+     stays dark in both themes: it is only ever visible for the moment before a
+     dark image paints, and a light placeholder would flash white there. */
+  --adflex-plate-media: #10201d;
 
   /* --- Semantic tokens, bound light by default -------------------------- */
-  /* These are what components use. `.adflex-deep`, `.adflex-light` and dark
-     mode rebind them; nothing else should. */
-  --adflex-color-ink: var(--adflex-light-ink);
-  --adflex-color-text: var(--adflex-light-text);
-  --adflex-color-muted: var(--adflex-light-muted);
-  --adflex-color-primary: var(--adflex-light-primary);
-  --adflex-color-primary-hover: var(--adflex-light-primary-hover);
-  --adflex-color-brand: var(--adflex-light-brand);
-  --adflex-color-background: var(--adflex-light-background);
-  --adflex-color-surface: var(--adflex-light-surface);
-  --adflex-color-surface-soft: var(--adflex-light-surface-soft);
-  --adflex-color-border: var(--adflex-light-border);
-  --adflex-color-border-strong: var(--adflex-light-border-strong);
-
-  /* --- Deep band source values ----------------------------------------- */
-  /* Drawn from the supplied imagery, which is uniformly deep navy with cyan
-     luminous accents. Referenced by `.adflex-deep` below; components should
-     not use these directly. */
-  --adflex-deep-background: #071523;
-  --adflex-deep-surface: #0e2134;
-  --adflex-deep-surface-soft: #143049;
-  --adflex-deep-border: #1e3b54;
-  --adflex-deep-border-strong: #2c5271;
-  --adflex-deep-ink: #f4fafd;
-  --adflex-deep-text: #dae8f1;
-  --adflex-deep-muted: #9cb4c6;
-  /* Cyan accent, taken from the glow in the imagery. Dark bands only — it has
-     nowhere near enough contrast on white. */
-  --adflex-deep-primary: #4fd1e8;
-  --adflex-deep-primary-hover: #8ce3f2;
+  /* These are what components use. */
+  --adflex-color-ink: var(--adflex-l-ink);
+  --adflex-color-text: var(--adflex-l-text);
+  --adflex-color-muted: var(--adflex-l-muted);
+  --adflex-color-primary: var(--adflex-l-primary);
+  --adflex-color-primary-hover: var(--adflex-l-primary-hover);
+  --adflex-color-brand: var(--adflex-l-brand);
+  --adflex-color-background: var(--adflex-l-background);
+  --adflex-color-surface: var(--adflex-l-surface);
+  --adflex-color-surface-soft: var(--adflex-l-surface-soft);
+  --adflex-color-border: var(--adflex-l-border);
+  --adflex-color-border-strong: var(--adflex-l-border-strong);
 
   /* --- Typography ------------------------------------------------------- */
   /* Self-hosted by next/font. The stacks fall back to system faces if the
@@ -122,8 +186,8 @@
   --adflex-radius-xl: 26px;
 
   /* --- Elevation -------------------------------------------------------- */
-  --adflex-shadow-sm: var(--adflex-light-shadow-sm);
-  --adflex-shadow-md: var(--adflex-light-shadow-md);
+  --adflex-shadow-sm: var(--adflex-l-shadow-sm);
+  --adflex-shadow-md: var(--adflex-l-shadow-md);
 
   /* --- Layout ----------------------------------------------------------- */
   --adflex-container: 1160px;
@@ -131,37 +195,116 @@
 
   /* Minimum internal target size for interactive elements. */
   --adflex-target-min: 44px;
+
+  color-scheme: light;
 }
 
 /*
- * Accent band. A saturated brand teal, for a call to action that should read as
- * an interruption rather than as another content section.
+ * ---------------------------------------------------------------------------
+ * DARK THEME
+ * ---------------------------------------------------------------------------
+ * Driven by `data-adflex-theme` on the document element, which an inline script
+ * in the root layout sets before first paint — see ThemeScript. The attribute
+ * is always written explicitly, so `prefers-color-scheme` is only ever read
+ * once, as the initial default, and never fights a choice the reader has made.
  *
- * Uses the same rebinding mechanism as `.adflex-deep`. Note the inversion:
- * `primary` becomes white and `surface` becomes the teal, which turns
- * `.adflex-cta` into a white button with teal text without needing a variant.
+ * Only the bindings change here. Every value already exists above, so dark mode
+ * adds no new colours to keep in sync.
+ */
+:root[data-adflex-theme="dark"] .adflex-scope {
+  --adflex-color-ink: var(--adflex-d-ink);
+  --adflex-color-text: var(--adflex-d-text);
+  --adflex-color-muted: var(--adflex-d-muted);
+  --adflex-color-primary: var(--adflex-d-primary);
+  --adflex-color-primary-hover: var(--adflex-d-primary-hover);
+  --adflex-color-brand: var(--adflex-d-brand);
+  --adflex-color-background: var(--adflex-d-background);
+  --adflex-color-surface: var(--adflex-d-surface);
+  --adflex-color-surface-soft: var(--adflex-d-surface-soft);
+  --adflex-color-border: var(--adflex-d-border);
+  --adflex-color-border-strong: var(--adflex-d-border-strong);
+
+  --adflex-shadow-sm: var(--adflex-d-shadow-sm);
+  --adflex-shadow-md: var(--adflex-d-shadow-md);
+
+  /* The emphasis band goes one step darker than the page, the same way it goes
+     one step deeper than white in the light theme. */
+  --adflex-band-background: #111b19;
+  --adflex-band-surface: #182321;
+  --adflex-band-surface-soft: #202c29;
+  --adflex-band-border: #2d3b38;
+  --adflex-band-border-strong: #46605b;
+  --adflex-band-ink: var(--adflex-d-ink);
+  --adflex-band-text: var(--adflex-d-text);
+  --adflex-band-muted: var(--adflex-d-muted);
+  --adflex-band-primary: var(--adflex-d-primary);
+  --adflex-band-primary-hover: var(--adflex-d-primary-hover);
+  --adflex-band-shadow-sm: var(--adflex-d-shadow-sm);
+  --adflex-band-shadow-md: var(--adflex-d-shadow-md);
+  --adflex-band-texture: rgba(95, 211, 189, 0.14);
+  --adflex-band-seam: rgba(95, 211, 189, 0.32);
+
+  /* Deeper, so the accent band reads as an accent rather than as a glare. */
+  --adflex-accent-background: #0e5a53;
+  --adflex-accent-surface-soft: #127066;
+  --adflex-accent-border: #2b7e75;
+  --adflex-accent-border-strong: #4f9c93;
+
+  color-scheme: dark;
+}
+
+/*
+ * Emphasis band. Rebinds the semantic tokens to the band values above — this is
+ * the whole mechanism that lets one set of components serve both.
  *
- * The band is deliberately not deep navy. Placed at the end of the home page it
- * follows the dark Pilot section, and a second dark band there reads as a tail
- * on the previous one instead of a separate call to action.
+ * Note that the band itself carries no theme logic: it points at
+ * `--adflex-band-*`, and dark mode changes what those mean.
+ */
+.adflex-band {
+  --adflex-color-ink: var(--adflex-band-ink);
+  --adflex-color-text: var(--adflex-band-text);
+  --adflex-color-muted: var(--adflex-band-muted);
+
+  --adflex-color-primary: var(--adflex-band-primary);
+  --adflex-color-primary-hover: var(--adflex-band-primary-hover);
+  --adflex-color-brand: var(--adflex-band-primary);
+
+  --adflex-color-background: var(--adflex-band-background);
+  --adflex-color-surface: var(--adflex-band-surface);
+  --adflex-color-surface-soft: var(--adflex-band-surface-soft);
+  --adflex-color-border: var(--adflex-band-border);
+  --adflex-color-border-strong: var(--adflex-band-border-strong);
+
+  --adflex-shadow-sm: var(--adflex-band-shadow-sm);
+  --adflex-shadow-md: var(--adflex-band-shadow-md);
+
+  color: var(--adflex-color-text);
+  background-color: var(--adflex-band-background);
+}
+
+/*
+ * Accent band. A saturated brand green, for a call to action that should read
+ * as an interruption rather than as another content section.
+ *
+ * Note the inversion: `primary` becomes white and `surface` becomes the green,
+ * which turns `.adflex-cta` into a white button with green text without needing
+ * a variant.
  */
 .adflex-accent {
-  --adflex-accent-background: #00544e;
+  --adflex-color-ink: var(--adflex-accent-ink);
+  --adflex-color-text: var(--adflex-accent-text);
+  --adflex-color-muted: var(--adflex-accent-muted);
 
-  --adflex-color-ink: #ffffff;
-  --adflex-color-text: #eaf6f4;
-  --adflex-color-muted: #b9dcd7;
-
-  /* Inverted: the button is white on teal, not teal on white. */
+  /* Inverted: the button is white on green, not green on white. */
   --adflex-color-primary: #ffffff;
-  --adflex-color-primary-hover: #eaf6f4;
+  --adflex-color-primary-hover: var(--adflex-accent-text);
   --adflex-color-brand: #ffffff;
 
   --adflex-color-background: var(--adflex-accent-background);
   --adflex-color-surface: var(--adflex-accent-background);
-  --adflex-color-surface-soft: #0b6a62;
-  --adflex-color-border: #1b7a71;
-  --adflex-color-border-strong: #3f9990;
+  --adflex-color-surface-soft: var(--adflex-accent-surface-soft);
+  --adflex-color-border: var(--adflex-accent-border);
+  --adflex-color-border-strong: var(--adflex-accent-border-strong);
 
   --adflex-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
   --adflex-shadow-md: 0 18px 48px -16px rgba(0, 0, 0, 0.45);
@@ -171,60 +314,36 @@
 }
 
 /*
- * Forces the light palette back on, for something that must stay light inside a
- * deep band.
+ * Forces the light palette back on, for something that must stay light in every
+ * theme.
  *
- * Used by the partner cards: their logos are raster files with opaque light
- * backgrounds, so they cannot sit on a dark colour — on one they read as pale
+ * Used by the partner cards: their logos are raster files drawn for a light
+ * ground, so they cannot sit on a dark colour — on one they read as pale
  * rectangles pasted onto the page.
  *
  * It rebinds the whole palette, not just the background: pinning the surface
- * alone would leave deep-band text colours on a white ground, which is
- * unreadable rather than merely wrong.
+ * alone would leave dark-theme text colours on a white ground, which is
+ * unreadable rather than merely wrong. Because it points at the fixed
+ * `--adflex-l-*` values rather than the semantic ones, it stays light even
+ * when dark mode is on.
  */
 .adflex-light {
-  --adflex-color-ink: var(--adflex-light-ink);
-  --adflex-color-text: var(--adflex-light-text);
-  --adflex-color-muted: var(--adflex-light-muted);
-  --adflex-color-primary: var(--adflex-light-primary);
-  --adflex-color-primary-hover: var(--adflex-light-primary-hover);
-  --adflex-color-brand: var(--adflex-light-brand);
-  --adflex-color-background: var(--adflex-light-background);
-  --adflex-color-surface: var(--adflex-light-surface);
-  --adflex-color-surface-soft: var(--adflex-light-surface-soft);
-  --adflex-color-border: var(--adflex-light-border);
-  --adflex-color-border-strong: var(--adflex-light-border-strong);
-  --adflex-shadow-sm: var(--adflex-light-shadow-sm);
-  --adflex-shadow-md: var(--adflex-light-shadow-md);
+  --adflex-color-ink: var(--adflex-l-ink);
+  --adflex-color-text: var(--adflex-l-text);
+  --adflex-color-muted: var(--adflex-l-muted);
+  --adflex-color-primary: var(--adflex-l-primary);
+  --adflex-color-primary-hover: var(--adflex-l-primary-hover);
+  --adflex-color-brand: var(--adflex-l-brand);
+  --adflex-color-background: var(--adflex-l-background);
+  --adflex-color-surface: var(--adflex-l-surface);
+  --adflex-color-surface-soft: var(--adflex-l-surface-soft);
+  --adflex-color-border: var(--adflex-l-border);
+  --adflex-color-border-strong: var(--adflex-l-border-strong);
+  --adflex-shadow-sm: var(--adflex-l-shadow-sm);
+  --adflex-shadow-md: var(--adflex-l-shadow-md);
 
   color: var(--adflex-color-text);
-}
-
-/*
- * Deep band. Rebinds the semantic tokens above — this is the whole mechanism
- * that lets one set of components serve both bands.
- */
-.adflex-deep {
-  --adflex-color-ink: var(--adflex-deep-ink);
-  --adflex-color-text: var(--adflex-deep-text);
-  --adflex-color-muted: var(--adflex-deep-muted);
-
-  --adflex-color-primary: var(--adflex-deep-primary);
-  --adflex-color-primary-hover: var(--adflex-deep-primary-hover);
-  --adflex-color-brand: var(--adflex-deep-primary);
-
-  --adflex-color-background: var(--adflex-deep-background);
-  --adflex-color-surface: var(--adflex-deep-surface);
-  --adflex-color-surface-soft: var(--adflex-deep-surface-soft);
-  --adflex-color-border: var(--adflex-deep-border);
-  --adflex-color-border-strong: var(--adflex-deep-border-strong);
-
-  /* Ink-coloured shadows vanish on a dark ground. */
-  --adflex-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --adflex-shadow-md: 0 18px 48px -16px rgba(0, 0, 0, 0.7);
-
-  color: var(--adflex-color-text);
-  background-color: var(--adflex-deep-background);
+  color-scheme: light;
 }
 
 @media (max-width: 720px) {

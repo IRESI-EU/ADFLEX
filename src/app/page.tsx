@@ -69,7 +69,7 @@ export default function HomePage() {
           title={technologies.title}
           intro={technologies.intro}
           introFigure={technologies.introFigure}
-          tone="deep"
+          tone="band"
         >
           <div className={styles.cardGrid}>
             {technologies.items.map((technology, index) => (

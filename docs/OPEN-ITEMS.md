@@ -31,11 +31,23 @@ every page of the site — fine while the team is reviewing, but before launch t
 real content or removal from `navigation`, otherwise public visitors hit dead ends from the
 header.
 
-**Dark mode was built and then removed** at the client's request on 29 July 2026. If it is
-revisited, note the blocker: the header, the footer and the partner cards cannot go dark, because
-the supplied logos are raster files with opaque light backgrounds. Transparent or reversed logo
-files would be needed first — see the brand assets section below and
-[HANDOVER.md](HANDOVER.md).
+## Imagery that does not fit the lighter palette
+
+The palette moved to white, mild grey and the logo green on 30 July 2026, and dark mode was
+restored at the same time. The supplied artwork was drawn for the previous dark-navy design, so
+some of it now sits awkwardly. None of this blocks review — each is handled deliberately rather
+than left broken — but each would be better solved with a new file.
+
+| Asset | Problem now | What would fix it |
+| --- | --- | --- |
+| `adflex-logo.png` | **Opaque white background, no alpha channel at all.** It cannot sit on any dark colour, so the header and footer give it a white plate. In dark mode that plate is a visible white badge. | A **transparent PNG or SVG**, ideally with a reversed (light-on-dark) variant. Then the plate can be deleted and the mark can sit directly on the surface in both themes. |
+| `adflex-system-concept.png` | Dark navy artwork on an opaque background. In the light theme it reads as a heavy dark plate in the middle of a light page. It is framed deliberately so it looks intentional. | A **light-background version** of the same diagram, with the same labels and the same red/blue arrow meanings. Keep the dark one if a per-theme pair is wanted later. |
+| `pilot-icons/*.png` | Dark navy line art (measured mean luminance 54–106 of 255). They need a light ground, so their tiles are pinned light in both themes. | Fine as they are. Only revisit if a light-on-dark icon set is supplied, in which case the tile pinning must be revisited too. |
+| `technologies/*.jpg`, `pilot/ringsend-pilot.jpg` | Dark photography. These work in both themes and need nothing. | — |
+
+When the new images arrive, the fixed grounds to revisit are the `--adflex-plate-*` tokens in
+`src/styles/adflex-tokens.css`. They exist precisely so this is a token change rather than a hunt
+through component CSS.
 
 ## Content and contact
 
@@ -92,6 +104,9 @@ Only a **PNG logo** has been supplied (`ADFLEX_Logo.png`, 3790 × 1148, opaque w
 Still unavailable:
 
 - Vector (SVG/EPS/AI) logo
+- **A transparent version** — the supplied file has no alpha channel, which is why the header and
+  footer have to put it on a white plate. This is now the highest-value missing asset, because it
+  is the one thing standing between dark mode and a clean logo treatment.
 - Monochrome variant
 - Reversed / dark-background variant
 - Favicon and app icons

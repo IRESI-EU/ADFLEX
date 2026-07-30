@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import type { ImageAsset, NavigationItem } from "@/content/adflex";
+import { adflexContent, type ImageAsset, type NavigationItem } from "@/content/adflex";
 import { NavLink } from "./NavLink";
+import { ThemeToggle } from "./ThemeToggle";
 import styles from "./AdflexHeader.module.css";
 
 type AdflexHeaderProps = {
@@ -141,6 +142,14 @@ export function AdflexHeader({
             })}
           </ul>
         </nav>
+
+        {/* Outside the nav landmark: switching theme is not navigation, and it
+            should not be read as one more item in the menu. */}
+        <ThemeToggle
+          label={adflexContent.meta.theme.label}
+          toDark={adflexContent.meta.theme.toDark}
+          toLight={adflexContent.meta.theme.toLight}
+        />
       </div>
     </header>
   );

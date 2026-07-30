@@ -19,12 +19,12 @@ type SectionShellProps = {
   /** A phrase inside `intro` to pick out typographically — see `FigureText`. */
   introFigure?: string;
   /**
-   * Band treatment.
-   * `default` and `soft` are light; `deep` is the dark band that the supplied
-   * imagery sits in natively. `deep` rebinds the colour tokens, so anything
-   * inside it inverts without needing its own dark styles.
+   * Band treatment. `default` sits on the page colour, `soft` on the soft
+   * surface, and `band` is the emphasis band. `band` rebinds the colour tokens,
+   * so anything inside it follows without needing styles of its own — and it
+   * carries no theme logic, so it works in both themes from one rule.
    */
-  tone?: "default" | "soft" | "deep";
+  tone?: "default" | "soft" | "band";
   /**
    * `stacked` puts the heading above the content. `split` sets the heading
    * beside it, which suits a short section that would otherwise leave most of
@@ -51,7 +51,7 @@ export function SectionShell({
 }: SectionShellProps) {
   const headingId = `${id}-heading`;
   const toneClass =
-    tone === "soft" ? styles.soft : tone === "deep" ? "adflex-deep" : "";
+    tone === "soft" ? styles.soft : tone === "band" ? "adflex-band" : "";
 
   return (
     <section

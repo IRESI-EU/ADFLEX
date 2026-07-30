@@ -39,7 +39,7 @@
 .diagram {
   width: 100%;
   height: auto;
-  border: 1px solid var(--adflex-deep-border);
+  border: 1px solid var(--adflex-band-border);
   border-radius: var(--adflex-radius-xl);
   box-shadow: var(--adflex-shadow-md);
 }

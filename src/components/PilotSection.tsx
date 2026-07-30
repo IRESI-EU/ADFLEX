@@ -30,7 +30,7 @@ export function PilotSection({ id, content }: PilotSectionProps) {
       // The place name belongs to "Pilot", so it sits inside the head. Given
       // its own block below it read as a second, competing heading.
       lead={<h3 className={styles.subtitle}>{content.subtitle}</h3>}
-      tone="deep"
+      tone="band"
     >
       {/* Image beside the narrative rather than as a full-width banner. At full
           width it ran 626px tall and swamped the section; here it is a little

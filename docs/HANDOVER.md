@@ -51,7 +51,9 @@ collected addresses would be doing so with no privacy policy published.
 | `AwaitingContent` | Body for a route that exists but has no approved content yet — News, Events and the three legal pages. States plainly that nothing is published rather than showing sample entries. |
 | `ContactForm` | Contact form template. **Every control is `disabled`** — there is no backend, and a form that silently discards messages is worse than no form. |
 | `NewsletterSignup` | Sign-up block on the home page. **Button disabled** — no mailing list exists, and collecting addresses with no privacy policy published would be worse still. |
-| `PageHero` | Opening deep band for the simple routes — About, Contact, Project Outputs. Carries the page's single `h1`. Shared so the three cannot drift apart, and deep so a visitor landing on a sub-page arrives in the same site rather than on a plain white page. |
+| `PageHero` | Opening emphasis band for the simple routes — About, Contact, Project Outputs. Carries the page's single `h1`. Shared so the three cannot drift apart, and a band rather than the plain page colour so a visitor landing on a sub-page arrives in the same site rather than on a blank white page. |
+| `ThemeScript` | The inline script that sets `data-adflex-theme` before first paint. Not a visual component. Must stay tiny — it is parsed and run on every request ahead of everything else. |
+| `ThemeToggle` | The light/dark control in the header. Client component, but deliberately holds no state — see the Dark mode section. |
 | `NavLink` | Small internal helper, not a UI-library component. Renders a plain `<a>` for same-page anchors so the browser's scroll behaviour and the reduced-motion rules still apply, and `next/link` for real routes. Shared by the header and footer. |
 
 Shared interactive styles are CSS classes rather than components, because they are single
@@ -90,10 +92,10 @@ These are hard constraints, not preferences. They are also documented on `/desig
 
 - Use the supplied full-colour PNG. Preserve its aspect ratio.
 - Keep the symbol, the wordmark and the "LOCAL ENERGY FLEXIBILITY" line all visible.
-- The file has an **opaque white background**. It must sit on white or a very light surface —
-  never directly on dark teal or charcoal. If it must appear on a coloured panel, put it inside
-  an intentional white surface with padding (see the Logo & Imagery section of the design
-  system for the pattern in use).
+- The file has an **opaque white background** — no alpha channel at all. It must sit on white or
+  a very light surface, never directly on a dark colour. The header and footer therefore give it
+  a white plate with padding: invisible in the light theme, a deliberate badge in dark mode. Do
+  the same anywhere else it appears (see the Logo & Imagery section of the design system).
 - Do not recolour, distort, rotate or crop it. Do not add shadows, borders or effects.
 - Do not trace it into SVG or present the raster file as a vector asset.
 - Do not rebuild the wordmark with text. Do not create monochrome or reversed variants.
@@ -196,63 +198,84 @@ has caught me out twice on this project.
 
 ## 5. Styling strategy
 
-### Two bands, one set of token names
+### One set of token names, four things that rebind them
 
 The single most important thing to understand before changing any CSS.
 
-The site alternates between **light** sections (reading-heavy copy) and **deep** sections (the
-supplied imagery, which is uniformly dark navy with cyan glows). Rather than every component
-learning about both, the `.adflex-deep` class **rebinds the same semantic token names** to
-dark-band values:
+Components only ever use the semantic `--adflex-color-*` names. Four things rebind them, and
+nothing else should:
+
+| | |
+|---|---|
+| `[data-adflex-theme="dark"]` | the whole page, when dark mode is on |
+| `.adflex-band` | an emphasis band inside the page |
+| `.adflex-accent` | the single saturated call-to-action band |
+| `.adflex-light` | a forced-light island |
 
 ```css
-.adflex-deep {
-  --adflex-color-surface: var(--adflex-deep-surface);
-  --adflex-color-text:    var(--adflex-deep-text);
-  --adflex-color-primary: var(--adflex-deep-primary);
+.adflex-band {
+  --adflex-color-surface: var(--adflex-band-surface);
+  --adflex-color-text:    var(--adflex-band-text);
+  --adflex-color-primary: var(--adflex-band-primary);
   /* …and the rest */
 }
 ```
 
-So a card written as `background: var(--adflex-color-surface)` works in both bands with no extra
+So a card written as `background: var(--adflex-color-surface)` works in all four with no extra
 CSS, no conditional class and no duplicated component. `.adflex-cta` needs no dark variant: its
-background and text colour both rebind, turning a teal-on-white button into cyan-on-dark.
+background and its text colour both rebind, turning a green-on-white button into a light-green
+button with dark text.
 
-There is a third band, `.adflex-accent` — a saturated brand teal, used once, for the newsletter
-block that closes the home page. It exists because that block follows the dark Pilot section: a
-second dark band there reads as a tail on the pilot rather than a separate call to action. It
-inverts two tokens, `primary` to white and `surface` to the teal, which turns `.adflex-cta` into
-a white button with teal text with no variant needed.
+Note that `.adflex-band` carries **no theme logic of its own**. It points at `--adflex-band-*`,
+and dark mode changes what those mean — so the band is a soft green-grey tint in the light theme
+and a deeper shade of the page in the dark one, from one rule.
+
+`.adflex-accent` is a saturated brand green, used once, for the newsletter block that closes the
+home page. It inverts two tokens, `primary` to white and `surface` to the green, which turns
+`.adflex-cta` into a white button with green text with no variant needed.
 
 **Rules that follow from this:**
 
 1. Style components with the **semantic** tokens (`--adflex-color-*`). Never a literal colour.
-2. Three things must stay light in both bands — the header, the footer and the partner cards —
-   because the ADFLEX logo and the partner logos have opaque light backgrounds. The pilot asset
-   icon tiles must stay **dark** in both bands, because that artwork is drawn to glow.
-3. Those deliberate exceptions reference the **raw** `--adflex-deep-*` values, which do not
-   rebind. If you find yourself reaching for a raw value anywhere else, you probably want a
-   semantic token instead.
-4. Adding a `deep` section is `tone="deep"` on `SectionShell`. Nothing else.
+2. A few things must stay fixed whatever the theme, because the supplied artwork is fixed. They
+   use the `--adflex-plate-*` tokens, which never rebind:
+   - the **logo** always gets a white plate — the file is opaque and has no alpha channel at all
+   - the **pilot icon tiles** stay light — that artwork is dark navy line art
+   - the **image placeholders** stay dark — they sit behind dark photography
+3. The **partner cards** carry `.adflex-light`, which pins the whole palette to the fixed
+   `--adflex-l-*` values. That is what keeps them light in dark mode. Pinning only the background
+   would leave dark-theme text on a white ground.
+4. If you find yourself reaching for a fixed value anywhere else, you probably want a semantic
+   token instead.
+5. Adding an emphasis section is `tone="band"` on `SectionShell`. Nothing else.
 
-The trap: `--adflex-color-ink` is *light* inside a deep band. Using it for something that must
-stay dark — as the pilot icon tiles briefly did — inverts it exactly when you don't want it to.
+The trap: `--adflex-color-ink` follows the theme. Using it for something that must stay dark — as
+the pilot icon tiles once did — inverts it exactly when you don't want it to.
 
-### There is no dark mode
+### Dark mode
 
-A light/dark toggle was built and then removed at the client's request on 29 July 2026. If it is
-ever revisited, the blocker is worth knowing in advance:
+Restored on 30 July 2026 at the team's request, alongside the move to the lighter palette. (It
+had been built once before and removed on 29 July.) The mechanism:
 
-**The header, the footer and the partner cards cannot go dark.** The ADFLEX logo and all three
-partner logos are raster files with **opaque light backgrounds**, so on a dark surface they
-render as pale rectangles pasted onto the page. That is not fixable in CSS — it needs transparent
-or reversed logo files, which have not been supplied. A dark mode therefore leaves those three
-surfaces light, which is most of the site's chrome.
+- The theme lives in **one place**: a `data-adflex-theme` attribute on the document element.
+- `ThemeScript` inlines a small raw script into `<head>`. It runs during parse, **before the
+  first paint**, so the first frame is already correct. An effect or a deferred `next/script`
+  strategy would run after the page had drawn — the flash is exactly what this prevents.
+- `ThemeToggle` holds **no React state**. It reads the attribute at click time, and its two
+  labels are shown and hidden by CSS off that same attribute. There is therefore nothing for the
+  server and the client to disagree about: no hydration mismatch and no flash of the wrong label.
+- `<html>` carries `suppressHydrationWarning` because that script writes to it before React
+  hydrates. It is scoped to that one element and does not extend to children.
+- The toggle is hidden until the script adds an `adflex-js` class, so a reader without JavaScript
+  is never shown a control that cannot do anything.
+- `color-scheme` is set alongside the palette, so scrollbars and native controls follow too.
 
-The token structure that made it work is still in place and is useful on its own: light source
-values (`--adflex-light-*`) and deep source values (`--adflex-deep-*`) are separate from the
-semantic tokens that bind to them, so a whole palette can be rebound in one block. `.adflex-light`
-is what remains of it, used by the partner cards.
+**The old blocker, and what changed.** Dark mode was previously rejected because the ADFLEX logo
+and the partner logos are raster files with opaque light backgrounds and render as pale
+rectangles on a dark surface. That is still true of the files. It is now handled rather than
+avoided: the logo is given a deliberate white plate (a badge, not an accident), and the partner
+cards keep `.adflex-light`. Transparent logo files would let the plate go away — see
+[OPEN-ITEMS.md](OPEN-ITEMS.md).
 
 ### Typography
 
@@ -306,7 +329,7 @@ copy of the layout exists.
 
 1. Create `src/app/<route>/page.tsx`. The root layout already provides `.adflex-scope` and the
    skip link, so the new page only needs its own `<main id="main-content">`. Open it with
-   `PageHero`, which carries the page's single `h1` and gives it the same deep opening band as
+   `PageHero`, which carries the page's single `h1` and gives it the same opening band as
    the other sub-pages — do not hand-roll a page heading.
 2. Reuse `AdflexHeader` and `AdflexFooter`. On a route other than `/`, pass `homeHref="/"` to
    the header and give both the result of
@@ -366,7 +389,7 @@ artwork; LinkedIn publishes official brand assets and usage rules, so swap it if
 to follow them exactly.
 
 **Current-page marking.** The header sets `aria-current="page"` on the link matching the route,
-drawn as a teal underline. Only `route` items qualify — the in-page anchors (Technologies,
+drawn as a green underline. Only `route` items qualify — the in-page anchors (Technologies,
 Consortium, Pilot) all live on the home page, so marking by pathname would flag four links at
 once. Highlighting the section actually in view would need scroll tracking, which is a separate
 feature and not built. "Home" is the one exception: it is an anchor, but it is also what `/`

@@ -96,9 +96,9 @@
   gap: var(--adflex-space-4);
 }
 
-/* The deep swatch grid is itself a deep band, so the cards around each chip
-   invert too and the values are shown in the context they are used in. */
-.deepSwatches {
+/* The band swatch grid is itself an emphasis band, so the cards around each
+   chip rebind too and the values are shown in the context they are used in. */
+.bandSwatches {
   padding: var(--adflex-space-5);
   border-radius: var(--adflex-radius-lg);
 }

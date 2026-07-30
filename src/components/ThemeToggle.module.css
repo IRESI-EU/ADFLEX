@@ -1,0 +1,96 @@
+/* Matches the collapsed-navigation button: same pill, same height, same border,
+   so the two controls read as a pair when they sit side by side. */
+.toggle {
+  /* Hidden until the inline theme script has run. Without JavaScript the
+     control cannot do anything, so it is never shown. */
+  display: none;
+  align-items: center;
+  gap: var(--adflex-space-2);
+  min-height: var(--adflex-target-min);
+  min-width: var(--adflex-target-min);
+  padding: var(--adflex-space-2) var(--adflex-space-4);
+  font: inherit;
+  font-size: var(--adflex-text-sm);
+  font-weight: 600;
+  color: var(--adflex-color-ink);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+:global(.adflex-js) .toggle {
+  display: inline-flex;
+}
+
+.toggle:hover {
+  color: var(--adflex-color-primary);
+  border-color: var(--adflex-color-primary);
+}
+
+.icon {
+  display: block;
+  flex: 0 0 auto;
+  /* Holds the glyph's line height off the button's, so the pill does not grow
+     by a pixel or two when the icon swaps. */
+  line-height: 0;
+}
+
+/* The two glyphs occupy the same box; only one is drawn at a time. */
+.moon {
+  display: none;
+}
+
+:global(:root[data-adflex-theme="dark"]) .sun {
+  display: none;
+}
+
+:global(:root[data-adflex-theme="dark"]) .moon {
+  display: block;
+}
+
+/* Reserves the width of the wider of the two words, so the header does not
+   shift by a few pixels each time the theme is switched. */
+.text {
+  display: inline-grid;
+  justify-items: start;
+}
+
+.whenLight,
+.whenDark {
+  grid-area: 1 / 1;
+}
+
+/* `display: none` rather than visual hiding, so the word that does not apply is
+   not announced either. */
+.whenDark {
+  display: none;
+}
+
+:global(:root[data-adflex-theme="dark"]) .whenLight {
+  display: none;
+}
+
+:global(:root[data-adflex-theme="dark"]) .whenDark {
+  display: block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toggle {
+    transition:
+      color 140ms ease-out,
+      border-color 140ms ease-out;
+  }
+}
+
+/* On the narrowest screens the word is dropped and the glyph carries the
+   control on its own. The button keeps its `aria-label`, so it is still named. */
+@media (max-width: 420px) {
+  .text {
+    display: none;
+  }
+
+  .toggle {
+    padding: var(--adflex-space-2);
+  }
+}

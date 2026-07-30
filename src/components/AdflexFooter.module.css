@@ -35,9 +35,15 @@
   padding-block: var(--adflex-space-6);
 }
 
+/* Same white plate as the header. The logo file is opaque and has no alpha
+   channel, so it needs white beneath it in every theme — invisible against the
+   light footer, a deliberate badge in dark mode. */
 .logo {
   width: 200px;
   height: auto;
+  padding: var(--adflex-space-1) var(--adflex-space-2);
+  background: var(--adflex-plate-logo);
+  border-radius: var(--adflex-radius-sm);
 }
 
 /* --- LinkedIn ---------------------------------------------------------- */

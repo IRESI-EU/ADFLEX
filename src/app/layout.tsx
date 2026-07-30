@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import { adflexContent } from "@/content/adflex";
+import { ThemeScript } from "@/components/ThemeScript";
 import "@/styles/adflex-tokens.css";
 import "./globals.css";
 
@@ -34,6 +35,12 @@ export const metadata: Metadata = {
  * The `.adflex-scope` wrapper carries every ADFLEX design token, so every route
  * is styled from one scoped source and nothing leaks to `:root`.
  * The skip link lives here so it is the first focusable element on every route.
+ *
+ * `suppressHydrationWarning` is on `<html>` because `ThemeScript` writes
+ * `data-adflex-theme` and the `adflex-js` class onto that element before React
+ * hydrates. The server cannot know which theme a given reader has chosen, so
+ * that attribute legitimately differs between the server markup and the DOM.
+ * It is scoped to this one element and does not extend to any children.
  */
 export default function RootLayout({
   children,
@@ -41,7 +48,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${sora.variable} ${inter.variable}`}>
+    <html
+      lang="en"
+      className={`${sora.variable} ${inter.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <ThemeScript />
+      </head>
       <body>
         <div className="adflex-scope">
           <a className="adflex-skip-link" href="#main-content">

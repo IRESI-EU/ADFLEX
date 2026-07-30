@@ -22,7 +22,7 @@
 .banner {
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: var(--adflex-deep-background);
+  background: var(--adflex-plate-media);
   border: 1px solid var(--adflex-color-border);
   border-radius: var(--adflex-radius-lg);
   box-shadow: var(--adflex-shadow-md);
@@ -85,11 +85,12 @@
   width: 56px;
   height: 56px;
   padding: var(--adflex-space-1);
-  /* The raw deep value, not `--adflex-color-ink` — ink rebinds to a light
-     colour inside a deep band, which would wash these luminous icons out.
-     The tile must stay dark in both bands. */
-  background: var(--adflex-deep-background);
-  border: 1px solid var(--adflex-deep-border);
+  /* A fixed light tile, not a semantic token. The supplied icons are dark navy
+     line art on transparency — measured mean luminance 54–106 out of 255 — so
+     they need a light ground to keep their edges, in either theme. Letting this
+     follow the theme would dissolve them in dark mode. */
+  background: var(--adflex-plate-icon);
+  border: 1px solid var(--adflex-plate-icon-border);
   border-radius: var(--adflex-radius-md);
 }
 

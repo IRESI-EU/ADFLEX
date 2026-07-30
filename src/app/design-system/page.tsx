@@ -71,7 +71,7 @@ export default function DesignSystemPage() {
 
             {/* 2 â€” Brand & Foundations ------------------------------ */}
             <Section id="brand-foundations" title={ds.sections[1].title}>
-              <h3 className={styles.subhead}>Light and deep bands</h3>
+              <h3 className={styles.subhead}>Bands</h3>
               <p className={styles.lead}>{ds.bands.lead}</p>
               <ul className={styles.bullets}>
                 {ds.bands.points.map((point) => (
@@ -79,11 +79,11 @@ export default function DesignSystemPage() {
                 ))}
               </ul>
 
-              {/* A live deep band, so the rebinding can be seen rather than
+              {/* A live emphasis band, so the rebinding can be seen rather than
                   only described. Everything inside uses the same production
-                  classes as the light examples. */}
-              <div className={`adflex-deep ${styles.bandDemo}`}>
-                <p className="adflex-eyebrow">Deep band</p>
+                  classes as the examples above. */}
+              <div className={`adflex-band ${styles.bandDemo}`}>
+                <p className="adflex-eyebrow">Emphasis band</p>
                 <p className={styles.bandDemoTitle}>
                   The same components, unchanged
                 </p>
@@ -93,7 +93,15 @@ export default function DesignSystemPage() {
                 </div>
               </div>
 
-              <h3 className={styles.subhead}>Colour â€” light band</h3>
+              <h3 className={styles.subhead}>Dark mode</h3>
+              <p className={styles.lead}>{ds.themes.lead}</p>
+              <ul className={styles.bullets}>
+                {ds.themes.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+
+              <h3 className={styles.subhead}>Colour â€” page</h3>
               <ul className={styles.swatchGrid}>
                 {ds.colours.map((colour) => (
                   <li key={colour.token} className={styles.swatch}>
@@ -110,14 +118,37 @@ export default function DesignSystemPage() {
                 ))}
               </ul>
 
-              <h3 className={styles.subhead}>Colour â€” deep band</h3>
+              <h3 className={styles.subhead}>Colour â€” emphasis band</h3>
               <p className={styles.note}>
-                These are the raw values that <code className={styles.code}>.adflex-deep</code>{" "}
+                These are the values that <code className={styles.code}>.adflex-band</code>{" "}
                 rebinds the semantic tokens to. Components should not reference them directly,
-                with the deliberate exceptions noted above.
+                with the deliberate exceptions noted above. Dark mode rebinds this set too, so
+                the swatches below follow whichever theme is on.
               </p>
-              <ul className={`${styles.swatchGrid} adflex-deep ${styles.deepSwatches}`}>
-                {ds.deepColours.map((colour) => (
+              <ul className={`${styles.swatchGrid} adflex-band ${styles.bandSwatches}`}>
+                {ds.bandColours.map((colour) => (
+                  <li key={colour.token} className={styles.swatch}>
+                    <span
+                      className={styles.swatchChip}
+                      style={{ background: `var(${colour.token})` }}
+                      aria-hidden="true"
+                    />
+                    <span className={styles.swatchName}>{colour.name}</span>
+                    <code className={styles.code}>{colour.token}</code>
+                    <span className={styles.swatchHex}>{colour.hex}</span>
+                    <span className={styles.swatchUsage}>{colour.usage}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <h3 className={styles.subhead}>Colour â€” dark theme</h3>
+              <p className={styles.note}>
+                The fixed dark palette. These are what the semantic tokens point at while{" "}
+                <code className={styles.code}>data-adflex-theme=&quot;dark&quot;</code> is set,
+                so the hex values below are the same whichever theme you are reading this in.
+              </p>
+              <ul className={styles.swatchGrid}>
+                {ds.darkColours.map((colour) => (
                   <li key={colour.token} className={styles.swatch}>
                     <span
                       className={styles.swatchChip}
