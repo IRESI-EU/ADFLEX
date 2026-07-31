@@ -4,13 +4,14 @@
   scroll-margin-top: calc(var(--adflex-header-height) + var(--adflex-space-4));
 }
 
-/* Copy left, network right. The text column takes much the larger share: the
-   headline is 100 characters, and at an even split it broke to seven lines and
-   turned the hero into a wall. The graphic balances the band; it does not get
-   an equal half. */
+/* Copy left, illustration right, close to even. The illustration is the
+   flagship image on the site and needs real width to hold its detail; the
+   headline is 100 characters and needs enough measure not to shatter. The
+   balance is struck by capping the headline's own size below the global
+   `--adflex-text-3xl` rather than by starving either column. */
 .split {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
   gap: var(--adflex-space-6);
   align-items: center;
 }
@@ -27,10 +28,13 @@
   margin-bottom: var(--adflex-space-5);
 }
 
-/* Five lines at desktop width. Measured: 18ch gave seven, which read as a
-   block of text rather than as a headline. */
+/* Capped below the global 3xl so the headline holds five lines in a column
+   roughly half the container wide. At the global size it broke to eight and the
+   hero became a wall of type; the illustration would then have had to shrink to
+   compensate, which is the wrong trade for the site's flagship image. */
 .headline {
-  max-width: 23ch;
+  max-width: 20ch;
+  font-size: clamp(2.1rem, 1.35rem + 2.1vw, 2.9rem);
 }
 
 .tagline {
@@ -41,7 +45,18 @@
   color: var(--adflex-color-text);
 }
 
+/* Wraps rather than overflowing when the two actions cannot sit side by side. */
+/* Holds the glossary term and the punctuation after it together. The term is an
+   inline-block and therefore unbreakable, so without this a following comma can
+   wrap to the start of the next line on its own. */
+.termGroup {
+  white-space: nowrap;
+}
+
 .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--adflex-space-3);
   margin-top: var(--adflex-space-6);
 }
 
@@ -70,17 +85,17 @@
   color: var(--adflex-color-muted);
 }
 
-/* One column below this width. The network moves under the copy rather than
-   beside it, at a reduced size — it is decorative, so it should never be the
-   reason someone has to scroll past to reach the text. */
-@media (max-width: 900px) {
+/* One column below this width: text first, illustration second. It keeps a
+   generous size here — it is the strongest thing on the page and a tablet has
+   the room for it. */
+@media (max-width: 940px) {
   .split {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--adflex-space-6);
   }
 
   .headline {
-    max-width: 22ch;
+    max-width: 26ch;
   }
 
   .tagline {
@@ -88,7 +103,7 @@
   }
 
   .figureCol {
-    max-width: 340px;
+    max-width: 560px;
     margin-inline: auto;
   }
 }
@@ -107,11 +122,12 @@
   }
 }
 
-/* Below this the network is dropped entirely. At phone width the hero should be
-   headline, sentence, button — a decorative graphic between the copy and the
-   call to action only pushes the action further down. */
+/* The illustration is kept at phone width — unlike the abstract network it
+   replaced, it carries the project's whole idea at a glance and is worth the
+   scroll. It sits below the actions, so the buttons are still reachable
+   without passing it. Detail holds down to roughly 300px wide. */
 @media (max-width: 520px) {
   .figureCol {
-    display: none;
+    max-width: 420px;
   }
 }

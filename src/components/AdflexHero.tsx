@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { HeroContent } from "@/content/adflex";
-import { EnergyNetwork } from "./EnergyNetwork";
+import { HeroTwin } from "./HeroTwin";
 import { GlossaryTerm } from "./GlossaryTerm";
 import { NavLink } from "./NavLink";
 import styles from "./AdflexHero.module.css";
@@ -15,13 +15,22 @@ type AdflexHeroProps = {
  * term can be rendered as an interactive element without the copy being stored
  * as pre-chopped fragments. Falls back to the plain tagline if the term is not
  * found, so a content typo degrades to plain text rather than losing a sentence.
+ *
+ * `trailing` is any punctuation sitting immediately after the term. The term
+ * renders as an inline-block, which is an unbreakable box, so a comma following
+ * it can wrap onto the next line on its own — which is what happened at this
+ * measure. Pulling that punctuation out lets it be tied to the term with
+ * `white-space: nowrap` instead of being left to strand.
  */
 function splitTagline(tagline: string, term: string) {
   const start = tagline.indexOf(term);
   if (start === -1) return null;
+  const rest = tagline.slice(start + term.length);
+  const trailing = rest.match(/^[,.;:!?)\]]+/)?.[0] ?? "";
   return {
     before: tagline.slice(0, start),
-    after: tagline.slice(start + term.length),
+    trailing,
+    after: rest.slice(trailing.length),
   };
 }
 
@@ -82,10 +91,14 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
             {tagline ? (
               <>
                 {tagline.before}
-                <GlossaryTerm
-                  term={content.glossary.term}
-                  definition={content.glossary.definition}
-                />
+                {/* Term and its following punctuation kept on one line. */}
+                <span className={styles.termGroup}>
+                  <GlossaryTerm
+                    term={content.glossary.term}
+                    definition={content.glossary.definition}
+                  />
+                  {tagline.trailing}
+                </span>
                 {tagline.after}
               </>
             ) : (
@@ -93,17 +106,25 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
             )}
           </p>
 
-          <p
+          <div
             className={styles.actions}
             data-reveal=""
             style={{ "--adflex-reveal-delay": "240ms" } as React.CSSProperties}
           >
-            {/* NavLink so the CTA works whether it points at a section anchor or
-                at a route of its own. */}
+            {/* NavLink so each action works whether it points at a section
+                anchor or at a route of its own. */}
             <NavLink className="adflex-cta" href={content.cta.href}>
               {content.cta.label}
             </NavLink>
-          </p>
+            {content.secondaryCta ? (
+              <NavLink
+                className="adflex-cta-quiet"
+                href={content.secondaryCta.href}
+              >
+                {content.secondaryCta.label}
+              </NavLink>
+            ) : null}
+          </div>
         </div>
 
         <div
@@ -111,7 +132,7 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
           data-reveal=""
           style={{ "--adflex-reveal-delay": "160ms" } as React.CSSProperties}
         >
-          <EnergyNetwork />
+          <HeroTwin />
         </div>
       </div>
 

@@ -97,6 +97,30 @@
   --adflex-band-bloom-a: rgba(8, 134, 122, 0.09);
   --adflex-band-bloom-b: rgba(138, 164, 188, 0.13);
 
+  /* --- Hero illustration ------------------------------------------------ */
+  /* Used only by `HeroTwin`. Kept as tokens rather than literals inside the
+     SVG so the illustration can be retuned in one place, and so it is obvious
+     that these are a separate, deliberate palette rather than semantic colours
+     leaking into artwork.
+
+     The physical side is drawn in a deep navy that is not the site's ink: text
+     ink is a near-black green, and line art at that value reads heavy. Navy
+     keeps the drawing technical rather than editorial. */
+  --adflex-illus-ink: #17384f;
+  --adflex-illus-ink-soft: rgba(23, 56, 79, 0.42);
+  --adflex-illus-panel: #e8f2ef;
+  --adflex-illus-panel-deep: #cfe4de;
+  --adflex-illus-surface: #ffffff;
+  /* The digital twin. Misty blue-cyan, deliberately cooler and lighter than the
+     brand green so the two halves read as different states of one thing. */
+  --adflex-illus-twin: #5aa6c4;
+  --adflex-illus-twin-soft: rgba(90, 166, 196, 0.16);
+  --adflex-illus-twin-faint: rgba(90, 166, 196, 0.4);
+  /* Energy flow. A muted gold, not the logo's bolt yellow: at line weight the
+     full-strength yellow vibrates against the mint ground. */
+  --adflex-illus-energy: #d69a2d;
+  --adflex-illus-energy-soft: rgba(214, 154, 45, 0.32);
+
   /* --- Image grounds ---------------------------------------------------- */
   /* Several supplied assets are opaque or drawn for one ground only, so they
      need a plate rather than the page colour underneath. See the notes at each

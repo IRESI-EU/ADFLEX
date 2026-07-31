@@ -283,6 +283,41 @@ a {
   }
 }
 
+/* Secondary call to action ------------------------------------------ */
+/* Same shape and target size as `.adflex-cta`, outlined rather than filled, so
+   two actions side by side read as primary and secondary rather than as two
+   equal choices. */
+.adflex-cta-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--adflex-target-min);
+  min-width: var(--adflex-target-min);
+  padding: var(--adflex-space-3) var(--adflex-space-5);
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--adflex-color-primary);
+  text-decoration: none;
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: var(--adflex-radius-md);
+  cursor: pointer;
+}
+
+.adflex-cta-quiet:hover {
+  color: var(--adflex-color-primary-hover);
+  border-color: var(--adflex-color-primary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .adflex-cta-quiet {
+    transition:
+      color 140ms ease-out,
+      border-color 140ms ease-out;
+  }
+}
+
 /* Text link --------------------------------------------------------- */
 /* Standalone link. inline-flex plus a minimum height keeps the target at
    least 44 CSS pixels tall. Links written inside a sentence should not use

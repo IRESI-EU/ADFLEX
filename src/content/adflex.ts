@@ -47,6 +47,11 @@ export type HeroContent = {
   glossary: { term: string; definition: string };
   cta: { label: string; href: string };
   /**
+   * Optional second action, shown beside the primary one as a quieter button.
+   * Omit it rather than inventing somewhere for it to go.
+   */
+  secondaryCta?: { label: string; href: string };
+  /**
    * The system diagram. Its labels are not repeated as visible text — `alt`
    * is therefore the only place the diagram's parts are named, so keep it
    * complete if the image ever changes.
@@ -416,7 +421,12 @@ export const adflexContent = {
     },
     // Project Outputs lives at /outputs, so this is a route rather than an
     // anchor. The label is the supplied wording and is unchanged.
-    cta: { label: "See Pilot Results", href: "/outputs" },
+    // Was "See Pilot Results" → /outputs. That page is still the empty
+    // "awaiting content" state, so the hero's main action promised results and
+    // delivered nothing. Both actions now point at sections that have real
+    // content today.
+    cta: { label: "Explore the pilot", href: "#pilot" },
+    secondaryCta: { label: "How ADFLEX works", href: "#technologies" },
     diagram: {
       // Kept as PNG rather than re-encoded to JPEG like the photographic
       // imagery: this diagram carries fine light text on a dark background,
