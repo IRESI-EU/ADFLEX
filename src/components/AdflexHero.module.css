@@ -4,14 +4,14 @@
   scroll-margin-top: calc(var(--adflex-header-height) + var(--adflex-space-4));
 }
 
-/* Copy left, illustration right, close to even. The illustration is the
+/* Copy left at ~54%, illustration right at ~46%. The illustration is the
    flagship image on the site and needs real width to hold its detail; the
    headline is 100 characters and needs enough measure not to shatter. The
    balance is struck by capping the headline's own size below the global
    `--adflex-text-3xl` rather than by starving either column. */
 .split {
   display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  grid-template-columns: minmax(0, 1.17fr) minmax(0, 1fr);
   gap: var(--adflex-space-6);
   align-items: center;
 }
@@ -20,21 +20,39 @@
   min-width: 0;
 }
 
+/*
+ * `width: 100%` alongside the auto margins is load-bearing, not redundant.
+ *
+ * A grid item with `margin-inline: auto` stops stretching and is sized
+ * shrink-to-fit instead. The child SVG sizes at `width: 100%` of that, which is
+ * circular, so the browser falls back to the CSS default replaced-element size
+ * — 300px wide. That is exactly what happened: below the two-column breakpoint
+ * the illustration silently rendered at 300px on every tablet and phone, with
+ * a `max-width` of 560px sitting on it doing nothing.
+ *
+ * Declaring the width restores stretch-up-to-max-width and keeps the centring.
+ */
 .figureCol {
   min-width: 0;
+  width: 100%;
 }
 
 .tags {
   margin-bottom: var(--adflex-space-5);
 }
 
-/* Capped below the global 3xl so the headline holds five lines in a column
-   roughly half the container wide. At the global size it broke to eight and the
-   hero became a wall of type; the illustration would then have had to shrink to
-   compensate, which is the wrong trade for the site's flagship image. */
+/*
+ * Sized to hold the 106-character project name at five lines across the desktop
+ * range, capped below the global `--adflex-text-3xl`.
+ *
+ * Both numbers were measured in the browser rather than estimated: at 24ch and
+ * 2.7rem the name broke to six lines at every desktop width. The slope is set
+ * so the size lands near 2.55rem at 1440 and near 2.15rem at 1024, where the
+ * column is only ~505px — without that taper 1024 also went to six.
+ */
 .headline {
-  max-width: 20ch;
-  font-size: clamp(2.1rem, 1.35rem + 2.1vw, 2.9rem);
+  max-width: 27ch;
+  font-size: clamp(1.9rem, 1.17rem + 1.54vw, 2.55rem);
 }
 
 .tagline {
@@ -46,11 +64,24 @@
 }
 
 /* Wraps rather than overflowing when the two actions cannot sit side by side. */
-/* Holds the glossary term and the punctuation after it together. The term is an
-   inline-block and therefore unbreakable, so without this a following comma can
-   wrap to the start of the next line on its own. */
+/*
+ * Holds the glossary term and the punctuation after it together. The term is an
+ * inline-block and therefore unbreakable, so without this a following comma can
+ * wrap to the start of the next line on its own.
+ *
+ * The reset on the child is not optional. `white-space` inherits, and the
+ * term's definition popup lives inside that child — so without this the
+ * definition rendered as a single unwrapped line spilling straight out of its
+ * own box, unreadable. Only the break *between* the term and its punctuation
+ * needs suppressing, and that break belongs to this element's inline context,
+ * so resetting the child costs nothing.
+ */
 .termGroup {
   white-space: nowrap;
+}
+
+.termGroup > * {
+  white-space: normal;
 }
 
 .actions {
@@ -103,7 +134,7 @@
   }
 
   .figureCol {
-    max-width: 560px;
+    max-width: 620px;
     margin-inline: auto;
   }
 }
@@ -122,12 +153,13 @@
   }
 }
 
-/* The illustration is kept at phone width — unlike the abstract network it
-   replaced, it carries the project's whole idea at a glance and is worth the
-   scroll. It sits below the actions, so the buttons are still reachable
-   without passing it. Detail holds down to roughly 300px wide. */
+/* Kept at phone width: it carries the project's whole idea at a glance and is
+   worth the scroll. It sits below the actions, so the buttons are reachable
+   without passing it. The decorative pylon and the twin outline are dropped
+   here — at this size they are noise rather than detail — while the buildings,
+   solar, EV, battery, heat pump, spine and grid link all remain. */
 @media (max-width: 520px) {
   .figureCol {
-    max-width: 420px;
+    max-width: 460px;
   }
 }

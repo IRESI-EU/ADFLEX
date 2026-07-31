@@ -76,7 +76,7 @@ Three decisions worth knowing:
 | `AwaitingContent` | Body for a route that exists but has no approved content yet — News & Events. States plainly that nothing is published rather than showing sample entries. |
 | `LegalDocument` | Renders one legal document from structured blocks. Handles the draft notice, headings, lists and the cookies table, and does the narrow email/URL linking. See *The legal pages*. |
 | `FigureBand` | The at-a-glance figures between the About glimpse and Technologies. Marked up as a `dl`. Every number restates something already written elsewhere — see *Motion and figures*. |
-| `HeroTwin` | The hero illustration — a community building, its energy assets, and its digital twin, linked through a Digital Spine hub. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
+| `HeroEnergyCommunity` | The hero illustration — an isometric energy community: a community building, two homes, solar, EV and charger, heat pump, battery, smart meter, grid link, and a Digital Spine hub. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
 | `MotionScript` | Inline script adding `adflex-js` before first paint, so the reveal styles are safe. Not a visual component. |
 | `RevealObserver` | One IntersectionObserver for every `[data-reveal]` on the page. Mounted once in the root layout. |
 | `ContactForm` | Contact form template. **Every control is `disabled`** — there is no backend, and a form that silently discards messages is worse than no form. |
@@ -333,32 +333,47 @@ not use motion to carry meaning: it is all decorative, which is what makes turni
 
 ### The hero illustration
 
-`HeroTwin`, added 31 July 2026, replacing an abstract node network that said
-nothing specific about the project.
+`HeroEnergyCommunity`, 31 July 2026. It replaced an abstract node network, and
+then a building-plus-digital-twin split, neither of which said anything specific
+about what ADFLEX does.
 
-**The twin is the same shape as the building, by construction.** Both are a
-`<use>` of one `<g id="adflex-mass">`. Keeping them as two drawings would let the
-silhouettes drift apart over time, and a digital twin whose geometry does not
-match its building is a picture that contradicts itself. The twin adds only a
-wireframe, a scan band, and an echo of the solar array — all at the same
-transform.
+**The geometry is computed, not drawn.** Every solid is projected from real
+(x, y, z) coordinates through one `iso()` function, and every face comes from
+`boxFaces()` or `gableRoof()`. Hand-authoring isometric path data means each
+shape carries its own idea of where the horizon is and they drift apart — which
+is exactly what makes an illustration read as a pile of unrelated icons rather
+than as one scene. Because the projection is shared, depth sorting is also free:
+painter's order is ascending `x + y`, since both axes run toward the viewer.
 
-Two flows are distinguished the way the supplied system diagram does it: dotted
-teal for data and control, warm gold for power. **Nothing is labelled inside the
-artwork** — it is decorative and `aria-hidden`, and the supplied diagram below it
-is what carries the content.
+To move something, change its entry in the layout table near the top of the file
+and the whole scene stays consistent — including the flow paths, which anchor to
+projected points on real solids rather than to guessed screen coordinates.
+
+**Two flow languages**, the same distinction the supplied system diagram makes:
+warm gold for power, dotted teal for data and control. Each energy path is drawn
+twice — a quiet solid line plus a brighter travelling pulse — because one dashed
+path cannot be both: the dash pattern that makes a pulse travel also erases the
+line it travels along.
+
+**Nothing is labelled inside the artwork.** It is decorative and `aria-hidden`,
+and the supplied system diagram below it is what carries the content.
 
 Colours come from `--adflex-illus-*`, a palette kept separate from the semantic
-tokens. The physical side is drawn in navy rather than the site's ink, which is a
-near-black green and reads heavy at line weight.
+tokens.
 
-**One trap worth knowing.** The clip path that confines the wireframe and scan
-band repeats its shapes rather than using `<use href="#adflex-mass">`. A clip path
-may only contain shapes, text, and `<use>` of a *shape* — a `<use>` of a group
-resolves to an empty clip, and browsers then silently discard everything inside
-rather than failing visibly. That is exactly what happened first time: the twin
-rendered as a plain box with no wireframe at all, and nothing in the build or the
-console said so.
+**Two traps worth knowing**, both found by looking at the render rather than from
+any build error:
+
+- A **clip path may only contain shapes, text, and `<use>` of a *shape***. A
+  `<use>` of a group resolves to an empty clip and browsers then silently discard
+  everything inside it. In the previous hero that left a wireframe completely
+  missing with nothing reported anywhere.
+- A grid item with `margin-inline: auto` **stops stretching and is sized
+  shrink-to-fit**. A child SVG at `width: 100%` of that is circular, so the
+  browser falls back to the CSS default replaced-element size — 300px. The hero
+  illustration silently rendered at 300px on every tablet and phone, with a
+  `max-width` of 560px sitting on it doing nothing. `.figureCol` now declares
+  `width: 100%` alongside the auto margins; that is load-bearing, not redundant.
 
 **The figures band.** `FigureBand` shows four numbers between the About glimpse and Technologies.
 Every one restates a fact already written elsewhere in `src/content/adflex.ts`, and each entry

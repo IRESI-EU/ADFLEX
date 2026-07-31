@@ -98,21 +98,22 @@
   --adflex-band-bloom-b: rgba(138, 164, 188, 0.13);
 
   /* --- Hero illustration ------------------------------------------------ */
-  /* Used only by `HeroTwin`. Kept as tokens rather than literals inside the
-     SVG so the illustration can be retuned in one place, and so it is obvious
-     that these are a separate, deliberate palette rather than semantic colours
-     leaking into artwork.
+  /* Used only by `HeroEnergyCommunity`. Kept as tokens rather than literals
+     inside the SVG so the illustration can be retuned in one place, and so it
+     is obvious that these are a separate, deliberate palette rather than
+     semantic colours leaking into artwork.
 
-     The physical side is drawn in a deep navy that is not the site's ink: text
-     ink is a near-black green, and line art at that value reads heavy. Navy
-     keeps the drawing technical rather than editorial. */
+     Line work is a deep navy rather than the site's ink: text ink is a
+     near-black green, and at line weight it reads heavy. Navy keeps the drawing
+     technical rather than editorial. */
   --adflex-illus-ink: #17384f;
   --adflex-illus-ink-soft: rgba(23, 56, 79, 0.42);
   --adflex-illus-panel: #e8f2ef;
   --adflex-illus-panel-deep: #cfe4de;
   --adflex-illus-surface: #ffffff;
-  /* The digital twin. Misty blue-cyan, deliberately cooler and lighter than the
-     brand green so the two halves read as different states of one thing. */
+  /* Digital elements — glazing, screens, and the twin outline behind the
+     community building. Misty blue-cyan, deliberately cooler and lighter than
+     the brand green so digital reads as distinct from physical. */
   --adflex-illus-twin: #5aa6c4;
   --adflex-illus-twin-soft: rgba(90, 166, 196, 0.16);
   --adflex-illus-twin-faint: rgba(90, 166, 196, 0.4);
