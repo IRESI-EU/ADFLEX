@@ -98,7 +98,7 @@
   --adflex-band-bloom-b: rgba(138, 164, 188, 0.13);
 
   /* --- Hero illustration ------------------------------------------------ */
-  /* Used only by `HeroEnergyCommunity`. Kept as tokens rather than literals
+  /* Used only by `HeroEnergyRibbon`. Kept as tokens rather than literals
      inside the SVG so the illustration can be retuned in one place, and so it
      is obvious that these are a separate, deliberate palette rather than
      semantic colours leaking into artwork.

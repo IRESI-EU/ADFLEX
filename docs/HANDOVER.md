@@ -76,7 +76,7 @@ Three decisions worth knowing:
 | `AwaitingContent` | Body for a route that exists but has no approved content yet — News & Events. States plainly that nothing is published rather than showing sample entries. |
 | `LegalDocument` | Renders one legal document from structured blocks. Handles the draft notice, headings, lists and the cookies table, and does the narrow email/URL linking. See *The legal pages*. |
 | `FigureBand` | The at-a-glance figures between the About glimpse and Technologies. Marked up as a `dl`. Every number restates something already written elsewhere — see *Motion and figures*. |
-| `HeroEnergyCommunity` | The hero illustration — an isometric energy community: a community building, two homes, solar, EV and charger, heat pump, battery, smart meter, grid link, and a Digital Spine hub. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
+| `HeroEnergyRibbon` | The hero illustration — a minimal energy ribbon sweeping past a home and a community building, carrying the Digital Spine hub at its crest, over solar, a battery, a charge point and an EV, to an abstract grid terminal. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
 | `MotionScript` | Inline script adding `adflex-js` before first paint, so the reveal styles are safe. Not a visual component. |
 | `RevealObserver` | One IntersectionObserver for every `[data-reveal]` on the page. Mounted once in the root layout. |
 | `ContactForm` | Contact form template. **Every control is `disabled`** — there is no backend, and a form that silently discards messages is worse than no form. |
@@ -333,27 +333,32 @@ not use motion to carry meaning: it is all decorative, which is what makes turni
 
 ### The hero illustration
 
-`HeroEnergyCommunity`, 31 July 2026. It replaced an abstract node network, and
-then a building-plus-digital-twin split, neither of which said anything specific
-about what ADFLEX does.
+`HeroEnergyRibbon`, 31 July 2026 — the fourth hero, and the one that stopped
+trying to explain the whole system in a picture. It replaced an abstract node
+network, then a building-and-digital-twin split, then a full isometric community.
+Each was more complete than the last and each read more like an engineering
+diagram than a hero.
 
-**The geometry is computed, not drawn.** Every solid is projected from real
-(x, y, z) coordinates through one `iso()` function, and every face comes from
-`boxFaces()` or `gableRoof()`. Hand-authoring isometric path data means each
-shape carries its own idea of where the horizon is and they drift apart — which
-is exactly what makes an illustration read as a pile of unrelated icons rather
-than as one scene. Because the projection is shared, depth sorting is also free:
-painter's order is ascending `x + y`, since both axes run toward the viewer.
+**The ribbon is the idea.** One continuous teal curve rises past a home, passes
+*behind* the community building, carries the Digital Spine hub at its crest, and
+settles at an abstract terminal node standing in for the grid. Beneath it sit
+only the things the project coordinates: rooftop solar, a battery, a charge point
+and an EV.
 
-To move something, change its entry in the layout table near the top of the file
-and the whole scene stays consistent — including the flow paths, which anchor to
-projected points on real solids rather than to guessed screen coordinates.
+**The occlusion is doing the work.** Drawn in front, the ribbon reads as a line
+laid over a picture. Drawn behind, it vanishes at one edge of the building and
+re-emerges at the other, which is what makes it read as flowing *through* the
+scene — and it is the whole reason the composition holds together with no
+connector lines at all. Resist adding them.
 
-**Two flow languages**, the same distinction the supplied system diagram makes:
-warm gold for power, dotted teal for data and control. Each energy path is drawn
-twice — a quiet solid line plus a brighter travelling pulse — because one dashed
-path cannot be both: the dash pattern that makes a pulse travel also erases the
-line it travels along.
+**One path, three strokes.** The band, its lighter sheen and the travelling pulse
+all use the same `RIBBON` constant. Sharing it is what keeps them registered;
+giving any one its own copy is the usual way a layered stroke effect drifts. The
+hub sits on an on-curve point of that same path, so it cannot float off it.
+
+The pulse is a short dash against a very long gap so exactly one travels, and it
+rests between passes — a continuous stream reads as traffic rather than as a
+single considered pulse.
 
 **Nothing is labelled inside the artwork.** It is decorative and `aria-hidden`,
 and the supplied system diagram below it is what carries the content.

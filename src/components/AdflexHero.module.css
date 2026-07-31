@@ -4,14 +4,14 @@
   scroll-margin-top: calc(var(--adflex-header-height) + var(--adflex-space-4));
 }
 
-/* Copy left at ~54%, illustration right at ~46%. The illustration is the
-   flagship image on the site and needs real width to hold its detail; the
-   headline is 100 characters and needs enough measure not to shatter. The
-   balance is struck by capping the headline's own size below the global
-   `--adflex-text-3xl` rather than by starving either column. */
+/* Copy left at ~51%, illustration right at ~49%. The ribbon is a horizontal
+   composition, so it needs width more than height to carry weight; at a
+   narrower share it floated as a small vignette in a tall empty column. The
+   headline is capped below the global `--adflex-text-3xl` to pay for that,
+   which also keeps the whole hero shorter. */
 .split {
   display: grid;
-  grid-template-columns: minmax(0, 1.17fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   gap: var(--adflex-space-6);
   align-items: center;
 }
@@ -51,8 +51,8 @@
  * column is only ~505px — without that taper 1024 also went to six.
  */
 .headline {
-  max-width: 27ch;
-  font-size: clamp(1.9rem, 1.17rem + 1.54vw, 2.55rem);
+  max-width: 28ch;
+  font-size: clamp(1.85rem, 1.1rem + 1.46vw, 2.4rem);
 }
 
 .tagline {

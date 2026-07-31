@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { HeroContent } from "@/content/adflex";
-import { HeroEnergyCommunity } from "./HeroEnergyCommunity";
+import { HeroEnergyRibbon } from "./HeroEnergyRibbon";
 import { GlossaryTerm } from "./GlossaryTerm";
 import { NavLink } from "./NavLink";
 import styles from "./AdflexHero.module.css";
@@ -132,7 +132,7 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
           data-reveal=""
           style={{ "--adflex-reveal-delay": "160ms" } as React.CSSProperties}
         >
-          <HeroEnergyCommunity />
+          <HeroEnergyRibbon />
         </div>
       </div>
 
