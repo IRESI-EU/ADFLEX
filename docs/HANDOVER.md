@@ -76,7 +76,7 @@ Three decisions worth knowing:
 | `AwaitingContent` | Body for a route that exists but has no approved content yet — News & Events. States plainly that nothing is published rather than showing sample entries. |
 | `LegalDocument` | Renders one legal document from structured blocks. Handles the draft notice, headings, lists and the cookies table, and does the narrow email/URL linking. See *The legal pages*. |
 | `FigureBand` | The at-a-glance figures between the About glimpse and Technologies. Marked up as a `dl`. Every number restates something already written elsewhere — see *Motion and figures*. |
-| `HeroSignature` | The hero illustration — the ADFLEX signature sculpture, rebuilt from the brand mark's own vocabulary (disc, leaf, open ring, bolt) with the project's subjects folded into those forms. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
+| `HeroCommunity` | The hero illustration — a small energy community with one shared arc of energy passing over it. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
 | `MotionScript` | Inline script adding `adflex-js` before first paint, so the reveal styles are safe. Not a visual component. |
 | `RevealObserver` | One IntersectionObserver for every `[data-reveal]` on the page. Mounted once in the root layout. |
 | `ContactForm` | Contact form template. **Every control is `disabled`** — there is no backend, and a form that silently discards messages is worse than no form. |
@@ -333,63 +333,73 @@ not use motion to carry meaning: it is all decorative, which is what makes turni
 
 ### The hero illustration
 
-`HeroSignature`, 31 July 2026 — the fifth hero, and the one that stopped drawing
-a scene at all. It replaced an abstract node network, then a
-building-and-digital-twin split, then a full isometric community, then a minimal
-energy ribbon. Each was more complete than the last and each read more like an
-engineering diagram than a hero. The pattern is worth naming, because the next
-person will feel the same pull: **the hero's job is to say whose site this is, not
-to explain the system.** The supplied system diagram sits directly below it and
-does the explaining.
+`HeroCommunity`, 31 July 2026 — the sixth hero. Read that number before changing
+it, because it is the most useful thing in this section.
 
-**It is the brand mark rebuilt, not enlarged.** The ADFLEX logo is a teal disc, a
-leaf with a light vein, an open blue-grey ring and a gold bolt. The sculpture
-reconstructs that vocabulary at hero scale from paths of its own, so it can carry
-detail an SVG logo scaled up never could. Do not swap it for the logo file.
+The five before it were an abstract node network, a building-and-digital-twin
+split, a full isometric community, a minimal energy ribbon and a brand-derived
+sculpture. Each was more complete or more clever than the last, and every one was
+rejected for the same reason: **the hero's job is to say what the project is
+about and look calm doing it, not to explain the system.** The supplied system
+diagram sits directly below and does the explaining. The pull to make this one
+say more will be strong. It is the wrong instinct, and it has now been wrong five
+times.
 
-**The project's subjects are folded into the forms**, not scattered around them
-as icons:
+**Six things, and nothing else:**
 
-| Cue | Where it lives |
+| Cue | Shape |
 | --- | --- |
-| Renewables, rooftop solar | The leaf, with a fine array texture clipped inside the blade |
-| The community and its buildings | A skyline carved into the base of the disc |
-| Energy, flexibility, charging | The bolt |
-| The Digital Spine coordinating it | The open ring and the node sitting on it |
-| Storage | The capsule further round the ring |
+| The homes taking part | A house, with a solar panel on the pitch |
+| The community around them | Two buildings beside it |
+| Energy shared across the community | One arc passing over all three |
+| The Digital Spine coordinating it | One point sitting on that arc |
+| Flexibility actually moving | One light travelling along it |
+| Somewhere for it all to stand | A ground line |
 
-Every cue is a facet of a shape that was going to be there anyway. That is what
-keeps it an emblem. Adding a labelled icon, a connector line or a caption inside
-the artwork turns it straight back into the diagram four heroes already failed to
-be.
+The arc does not touch a building and there are no connector lines. That is
+deliberate: it passes *over* the community rather than wiring it together, which
+is the whole difference between an illustration and a schematic. Do not add
+connectors, labels, arrows or a legend.
 
-**The ring is one dashed circle, not an arc path.** `pathLength={100}` normalises
-the circumference so the dash values read as percentages and survive a radius
-change. It is drawn from 300° clockwise for 65%, leaving the upper left open
-beneath the leaf, exactly as the mark leaves it. Both markers are positioned by
-`onRing()` from the same constants — **and both must land on the drawn 65%.**
-Placed in the gap, a marker has no ring beneath it and reads as a stray object
-floating beside the emblem, which is what happened first time.
+**It is wide and shallow on purpose** — 560 × 300. It sits beside the copy at
+desktop width and above the fold on a phone, and a tall illustration in that slot
+pushes the hero down by most of a screen. The previous hero was near-square and
+stood the tablet hero at 1725px; this one brings it to 1451px.
 
-**The sculpture itself never moves.** Three things animate, all slowly and all
-inside `prefers-reduced-motion: no-preference`: the halo breathes, the node
-pulses, and a faint sheen drifts along the ring. A rotating or bobbing emblem
-reads as a loading spinner.
+**One path, three strokes.** The `ARC` constant is shared by the visible stroke,
+the faint echo above it and the travelling light, so the three cannot drift out
+of register. Giving any one of them its own copy is the usual way a layered
+stroke effect breaks. The travelling light is a second copy rather than a dash
+pattern on the first, because one path cannot be both a continuous line and a
+moving pulse.
 
-**Nothing is labelled inside the artwork.** It is decorative and `aria-hidden`,
-with no client-side JavaScript.
+The light's gap is three times the path length, which is what leaves exactly one
+light on the arc and a long pause between passes — a continuous stream reads as
+traffic rather than as something being coordinated. Its resting offset parks it
+past the end of the arc, so reduced motion shows a clean curve rather than a
+stray dot.
 
-Its greens, slate and gold come straight from the brand tokens; only white and
-the illustration ink come from `--adflex-illus-*`.
+**Both animations are behind `prefers-reduced-motion: no-preference`**, and the
+node's ping is timed against the travel rather than guessed: the light is halfway
+along the arc at 18% of the sweep, which is where the ping fires.
 
-**Three traps worth knowing**, all found by looking at the render rather than from
+Its greens, slate and gold come from the brand tokens; only white and the
+illustration ink come from `--adflex-illus-*`.
+
+**Four traps worth knowing**, all found by looking at the render rather than from
 any build error:
 
-- The skyline is **carved by a clip on the disc**, not laid over it, and its
-  opacity is doing real work. At a third of the current value it was invisible
-  against the disc's own shading, so the built-environment cue was simply absent
-  while the code that drew it looked entirely correct.
-
+- **A horizontal path has a zero-height bounding box**, so the default
+  `objectBoundingBox` gradient on it never resolves and the stroke renders
+  completely invisible, with nothing reported anywhere. The ground line needs
+  `gradientUnits="userSpaceOnUse"`. Without the ground line the three buildings
+  read as rounded cards floating in space, which is exactly how it first looked.
+- **`rx` on a `<rect>` rounds all four corners.** A rounded bottom edge is what
+  makes a shape read as a card lying on a surface rather than a building standing
+  on one. The `block()` helper exists only to round the top two.
+- **A CSS `scale()` on an SVG element scales about the viewBox origin**, not the
+  element. `transform-box: fill-box` on `.nodePulse` is what keeps the ring
+  growing in place instead of being thrown across the drawing.
 - A **clip path may only contain shapes, text, and `<use>` of a *shape***. A
   `<use>` of a group resolves to an empty clip and browsers then silently discard
   everything inside it. In the previous hero that left a wireframe completely

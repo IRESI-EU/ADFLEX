@@ -4,11 +4,11 @@
   scroll-margin-top: calc(var(--adflex-header-height) + var(--adflex-space-4));
 }
 
-/* Copy left at ~51%, illustration right at ~49%. The sculpture is close to
-   square and is the strongest thing on the page, so it needs a near-equal share
-   to hold its own; at a narrower share it sat as a small vignette in a tall
-   empty column. The headline is capped below the global `--adflex-text-3xl` to
-   pay for that, which also keeps the whole hero shorter. */
+/* Copy left at ~51%, illustration right at ~49%. The illustration is a wide,
+   shallow composition, so width is what gives it presence — at a narrower share
+   it shrinks in both directions at once and becomes a thumbnail. The headline
+   is capped below the global `--adflex-text-3xl` to pay for that, which also
+   keeps the whole hero shorter. */
 .split {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
@@ -133,11 +133,11 @@
     max-width: 56ch;
   }
 
-  /* Capped tighter than the desktop column allows. The sculpture is close to
-     square, so at full tablet width it stood 574px tall and pushed the hero to
-     1725px — a screen and a half before anything else. */
+  /* Capped only so it does not run the full width of a tablet on its own. It
+     can afford to be generous here: at 560px it is still just 300px tall, which
+     is the point of a wide composition in this slot. */
   .figureCol {
-    max-width: 470px;
+    max-width: 560px;
     margin-inline: auto;
   }
 }
@@ -156,12 +156,6 @@
   }
 }
 
-/* Kept at phone width, and kept whole: it is the brand mark, so a phone visitor
-   seeing a reduced version of it would be seeing a different emblem. It sits
-   below the actions, so the buttons are reachable without passing it. Capped
-   again here only so it does not fill the viewport on its own. */
-@media (max-width: 520px) {
-  .figureCol {
-    max-width: 380px;
-  }
-}
+/* No cap at phone width. The composition is wide and shallow, so at 358px it is
+   only ~190px tall — capping it further would shrink it for no gain. It sits
+   below the actions, so the buttons are reachable without scrolling past it. */

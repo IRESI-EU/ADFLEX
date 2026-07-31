@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { HeroContent } from "@/content/adflex";
-import { HeroSignature } from "./HeroSignature";
+import { HeroCommunity } from "./HeroCommunity";
 import { GlossaryTerm } from "./GlossaryTerm";
 import { NavLink } from "./NavLink";
 import styles from "./AdflexHero.module.css";
@@ -35,15 +35,15 @@ function splitTagline(tagline: string, term: string) {
 }
 
 /**
- * Hero: copy and call to action on the left, a decorative energy network on the
+ * Hero: copy and call to action on the left, a decorative illustration on the
  * right, then the full-width project diagram with its caption below.
  *
  * Split rather than a single left column: at desktop width the text measure
  * tops out around 24ch, which left the right-hand half of the band empty. The
- * network fills it with the project's own motif — a coordinating hub with
- * assets around it — without duplicating anything the diagram already says. It
- * is decorative and hidden from assistive technology; the supplied diagram
- * underneath is the one that carries the content.
+ * illustration fills it with a small energy community and one shared arc of
+ * energy passing over it, without duplicating anything the diagram already
+ * says. It is decorative and hidden from assistive technology; the supplied
+ * diagram underneath is the one that carries the content.
  *
  * The standalone logo is deliberately not repeated here — it is already in the
  * header and inside the diagram itself.
@@ -132,7 +132,7 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
           data-reveal=""
           style={{ "--adflex-reveal-delay": "160ms" } as React.CSSProperties}
         >
-          <HeroSignature />
+          <HeroCommunity />
         </div>
       </div>
 

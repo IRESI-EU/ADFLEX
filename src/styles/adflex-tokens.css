@@ -98,17 +98,16 @@
   --adflex-band-bloom-b: rgba(138, 164, 188, 0.13);
 
   /* --- Hero illustration ------------------------------------------------ */
-  /* Used only by `HeroSignature`. Kept as tokens rather than literals inside
+  /* Used only by `HeroCommunity`. Kept as tokens rather than literals inside
      the SVG so the illustration can be retuned in one place, and so it is
      obvious that these are a separate, deliberate palette rather than semantic
      colours leaking into artwork.
 
      This list was eleven tokens while the hero was a line drawing of a whole
-     scene — panels, glazing, twin outlines, flow lines. The signature sculpture
-     is built from the brand mark's own forms and takes its greens, slate and
-     gold straight from the brand tokens, so only these two are left. Do not
-     restore the others speculatively; add what a new illustration actually
-     uses. */
+     scene — panels, glazing, twin outlines, flow lines. The current one takes
+     its greens, slate and gold straight from the brand tokens, so only these
+     two are left. Do not restore the others speculatively; add what a new
+     illustration actually uses. */
   --adflex-illus-surface: #ffffff;
   /* Line and fill work that must not be the site's text ink: text ink is a
      near-black green, and at illustration weight it reads heavy. */
