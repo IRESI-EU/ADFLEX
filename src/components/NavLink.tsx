@@ -14,10 +14,25 @@ type NavLinkProps = {
  * Small internal helper shared by the header and footer — not a UI-library
  * component.
  *
- * Same-page anchors stay a plain `<a>`, so the browser handles the jump and the
- * `scroll-behavior` / `prefers-reduced-motion` rules in globals.css still apply.
- * Anything else is a real route, so it uses `next/link` for client navigation
- * and prefetching.
+ * **Anything with a fragment in it stays a plain `<a>`.** Only fragment-less
+ * routes go through `next/link`.
+ *
+ * Two reasons, and the second is a real bug rather than a preference:
+ *
+ * 1. For a same-page anchor the browser handles the jump, so the
+ *    `scroll-behavior` and `prefers-reduced-motion` rules in globals.css still
+ *    apply.
+ * 2. For a cross-route anchor — `/#technologies` from `/about`, which is what
+ *    `resolveNavigation` produces off the home page — `next/link` **appends**
+ *    the fragment instead of replacing it if a previous client navigation
+ *    commits between two clicks. Clicking Technologies and then Home about
+ *    300ms apart landed on `/#technologies#home`. Faster than that and both
+ *    clicks queue before the first commits, so last-one-wins hides it; that is
+ *    why it looks intermittent. A plain `<a>` is a normal browser navigation
+ *    and the URL is always exactly the href.
+ *
+ * The cost is a full page load when jumping from a sub-page into a home-page
+ * section, which is the correct trade for a URL that cannot come out wrong.
  */
 export function NavLink({
   href,
@@ -26,7 +41,7 @@ export function NavLink({
   "aria-current": ariaCurrent,
   children,
 }: NavLinkProps) {
-  if (href.startsWith("#")) {
+  if (href.includes("#")) {
     return (
       <a
         className={className}

@@ -80,7 +80,7 @@ Three decisions worth knowing:
 | `RevealObserver` | One IntersectionObserver for every `[data-reveal]` on the page. Mounted once in the root layout. |
 | `ContactForm` | Contact form template. **Every control is `disabled`** — there is no backend, and a form that silently discards messages is worse than no form. |
 | `PageHero` | Opening emphasis band for the simple routes — About, Contact, Project Outputs. Carries the page's single `h1`. Shared so the three cannot drift apart, and a band rather than the plain page colour so a visitor landing on a sub-page arrives in the same site rather than on a blank white page. |
-| `NavLink` | Small internal helper, not a UI-library component. Renders a plain `<a>` for same-page anchors so the browser's scroll behaviour and the reduced-motion rules still apply, and `next/link` for real routes. Shared by the header and footer. |
+| `NavLink` | Small internal helper, not a UI-library component. Renders a plain `<a>` for **any href containing a fragment** and `next/link` only for fragment-less routes. Shared by the header and footer. The fragment rule is load-bearing — see *Why anchors are never `next/link`*. |
 
 Shared interactive styles are CSS classes rather than components, because they are single
 elements: `.adflex-cta`, `.adflex-link`, `.adflex-tag`, `.adflex-tag-list`, `.adflex-container`
@@ -624,6 +624,33 @@ a route.
 anchors with `/` on every route other than the home page, so `#technologies` becomes
 `/#technologies` on `/contact` and `/design-system`. Without it, those links would silently do
 nothing.
+
+#### Why anchors are never `next/link`
+
+`NavLink` sends **any href containing a `#`** to a plain `<a>`, and only fragment-less routes to
+`next/link`. Do not "optimise" that back to client navigation.
+
+For a same-page anchor the reason is the obvious one: the browser does the jump, so the
+`scroll-behavior` and `prefers-reduced-motion` rules in globals.css still apply.
+
+For a cross-route anchor the reason is a bug. `resolveNavigation` produces `/#technologies` off
+the home page, which does not start with `#`, so it used to go through `next/link`. If a previous
+client navigation commits *between* two clicks, the App Router applies the second one by
+**appending** its fragment rather than replacing it:
+
+```
+/about  →  click Technologies  →  (~300ms)  →  click Home  →  /#technologies#home
+```
+
+Click faster and both navigations queue before the first commits, so last-one-wins hides it.
+That timing window is why it reads as intermittent, and it moved between 300ms and 350ms across
+two runs of the same test — it is a race, not a fixed threshold. A plain `<a>` is an ordinary
+browser navigation, so the URL is always exactly the href.
+
+The cost is a full page load when jumping from a sub-page into a home-page section. That is the
+right trade for a URL that cannot come out wrong. There is a repro harness in the notes for this
+change if the behaviour ever needs re-checking: load a sub-route, click a section link, wait
+~300ms, click another, and assert `location.href` contains one `#`.
 
 `SectionShell` applies `scroll-margin-top: calc(var(--adflex-header-height) + space)`. If you
 change the header height, change the token — do not hard-code a new offset.
