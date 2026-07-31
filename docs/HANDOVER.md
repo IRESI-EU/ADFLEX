@@ -76,7 +76,7 @@ Three decisions worth knowing:
 | `AwaitingContent` | Body for a route that exists but has no approved content yet — News & Events. States plainly that nothing is published rather than showing sample entries. |
 | `LegalDocument` | Renders one legal document from structured blocks. Handles the draft notice, headings, lists and the cookies table, and does the narrow email/URL linking. See *The legal pages*. |
 | `FigureBand` | The at-a-glance figures between the About glimpse and Technologies. Marked up as a `dl`. Every number restates something already written elsewhere — see *Motion and figures*. |
-| `HeroEnergyRibbon` | The hero illustration — a minimal energy ribbon sweeping past a home and a community building, carrying the Digital Spine hub at its crest, over solar, a battery, a charge point and an EV, to an abstract grid terminal. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
+| `HeroSignature` | The hero illustration — the ADFLEX signature sculpture, rebuilt from the brand mark's own vocabulary (disc, leaf, open ring, bolt) with the project's subjects folded into those forms. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
 | `MotionScript` | Inline script adding `adflex-js` before first paint, so the reveal styles are safe. Not a visual component. |
 | `RevealObserver` | One IntersectionObserver for every `[data-reveal]` on the page. Mounted once in the root layout. |
 | `ContactForm` | Contact form template. **Every control is `disabled`** — there is no backend, and a form that silently discards messages is worse than no form. |
@@ -333,41 +333,62 @@ not use motion to carry meaning: it is all decorative, which is what makes turni
 
 ### The hero illustration
 
-`HeroEnergyRibbon`, 31 July 2026 — the fourth hero, and the one that stopped
-trying to explain the whole system in a picture. It replaced an abstract node
-network, then a building-and-digital-twin split, then a full isometric community.
-Each was more complete than the last and each read more like an engineering
-diagram than a hero.
+`HeroSignature`, 31 July 2026 — the fifth hero, and the one that stopped drawing
+a scene at all. It replaced an abstract node network, then a
+building-and-digital-twin split, then a full isometric community, then a minimal
+energy ribbon. Each was more complete than the last and each read more like an
+engineering diagram than a hero. The pattern is worth naming, because the next
+person will feel the same pull: **the hero's job is to say whose site this is, not
+to explain the system.** The supplied system diagram sits directly below it and
+does the explaining.
 
-**The ribbon is the idea.** One continuous teal curve rises past a home, passes
-*behind* the community building, carries the Digital Spine hub at its crest, and
-settles at an abstract terminal node standing in for the grid. Beneath it sit
-only the things the project coordinates: rooftop solar, a battery, a charge point
-and an EV.
+**It is the brand mark rebuilt, not enlarged.** The ADFLEX logo is a teal disc, a
+leaf with a light vein, an open blue-grey ring and a gold bolt. The sculpture
+reconstructs that vocabulary at hero scale from paths of its own, so it can carry
+detail an SVG logo scaled up never could. Do not swap it for the logo file.
 
-**The occlusion is doing the work.** Drawn in front, the ribbon reads as a line
-laid over a picture. Drawn behind, it vanishes at one edge of the building and
-re-emerges at the other, which is what makes it read as flowing *through* the
-scene — and it is the whole reason the composition holds together with no
-connector lines at all. Resist adding them.
+**The project's subjects are folded into the forms**, not scattered around them
+as icons:
 
-**One path, three strokes.** The band, its lighter sheen and the travelling pulse
-all use the same `RIBBON` constant. Sharing it is what keeps them registered;
-giving any one its own copy is the usual way a layered stroke effect drifts. The
-hub sits on an on-curve point of that same path, so it cannot float off it.
+| Cue | Where it lives |
+| --- | --- |
+| Renewables, rooftop solar | The leaf, with a fine array texture clipped inside the blade |
+| The community and its buildings | A skyline carved into the base of the disc |
+| Energy, flexibility, charging | The bolt |
+| The Digital Spine coordinating it | The open ring and the node sitting on it |
+| Storage | The capsule further round the ring |
 
-The pulse is a short dash against a very long gap so exactly one travels, and it
-rests between passes — a continuous stream reads as traffic rather than as a
-single considered pulse.
+Every cue is a facet of a shape that was going to be there anyway. That is what
+keeps it an emblem. Adding a labelled icon, a connector line or a caption inside
+the artwork turns it straight back into the diagram four heroes already failed to
+be.
+
+**The ring is one dashed circle, not an arc path.** `pathLength={100}` normalises
+the circumference so the dash values read as percentages and survive a radius
+change. It is drawn from 300° clockwise for 65%, leaving the upper left open
+beneath the leaf, exactly as the mark leaves it. Both markers are positioned by
+`onRing()` from the same constants — **and both must land on the drawn 65%.**
+Placed in the gap, a marker has no ring beneath it and reads as a stray object
+floating beside the emblem, which is what happened first time.
+
+**The sculpture itself never moves.** Three things animate, all slowly and all
+inside `prefers-reduced-motion: no-preference`: the halo breathes, the node
+pulses, and a faint sheen drifts along the ring. A rotating or bobbing emblem
+reads as a loading spinner.
 
 **Nothing is labelled inside the artwork.** It is decorative and `aria-hidden`,
-and the supplied system diagram below it is what carries the content.
+with no client-side JavaScript.
 
-Colours come from `--adflex-illus-*`, a palette kept separate from the semantic
-tokens.
+Its greens, slate and gold come straight from the brand tokens; only white and
+the illustration ink come from `--adflex-illus-*`.
 
-**Two traps worth knowing**, both found by looking at the render rather than from
+**Three traps worth knowing**, all found by looking at the render rather than from
 any build error:
+
+- The skyline is **carved by a clip on the disc**, not laid over it, and its
+  opacity is doing real work. At a third of the current value it was invisible
+  against the disc's own shading, so the built-environment cue was simply absent
+  while the code that drew it looked entirely correct.
 
 - A **clip path may only contain shapes, text, and `<use>` of a *shape***. A
   `<use>` of a group resolves to an empty clip and browsers then silently discard

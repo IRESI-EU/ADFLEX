@@ -98,29 +98,21 @@
   --adflex-band-bloom-b: rgba(138, 164, 188, 0.13);
 
   /* --- Hero illustration ------------------------------------------------ */
-  /* Used only by `HeroEnergyRibbon`. Kept as tokens rather than literals
-     inside the SVG so the illustration can be retuned in one place, and so it
-     is obvious that these are a separate, deliberate palette rather than
-     semantic colours leaking into artwork.
+  /* Used only by `HeroSignature`. Kept as tokens rather than literals inside
+     the SVG so the illustration can be retuned in one place, and so it is
+     obvious that these are a separate, deliberate palette rather than semantic
+     colours leaking into artwork.
 
-     Line work is a deep navy rather than the site's ink: text ink is a
-     near-black green, and at line weight it reads heavy. Navy keeps the drawing
-     technical rather than editorial. */
-  --adflex-illus-ink: #17384f;
-  --adflex-illus-ink-soft: rgba(23, 56, 79, 0.42);
-  --adflex-illus-panel: #e8f2ef;
-  --adflex-illus-panel-deep: #cfe4de;
+     This list was eleven tokens while the hero was a line drawing of a whole
+     scene — panels, glazing, twin outlines, flow lines. The signature sculpture
+     is built from the brand mark's own forms and takes its greens, slate and
+     gold straight from the brand tokens, so only these two are left. Do not
+     restore the others speculatively; add what a new illustration actually
+     uses. */
   --adflex-illus-surface: #ffffff;
-  /* Digital elements — glazing, screens, and the twin outline behind the
-     community building. Misty blue-cyan, deliberately cooler and lighter than
-     the brand green so digital reads as distinct from physical. */
-  --adflex-illus-twin: #5aa6c4;
-  --adflex-illus-twin-soft: rgba(90, 166, 196, 0.16);
-  --adflex-illus-twin-faint: rgba(90, 166, 196, 0.4);
-  /* Energy flow. A muted gold, not the logo's bolt yellow: at line weight the
-     full-strength yellow vibrates against the mint ground. */
-  --adflex-illus-energy: #d69a2d;
-  --adflex-illus-energy-soft: rgba(214, 154, 45, 0.32);
+  /* Line and fill work that must not be the site's text ink: text ink is a
+     near-black green, and at illustration weight it reads heavy. */
+  --adflex-illus-ink: #17384f;
 
   /* --- Image grounds ---------------------------------------------------- */
   /* Several supplied assets are opaque or drawn for one ground only, so they
