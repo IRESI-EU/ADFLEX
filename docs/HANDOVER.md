@@ -75,6 +75,10 @@ Three decisions worth knowing:
 | `GlossaryTerm` | A term inside running text that reveals its definition. A real `<button>`, so it works by hover, focus and tap; the definition is always in the accessibility tree via `aria-describedby`. Client component. |
 | `AwaitingContent` | Body for a route that exists but has no approved content yet — News & Events. States plainly that nothing is published rather than showing sample entries. |
 | `LegalDocument` | Renders one legal document from structured blocks. Handles the draft notice, headings, lists and the cookies table, and does the narrow email/URL linking. See *The legal pages*. |
+| `FigureBand` | The at-a-glance figures between the About glimpse and Technologies. Marked up as a `dl`. Every number restates something already written elsewhere — see *Motion and figures*. |
+| `EnergyNetwork` | The hero's decorative SVG network. No JavaScript, `aria-hidden`, CSS-only motion. States nothing the copy does not. |
+| `MotionScript` | Inline script adding `adflex-js` before first paint, so the reveal styles are safe. Not a visual component. |
+| `RevealObserver` | One IntersectionObserver for every `[data-reveal]` on the page. Mounted once in the root layout. |
 | `ContactForm` | Contact form template. **Every control is `disabled`** — there is no backend, and a form that silently discards messages is worse than no form. |
 | `PageHero` | Opening emphasis band for the simple routes — About, Contact, Project Outputs. Carries the page's single `h1`. Shared so the three cannot drift apart, and a band rather than the plain page colour so a visitor landing on a sub-page arrives in the same site rather than on a blank white page. |
 | `NavLink` | Small internal helper, not a UI-library component. Renders a plain `<a>` for same-page anchors so the browser's scroll behaviour and the reduced-motion rules still apply, and `next/link` for real routes. Shared by the header and footer. |
@@ -300,6 +304,38 @@ If it is ever asked for a third time, two things are worth knowing up front:
 The token structure that made it cheap is still in place: fixed source values (`--adflex-l-*`)
 are separate from the semantic tokens that bind to them, so a whole palette can be rebound in one
 block.
+
+### Motion and figures
+
+Added 31 July 2026, when the team asked for a more considered UI.
+
+**The reveal system.** Anything with a `data-reveal` attribute lifts 16px and fades in as it
+enters the viewport. One `IntersectionObserver` in `RevealObserver` handles the whole document, so
+a server component only has to add a string to its markup — no part of the page tree becomes
+client-rendered in order to animate. Elements are revealed once and then unobserved.
+
+**Three guards, and why each exists.** A scroll-reveal system fails silently in exactly three
+ways, so each is closed deliberately:
+
+| Failure | Guard |
+| --- | --- |
+| JavaScript off, content stays hidden forever | Every hidden-state rule is gated on `:root.adflex-js`, which only `MotionScript` adds. No JS, nothing hidden. |
+| Reduced motion, content stays hidden or animates anyway | The whole block sits inside `prefers-reduced-motion: no-preference`, **and** the observer checks the query itself and marks everything shown without scheduling work. |
+| A flash of visible content before JS hides it | `MotionScript` runs during head parse, so the pre-reveal state is correct on the first frame. |
+
+All three were verified against the built site: with JavaScript disabled, 0 of 18 reveal elements
+are hidden; with reduced motion on, 0 are hidden and **0 elements have a running animation** — the
+site is genuinely still, not merely quicker.
+
+If you add a section, add `data-reveal=""` to it. Add `--adflex-reveal-delay` inline to stagger a
+group. Do not put anything in a revealed element that is the only place something is said, and do
+not use motion to carry meaning: it is all decorative, which is what makes turning it off safe.
+
+**The figures band.** `FigureBand` shows four numbers between the About glimpse and Technologies.
+Every one restates a fact already written elsewhere in `src/content/adflex.ts`, and each entry
+carries a `source` field naming where it came from. **That field is the rule, not documentation:**
+if a figure cannot be traced to approved copy, it does not belong in the band. It is a second,
+faster reading of approved facts — never a place to introduce a new one.
 
 ### Typography
 

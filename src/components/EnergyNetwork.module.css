@@ -1,0 +1,145 @@
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 520px;
+  margin-inline: auto;
+  /* The glow and the outer ring sit past the viewBox edge. */
+  overflow: visible;
+  /* Lets the figure read at the size the column allows: the nodes sit at ~85%
+     of the box, so without this the drawing looks smaller than its footprint. */
+  scale: 1.12;
+}
+
+/* --- Static appearance ------------------------------------------------
+   Everything below renders identically with motion off. The animations only
+   add movement to shapes that are already correct and visible. */
+
+.orbit {
+  transform-origin: 220px 220px;
+}
+
+.link {
+  stroke: var(--adflex-color-brand);
+  stroke-opacity: 0.45;
+  stroke-width: 1.6;
+}
+
+/* The travelling pulse. A short dash on a long gap, walked along the line by
+   animating the dash offset — so one bright segment appears to run from the hub
+   outward. With motion off it sits still at the hub end, which reads as a
+   highlight rather than as something broken. */
+.pulse {
+  stroke: var(--adflex-color-primary);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 16 320;
+  stroke-dashoffset: 0;
+  opacity: 0;
+}
+
+.nodeHalo {
+  fill: var(--adflex-color-brand);
+  fill-opacity: 0.18;
+}
+
+.nodeCore {
+  fill: var(--adflex-color-surface);
+  stroke: var(--adflex-color-brand);
+  stroke-width: 2.25;
+}
+
+.hubHalo {
+  fill: var(--adflex-color-brand);
+  fill-opacity: 0.14;
+}
+
+.hubRing {
+  fill: none;
+  stroke: var(--adflex-color-primary);
+  stroke-width: 1.5;
+  stroke-opacity: 0.5;
+}
+
+.hubCore {
+  fill: var(--adflex-color-primary);
+}
+
+/* --- Motion -----------------------------------------------------------
+   Opt-in only. Slow on purpose: this sits behind the headline for as long as
+   someone reads it, and anything quick would compete with the copy. */
+@media (prefers-reduced-motion: no-preference) {
+  .pulse {
+    animation: travel 5.2s linear infinite;
+  }
+
+  .node {
+    transform-origin: center;
+    animation: breathe 6s ease-in-out infinite;
+  }
+
+  .orbit {
+    animation: spin 90s linear infinite;
+  }
+
+  /* Counter-rotating, so the two rings never lock into looking like one solid
+     object turning. */
+  .orbitOuter {
+    animation-duration: 140s;
+    animation-direction: reverse;
+  }
+
+  .hubHalo {
+    transform-origin: 220px 220px;
+    animation: pulseHalo 4.5s ease-in-out infinite;
+  }
+}
+
+@keyframes travel {
+  0% {
+    stroke-dashoffset: 16;
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  55% {
+    opacity: 0.85;
+  }
+  70% {
+    stroke-dashoffset: -170;
+    opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: -170;
+    opacity: 0;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseHalo {
+  0%,
+  100% {
+    transform: scale(1);
+    fill-opacity: 0.1;
+  }
+  50% {
+    transform: scale(1.12);
+    fill-opacity: 0.16;
+  }
+}

@@ -78,6 +78,27 @@
   border-radius: var(--adflex-radius-md);
 }
 
+/* These are not links, so the response is deliberately quieter than the
+   technology cards': the edge picks up and the artwork settles, but nothing
+   lifts. A card that rises invites a click it cannot honour. */
+.asset:hover {
+  border-color: var(--adflex-color-border-strong);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .asset {
+    transition: border-color 200ms ease-out;
+  }
+
+  .assetImage {
+    transition: transform 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .asset:hover .assetImage {
+    transform: scale(1.04);
+  }
+}
+
 /* Fixed 3:2 frame matching the supplied 1536×1024 artwork, so the space is
    reserved before the image loads and nothing shifts. The placeholder is dark
    because these illustrations carry their own dark grounds — a light one would

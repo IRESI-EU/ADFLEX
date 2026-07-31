@@ -398,9 +398,22 @@ export const designSystemContent = {
       ],
     },
     {
+      title: "Motion",
+      items: [
+        "Content lifts 16px and fades in as it enters the viewport, over 420ms. Groups stagger 60 to 110ms apart so a section reads as heading-then-detail rather than everything landing at once.",
+        "One IntersectionObserver handles the whole document. Server components add a data-reveal attribute — a string in the markup — so no part of the page tree has to become client-rendered in order to animate.",
+        "Elements are revealed once and then unobserved. Content that has already been read should not fade out again on the way back up.",
+        "The hidden state is gated on an adflex-js class that an inline script adds during head parse. Without JavaScript nothing is ever hidden, so the page is a normal static page rather than a blank one; with it, the pre-reveal state is already correct on the first frame, so nothing flashes visible and then jumps.",
+        "The hero network is decorative SVG with CSS-only motion: pulses travel outward from the hub by animating a dash offset, and the orbit rings counter-rotate so they never look like one solid object turning. It is aria-hidden and states nothing the copy and the supplied diagram do not.",
+        "Hover responses are around 150 to 200ms; card artwork zooms under 4%, which is the point past which the illustrations start losing their edges.",
+        "Everything above is inside prefers-reduced-motion: no-preference, and the observer also checks the query directly so no work is scheduled at all when reduced motion is on.",
+      ],
+    },
+    {
       title: "Sticky header",
       items: [
-        "The header is position: sticky at top: 0 with z-index 50, on whichever surface the current theme binds. The logo inside it always keeps its own white plate, because the logo file is opaque.",
+        "The header is position: sticky at top: 0 with z-index 50. The logo inside it always keeps its own white plate, because the logo file is opaque.",
+        "Once the page has scrolled past 8px the bar tightens by 12px and gains a shadow. At the very top it sits flush on the hero band and needs no edge; with content running underneath, it does. The scroll listener is passive and reads through requestAnimationFrame, so it never does layout work in the scroll handler itself.",
         "Its height comes from --adflex-header-height, which is also what every anchored section uses for scroll-margin-top — change the token and both stay aligned.",
         "Below 1080px the navigation collapses behind a button with aria-expanded; above it, the full list is visible. That breakpoint is set by the item count — nine items wrap the header to double height by 1024px, so re-measure it if any are added.",
         "The link for the current route carries aria-current=\"page\" and is drawn with a green underline. The state is announced as well as shown — colour and a rule alone would leave it invisible to a screen reader.",
@@ -444,9 +457,9 @@ export const designSystemContent = {
       items: [
         "Every foreground and background pair was checked against WCAG AA in both themes before the palette was committed; the interaction green is darker than the logo green for exactly this reason.",
         "Yellow and pale blue-grey are decorative only and never carry small text on a light ground.",
-        "Dark mode is a genuine second palette, not a filter or an inversion. Nothing is dimmed with opacity, so text keeps its measured contrast rather than losing it to a blend.",
         "Nothing is communicated by colour alone: the diagram's red and blue arrow meanings are written out, and the empty state says so in words as well as with a dashed edge.",
-        "Smooth scrolling is opted into only under prefers-reduced-motion: no-preference. There is no other animation.",
+        "Every animation on the site sits inside prefers-reduced-motion: no-preference — smooth scrolling, the scroll reveals, the hero network, the card hovers and the header's condense. Switch reduced motion on and the site is entirely still.",
+        "Motion never carries meaning. Everything it does is decorative, so nothing is lost when it is off.",
         "Browser zoom is not disabled and no viewport scaling limits are set.",
       ],
     },

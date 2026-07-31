@@ -100,6 +100,44 @@ a {
   border-radius: var(--adflex-radius-sm);
 }
 
+/* Scroll reveal ----------------------------------------------------- */
+/*
+ * Anything with `data-reveal` starts slightly low and transparent, and settles
+ * as it enters the viewport. `RevealObserver` flips the attribute to
+ * `data-reveal="shown"`.
+ *
+ * Three guards, all deliberate:
+ *
+ *   `.adflex-js`                       nothing is hidden unless something is
+ *                                      there to reveal it
+ *   `prefers-reduced-motion`           the whole block is opt-in
+ *   `[data-reveal="shown"]` fallback   set directly by the observer when either
+ *                                      of the above does not hold
+ *
+ * The result is that with JavaScript off, or reduced motion on, the page is
+ * simply a normal static page — not a blank one.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :root.adflex-js [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    /* Staggered by a per-element delay, set inline where a group should arrive
+       in sequence rather than all at once. */
+    transition:
+      opacity 420ms cubic-bezier(0.22, 0.61, 0.36, 1) var(--adflex-reveal-delay, 0ms),
+      transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1) var(--adflex-reveal-delay, 0ms);
+    /* Hints the compositor for the one frame that matters, without leaving a
+       permanent layer behind. */
+    will-change: opacity, transform;
+  }
+
+  :root.adflex-js [data-reveal="shown"] {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+}
+
 /* Layout container -------------------------------------------------- */
 .adflex-container {
   width: 100%;

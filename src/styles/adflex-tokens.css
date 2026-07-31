@@ -92,6 +92,10 @@
   /* Tint used for the band's faint lattice texture. */
   --adflex-band-texture: rgba(8, 134, 122, 0.16);
   --adflex-band-seam: rgba(8, 134, 122, 0.35);
+  /* The two blooms layered over the band's flat fill. Kept very low: they are
+     depth, not decoration anyone should notice. */
+  --adflex-band-bloom-a: rgba(8, 134, 122, 0.09);
+  --adflex-band-bloom-b: rgba(138, 164, 188, 0.13);
 
   /* --- Image grounds ---------------------------------------------------- */
   /* Several supplied assets are opaque or drawn for one ground only, so they
@@ -202,6 +206,22 @@
 
   color: var(--adflex-color-text);
   background-color: var(--adflex-band-background);
+  /* Two wide blooms over the flat fill, giving the band a light direction
+     instead of one even tint. Deliberately far below the contrast of anything
+     readable: at these opacities it registers as depth, not as a shape. The
+     lattice texture sits above this on `.adflex-band::before`. */
+  background-image:
+    radial-gradient(
+      60rem 34rem at 8% -12%,
+      var(--adflex-band-bloom-a),
+      transparent 70%
+    ),
+    radial-gradient(
+      54rem 30rem at 94% 110%,
+      var(--adflex-band-bloom-b),
+      transparent 68%
+    );
+  background-repeat: no-repeat;
 }
 
 /*

@@ -62,7 +62,13 @@ export function SectionShell({
       <div
         className={`adflex-container ${layout === "split" ? styles.split : ""}`}
       >
-        <div className={layout === "split" ? styles.headSplit : styles.head}>
+        {/* The head reveals as one block and the content follows a beat later,
+            so a section reads as heading-then-detail rather than as everything
+            arriving at once. */}
+        <div
+          className={layout === "split" ? styles.headSplit : styles.head}
+          data-reveal=""
+        >
           {eyebrow ? <p className="adflex-eyebrow">{eyebrow}</p> : null}
           <h2 id={headingId} className={styles.title}>
             {title}
@@ -74,7 +80,13 @@ export function SectionShell({
             </p>
           ) : null}
         </div>
-        <div className={styles.content}>{children}</div>
+        <div
+          className={styles.content}
+          data-reveal=""
+          style={{ "--adflex-reveal-delay": "110ms" } as React.CSSProperties}
+        >
+          {children}
+        </div>
       </div>
     </section>
   );

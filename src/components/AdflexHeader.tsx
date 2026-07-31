@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { ImageAsset, NavigationItem } from "@/content/adflex";
@@ -38,7 +38,34 @@ export function AdflexHeader({
   navLabel = "Primary",
 }: AdflexHeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+
+  /**
+   * Condenses the header once the page has moved.
+   *
+   * At the top of a page the header sits on the hero band with no separation;
+   * once content scrolls underneath it needs an edge, or the logo and the copy
+   * behind it run together. Read through `requestAnimationFrame` so the scroll
+   * handler itself does no layout work, and `passive` so it never delays the
+   * scroll.
+   */
+  useEffect(() => {
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        setIsScrolled(window.scrollY > 8);
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
 
   /**
    * Which link represents the page you are on.
@@ -73,7 +100,9 @@ export function AdflexHeader({
   const isCollapsible = navigation.length > 0;
 
   return (
-    <header className={styles.header}>
+    <header
+      className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""}`}
+    >
       <div className={`adflex-container ${styles.inner}`}>
         <a className={styles.logoLink} href={homeHref}>
           <Image

@@ -77,7 +77,7 @@ src/
     design-system/
       page.tsx                   the design-system page (/design-system)
       design-system.module.css
-  components/                    the nine production components (one CSS module each)
+  components/                    the production components (one CSS module each)
   content/
     adflex.ts                    all ADFLEX project copy — single source of truth
     design-system.ts             explanatory copy for the design-system page
@@ -360,8 +360,14 @@ reproducing them out of context would mean building a second copy of the product
 WordPress or any CMS, a database, authentication, user accounts, an admin area, a backend or
 APIs, contact-form processing, newsletter integration, analytics, a cookie banner, multilingual
 support, a news or events system, search, dark mode, Storybook, a token generator, a separate
-design-system application, a UI component library, an external icon package, complex animation,
-video, social embeds, external stock imagery, deployment infrastructure and Docker.
+design-system application, a UI component library, an external icon package, an animation
+library, video, social embeds, external stock imagery, deployment infrastructure and Docker.
 
 None of these were requested for this release. See [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) for
 what is still undecided.
+
+**There is motion, but no animation dependency.** The scroll reveals, the hero network and the
+hover states are CSS plus one `IntersectionObserver` — no Framer Motion, no GSAP, nothing added to
+`package.json`. Everything sits behind `prefers-reduced-motion` and behind a JavaScript check, so
+the site degrades to a normal static page rather than a blank one. See the *Motion and figures*
+section of [docs/HANDOVER.md](docs/HANDOVER.md).

@@ -1,0 +1,96 @@
+.band {
+  padding-block: var(--adflex-space-7);
+  background: var(--adflex-color-surface);
+  border-block: 1px solid var(--adflex-color-border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--adflex-space-5);
+}
+
+/* A hairline between figures rather than boxes around them: four cards here
+   would repeat the card pattern used by every other section, and this band
+   works better as one continuous strip. */
+.item {
+  position: relative;
+  padding-left: var(--adflex-space-5);
+  border-left: 2px solid var(--adflex-color-border);
+}
+
+.item:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--adflex-space-2);
+  font-family: var(--adflex-font-display);
+  font-size: clamp(2.25rem, 1.6rem + 2.2vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: var(--adflex-tracking-tight);
+  color: var(--adflex-color-primary);
+  /* Stops "9,000" wrapping between the comma and the zeros. */
+  white-space: nowrap;
+}
+
+/* "around" — a qualifier, so it is set small and quiet rather than sharing the
+   weight of the number it qualifies. */
+.prefix {
+  font-family: var(--adflex-font-sans);
+  font-size: var(--adflex-text-sm);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--adflex-color-muted);
+}
+
+.label {
+  margin-top: var(--adflex-space-3);
+  font-size: var(--adflex-text-sm);
+  line-height: var(--adflex-leading-snug);
+  color: var(--adflex-color-muted);
+  text-wrap: pretty;
+}
+
+/* Two-up before the labels start wrapping to three lines each. */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--adflex-space-5) var(--adflex-space-4);
+  }
+
+  /* The rule belongs on the left edge of each row's second item, so it has to
+     be reset on every odd child rather than only on the first. */
+  .item:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .band {
+    padding-block: var(--adflex-space-6);
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Single column: a left rule on every item reads as a stray vertical line, so
+     the separation becomes horizontal instead. */
+  .item {
+    padding-left: 0;
+    padding-top: var(--adflex-space-4);
+    border-left: 0;
+    border-top: 1px solid var(--adflex-color-border);
+  }
+
+  .item:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+}

@@ -6,6 +6,7 @@ import { SectionShell } from "@/components/SectionShell";
 import { TechnologyCard } from "@/components/TechnologyCard";
 import { PartnerCard } from "@/components/PartnerCard";
 import { PilotSection } from "@/components/PilotSection";
+import { FigureBand } from "@/components/FigureBand";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import styles from "./home.module.css";
 
@@ -18,8 +19,16 @@ import styles from "./home.module.css";
  * `src/content/adflex.ts`. All copy comes from that file.
  */
 export default function HomePage() {
-  const { brand, navigation, hero, about, technologies, consortium, pilot } =
-    adflexContent;
+  const {
+    brand,
+    navigation,
+    hero,
+    about,
+    figures,
+    technologies,
+    consortium,
+    pilot,
+  } = adflexContent;
 
   const nav = resolveNavigation(navigation, { onHome: true });
   const aboutGlimpse = about.items.find((item) => item.id === about.home.itemId);
@@ -52,8 +61,11 @@ export default function HomePage() {
           </p>
         </SectionShell>
 
-        {/* Deep band: these four cards are led by dark imagery, so they sit in
-            the dark rather than as dark blocks on a light page. */}
+        {/* A fast second reading of facts already stated in prose above and
+            below. Sits here because it closes the "what is this" opening and
+            sets up the detail that follows. */}
+        <FigureBand figures={figures} />
+
         <SectionShell
           id="technologies"
           eyebrow="What we are building"

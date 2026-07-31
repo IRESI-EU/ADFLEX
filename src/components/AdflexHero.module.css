@@ -4,16 +4,37 @@
   scroll-margin-top: calc(var(--adflex-header-height) + var(--adflex-space-4));
 }
 
+/* Copy left, network right. The text column takes much the larger share: the
+   headline is 100 characters, and at an even split it broke to seven lines and
+   turned the hero into a wall. The graphic balances the band; it does not get
+   an equal half. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+  gap: var(--adflex-space-6);
+  align-items: center;
+}
+
+.copy {
+  min-width: 0;
+}
+
+.figureCol {
+  min-width: 0;
+}
+
 .tags {
   margin-bottom: var(--adflex-space-5);
 }
 
+/* Five lines at desktop width. Measured: 18ch gave seven, which read as a
+   block of text rather than as a headline. */
 .headline {
-  max-width: 24ch;
+  max-width: 23ch;
 }
 
 .tagline {
-  max-width: 56ch;
+  max-width: 46ch;
   margin-top: var(--adflex-space-5);
   font-size: var(--adflex-text-xl);
   line-height: var(--adflex-leading-snug);
@@ -25,7 +46,7 @@
 }
 
 .diagramWrap {
-  margin-top: var(--adflex-space-7);
+  margin-top: var(--adflex-space-8);
 }
 
 .figure {
@@ -49,6 +70,29 @@
   color: var(--adflex-color-muted);
 }
 
+/* One column below this width. The network moves under the copy rather than
+   beside it, at a reduced size — it is decorative, so it should never be the
+   reason someone has to scroll past to reach the text. */
+@media (max-width: 900px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--adflex-space-6);
+  }
+
+  .headline {
+    max-width: 22ch;
+  }
+
+  .tagline {
+    max-width: 56ch;
+  }
+
+  .figureCol {
+    max-width: 340px;
+    margin-inline: auto;
+  }
+}
+
 @media (max-width: 720px) {
   .hero {
     padding-block: var(--adflex-space-7);
@@ -60,5 +104,14 @@
 
   .diagram {
     border-radius: var(--adflex-radius-lg);
+  }
+}
+
+/* Below this the network is dropped entirely. At phone width the hero should be
+   headline, sentence, button — a decorative graphic between the copy and the
+   call to action only pushes the action further down. */
+@media (max-width: 520px) {
+  .figureCol {
+    display: none;
   }
 }

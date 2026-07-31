@@ -9,6 +9,27 @@
   background: var(--adflex-color-surface);
 }
 
+/* Once the page has moved, the bar tightens and lifts. At the top of a page it
+   sits flush on the hero band and needs no edge; with content running beneath
+   it, it does. */
+.headerScrolled {
+  box-shadow: var(--adflex-shadow-sm);
+}
+
+.headerScrolled .inner {
+  min-height: calc(var(--adflex-header-height) - 12px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .header {
+    transition: box-shadow 200ms ease-out;
+  }
+
+  .inner {
+    transition: min-height 200ms ease-out;
+  }
+}
+
 /* Brand rule along the bottom edge, mirroring the one across the top of the
    footer — together they bracket the page. Replaces a plain 1px border. */
 .header::after {
