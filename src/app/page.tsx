@@ -6,7 +6,6 @@ import { SectionShell } from "@/components/SectionShell";
 import { TechnologyCard } from "@/components/TechnologyCard";
 import { PartnerCard } from "@/components/PartnerCard";
 import { PilotSection } from "@/components/PilotSection";
-import { FigureBand } from "@/components/FigureBand";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import styles from "./home.module.css";
 
@@ -24,7 +23,6 @@ export default function HomePage() {
     navigation,
     hero,
     about,
-    figures,
     technologies,
     consortium,
     pilot,
@@ -60,11 +58,6 @@ export default function HomePage() {
             </Link>
           </p>
         </SectionShell>
-
-        {/* A fast second reading of facts already stated in prose above and
-            below. Sits here because it closes the "what is this" opening and
-            sets up the detail that follows. */}
-        <FigureBand figures={figures} />
 
         <SectionShell
           id="technologies"

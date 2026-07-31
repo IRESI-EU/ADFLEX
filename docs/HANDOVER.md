@@ -75,7 +75,6 @@ Three decisions worth knowing:
 | `GlossaryTerm` | A term inside running text that reveals its definition. A real `<button>`, so it works by hover, focus and tap; the definition is always in the accessibility tree via `aria-describedby`. Client component. |
 | `AwaitingContent` | Body for a route that exists but has no approved content yet — News & Events. States plainly that nothing is published rather than showing sample entries. |
 | `LegalDocument` | Renders one legal document from structured blocks. Handles the draft notice, headings, lists and the cookies table, and does the narrow email/URL linking. See *The legal pages*. |
-| `FigureBand` | The at-a-glance figures between the About glimpse and Technologies. Marked up as a `dl`. Every number restates something already written elsewhere — see *Motion and figures*. |
 | `HeroCommunity` | The hero illustration — a small energy community with one shared arc of energy passing over it. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
 | `MotionScript` | Inline script adding `adflex-js` before first paint, so the reveal styles are safe. Not a visual component. |
 | `RevealObserver` | One IntersectionObserver for every `[data-reveal]` on the page. Mounted once in the root layout. |
@@ -315,7 +314,7 @@ The token structure that made it cheap is still in place: fixed source values (`
 are separate from the semantic tokens that bind to them, so a whole palette can be rebound in one
 block.
 
-### Motion and figures
+### Motion
 
 Added 31 July 2026, when the team asked for a more considered UI.
 
@@ -421,11 +420,17 @@ any build error:
   `max-width` of 560px sitting on it doing nothing. `.figureCol` now declares
   `width: 100%` alongside the auto margins; that is load-bearing, not redundant.
 
-**The figures band.** `FigureBand` shows four numbers between the About glimpse and Technologies.
-Every one restates a fact already written elsewhere in `src/content/adflex.ts`, and each entry
-carries a `source` field naming where it came from. **That field is the rule, not documentation:**
-if a figure cannot be traced to approved copy, it does not belong in the band. It is a second,
-faster reading of approved facts — never a place to introduce a new one.
+**There is no figures band.** `FigureBand` showed four large numbers — 9,000 residents, 3
+partners, 4 building blocks, 7 assets — between the About glimpse and Technologies. It was
+removed at the client's request on 31 July 2026, along with its `Figure` type and its `figures`
+content. It was not wanted, not broken.
+
+If numbers are ever asked for again, the rule it was built under is the one worth keeping: every
+figure restated a fact already written elsewhere in `src/content/adflex.ts`, and each carried a
+`source` field naming where it came from. **That field was the rule, not documentation** — a
+figure that cannot be traced to approved copy does not belong on a publicly funded project site.
+`FigureText`, which gives one phrase in a paragraph typographic emphasis, is a different
+component and is still in use.
 
 ### Typography
 

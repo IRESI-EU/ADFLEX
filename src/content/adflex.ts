@@ -126,25 +126,6 @@ export type Partner = {
   logo?: ImageAsset;
 };
 
-/**
- * A single figure in the at-a-glance band.
- *
- * Every one of these must already be stated elsewhere in this file — the band
- * is a second presentation of approved facts, never a place to introduce a new
- * one. `source` records where each comes from so that stays checkable.
- */
-export type Figure = {
-  id: string;
-  /** The number itself, e.g. "9,000". Kept short: it is set very large. */
-  value: string;
-  /** Optional qualifier shown before the value, e.g. "around". */
-  prefix?: string;
-  /** What the number counts. */
-  label: string;
-  /** Where in the approved content this figure comes from. Not rendered. */
-  source: string;
-};
-
 export type ConsortiumContent = {
   title: string;
   intro: string;
@@ -285,18 +266,6 @@ export type AdflexContent = {
      */
     introFigure?: string;
     items: readonly Technology[];
-  };
-  /**
-   * At-a-glance figures, shown as a band between the About glimpse and the
-   * Technologies section.
-   *
-   * Presentation only: every figure restates something already approved and
-   * written elsewhere in this file. Do not add one that is not.
-   */
-  figures: {
-    /** Screen-reader name for the band's landmark. */
-    label: string;
-    items: readonly Figure[];
   };
   consortium: ConsortiumContent;
   pilot: PilotContent;
@@ -534,40 +503,6 @@ export const adflexContent = {
           width: 1672,
           height: 941,
         },
-      },
-    ],
-  },
-
-  // Presentation of facts already stated above, not new ones. `source` names
-  // where each came from so a reviewer can check it without hunting. If a
-  // figure cannot be traced to approved copy, it does not belong here.
-  figures: {
-    label: "ADFLEX at a glance",
-    items: [
-      {
-        id: "residents",
-        prefix: "around",
-        value: "9,000",
-        label: "residents in the pilot community",
-        source: "pilot.body — 'a community of around 9,000 residents'",
-      },
-      {
-        id: "partners",
-        value: "3",
-        label: "consortium partners",
-        source: "consortium.partners.length, and consortium.introFigure",
-      },
-      {
-        id: "technologies",
-        value: "4",
-        label: "building blocks being developed",
-        source: "technologies.items.length, and technologies.introFigure",
-      },
-      {
-        id: "assets",
-        value: "7",
-        label: "assets and programmes coordinated",
-        source: "pilot.assets.length",
       },
     ],
   },
