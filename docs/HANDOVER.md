@@ -206,9 +206,19 @@ through.
 
 ### System diagram
 
-The current file is a dark-treatment redraw supplied on 29 July 2026, replacing the original
-light version — same labels, same legend, different styling. It sits directly on the hero with
-rounded corners rather than inside a white frame, because a dark image defines its own edges.
+The current file was supplied on 30 July 2026, the third version of the same content — same
+labels, same legend, different styling. It went dark on 29 July and light again on 30 July, so
+**check the file before assuming anything about its treatment.**
+
+**It is mounted on a white plate, not placed on the band.** Its artwork ground is a pale mint
+within a few percent of `--adflex-band-background` behind it, so sitting directly on the section
+the only thing separating a 1672px-wide illustration from the page was a single hairline — it
+read as a screenshot dropped onto the band. The mat gives it an edge on all four sides, the
+caption lives inside the same plate so the two read as one object, and the image's radius is one
+step tighter than the plate's so the curves nest. All three step down together at 720px.
+
+If a future version goes dark again, the mat becomes optional — a dark image defines its own
+edges — but the caption should stay inside the plate either way.
 
 **Replacing it again:** drop the new file at the same path, update `width`/`height` in
 `hero.diagram`, and **clear `.next` before checking**. The image optimizer caches by URL, so a
