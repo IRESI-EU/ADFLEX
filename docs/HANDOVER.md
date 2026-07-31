@@ -174,7 +174,8 @@ Two sizing decisions that look arbitrary but are not:
   length.**
 - **The assets are a full-width grid, not a sidebar.** They were previously a column beside the
   narrative, but a seven-item list and a 700-character paragraph are never the same height, so
-  one always ran past the other. Full width also gives the icons room to read.
+  one always ran past the other. The grid takes its column count from `minmax` alone — four at
+  desktop, two at tablet, one on a phone — so there is no breakpoint to keep in step with it.
 
 ### Illustrative imagery
 
@@ -192,9 +193,19 @@ Their `alt` is empty because the surrounding heading and description already car
 Give an image real alt text only if it adds information the text does not have.
 
 The pilot asset icons in `public/images/pilot-icons/` follow the same thinking at small scale.
-They sit in a fixed 56px tile with `object-fit: contain`, so each keeps its own aspect ratio and
-the rows line up. The tile is dark on purpose: these icons are drawn as luminous marks and their
-glows wash out on white. Two of them illustrate ESB Networks and Arden Energy — **neither is that
+They sit in a **104px-wide 3:2 thumbnail beside the label**, not above it and not in a square
+glyph tile. Two constraints fix that shape:
+
+- The supplied files are 1536×1024 artworks on their own opaque grounds. Three of the seven are
+  wide scenes — the dashboard, the charger and car, the pylon and demand curve — and a square
+  centre crop cuts the subject off at both ends.
+- Set across the full card width, as they were until 31 July 2026, each card stood about 300px
+  tall and a seven-item labelled list carried as much visual weight as the pilot narrative above
+  it. The artwork is supporting detail; it names the asset faster than the words do and is not
+  worth a third of the section.
+
+The tile ground is dark on purpose: these icons are drawn as luminous marks and their glows wash
+out on white. Two of them illustrate ESB Networks and Arden Energy — **neither is that
 organisation's logo**, and neither may be presented as one.
 
 Sizing rule of thumb: match the source to how wide the image actually renders. Technology cards

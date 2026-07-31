@@ -64,10 +64,10 @@ export function PilotSection({ id, content }: PilotSectionProps) {
           {content.assets.map((asset) => (
             <li key={asset.id} className={styles.asset}>
               {asset.icon ? (
-                // A 3:2 illustration above the label, not a small icon beside
-                // it: the supplied files are 1536×1024 artworks on their own
-                // opaque grounds, which collapse into an unreadable sliver in a
-                // square glyph tile. alt is empty — the label sits under it.
+                // A small 3:2 thumbnail beside the label, not a square glyph:
+                // the supplied files are 1536×1024 artworks on their own opaque
+                // grounds, and three of the seven are wide scenes that a square
+                // centre crop cuts off at both ends.
                 <span className={styles.assetMedia}>
                   <Image
                     className={styles.assetImage}
@@ -75,7 +75,9 @@ export function PilotSection({ id, content }: PilotSectionProps) {
                     alt={asset.icon.alt}
                     width={asset.icon.width}
                     height={asset.icon.height}
-                    sizes="(max-width: 620px) 100vw, (max-width: 1080px) 45vw, 270px"
+                    // Matches the rendered box. It was asking for 270px-wide
+                    // renditions of images now painted at 104px.
+                    sizes="(max-width: 520px) 84px, 104px"
                   />
                 </span>
               ) : null}
