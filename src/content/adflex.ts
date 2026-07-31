@@ -516,6 +516,15 @@ export const adflexContent = {
     // 30 July 2026. Partner descriptions, URLs and countries beyond these lines
     // have not been supplied — do not add them without approved source material.
     //
+    // Capitalisation normalised on 31 July 2026; the wording is untouched.
+    // `Digital Spine` is Title Case throughout the site because it is the name
+    // of the middleware. Everything else is a common noun and stays lower case
+    // in running prose, which is how `digital twin` is already set in the About
+    // copy, the diagram alt text and the technology card names. UCD's line read
+    // "the Digital Twin and Communication gateway"; `Communication` in
+    // particular had nothing to anchor to — there is no component of that name
+    // anywhere else on the site.
+    //
     // Logos live in public/images/partners/ and were supplied for the project.
     // `width`/`height` are each file's intrinsic pixel size, so the aspect
     // ratio is preserved. `alt` is empty on purpose — the partner name is
@@ -539,7 +548,7 @@ export const adflexContent = {
       {
         id: "university-college-dublin",
         name: "University College Dublin (UCD)",
-        role: "Modelling the Digital Twin and Communication gateway in the lab",
+        role: "Modelling the digital twin and communication gateway in the lab",
         initials: "UCD",
         logo: {
           src: "/images/partners/university-college-dublin.png",
