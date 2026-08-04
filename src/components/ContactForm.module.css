@@ -86,6 +86,49 @@
   margin-top: var(--adflex-space-2);
 }
 
+/*
+ * Honeypot.
+ *
+ * Off-screen rather than `display: none`, because some automated posters skip
+ * fields that are display-none and fill everything else. It is `aria-hidden`
+ * and `tabindex="-1"` in the markup, so no keyboard or screen-reader user can
+ * reach it either way.
+ */
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.error {
+  padding: var(--adflex-space-3) var(--adflex-space-4);
+  margin-top: var(--adflex-space-4);
+  font-size: var(--adflex-text-sm);
+  color: #7a1b12;
+  background: #fdf2f0;
+  border: 1px solid #e7b4ab;
+  border-radius: var(--adflex-radius-md);
+}
+
+.sent {
+  padding: var(--adflex-space-4);
+  margin-top: var(--adflex-space-4);
+  font-size: var(--adflex-text-sm);
+  color: #0c4a3e;
+  background: #eaf6f2;
+  border: 1px solid #a8d5c6;
+  border-radius: var(--adflex-radius-md);
+}
+
+/* Says what happens to the data, next to the control that sends it, rather than
+   only in a policy two clicks away. */
+.privacy {
+  font-size: var(--adflex-text-xs);
+  color: var(--adflex-color-muted);
+}
+
 .fields:disabled .actions :global(.adflex-cta) {
   opacity: 0.55;
   cursor: not-allowed;

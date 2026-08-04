@@ -209,6 +209,27 @@ a {
   border-top: 1px solid var(--adflex-band-border);
 }
 
+/* Visually hidden ---------------------------------------------------- */
+/* Text for screen readers only. Used where a visible label would be redundant
+   for a sighted reader but the meaning is carried by position or colour — the
+   unread count in the admin bar, for instance, where "3" beside "Messages"
+   reads as "3 unread" visually and as a bare number otherwise.
+
+   `clip-path` with a 1px box rather than `display: none` or `width: 0`, both of
+   which remove the text from the accessibility tree as well, which is the exact
+   opposite of the intent. */
+.adflex-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+  border: 0;
+}
+
 /* Skip link --------------------------------------------------------- */
 .adflex-skip-link {
   position: absolute;

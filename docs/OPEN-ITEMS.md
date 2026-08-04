@@ -15,9 +15,11 @@ state rather than sample content, and each becomes live by editing
 | Privacy Policy | `/legal/privacy` | ✅ Draft text published 30 July 2026. **Still a draft** — see *Legal pages* below |
 | Cookies Policy | `/legal/cookies` | ✅ Draft text published 30 July 2026. **Still a draft** — see *Legal pages* below |
 | Terms of Use | `/legal/terms` | ✅ Draft text published 30 July 2026. **Still a draft** — see *Legal pages* below |
-| Contact form | `ContactForm` | A backend or form service. **All controls are disabled** until submissions have somewhere to go |
+| Contact form | `ContactForm` | ✅ **Live 31 July 2026.** Submissions are stored in Postgres and read at `/admin/messages`. Reverts to disabled automatically on a deployment with no database |
 | LinkedIn link | `AdflexFooter` | **The page URL.** Set `footer.linkedin.href`. Until then the block renders as muted, dashed, non-interactive text rather than a dead link |
-| Funding row | `AdflexFooter` | Approved statement and emblem. Set `footer.funding`; the row is not rendered at all while it is `null`. See *Funding and legal* below |
+| Funding row | `AdflexFooter` | ⚠️ **Partly filled 31 July 2026** — it now reads "Funded by SEAI." at the client's instruction. Still outstanding: the programme name as approved footer wording, the grant number, a disclaimer and an SEAI emblem file. See *Funding and legal* below |
+| Project outputs | `/outputs` | ✅ **Editor-managed since 31 July 2026.** Findings and publications are published from `/admin/outputs`. The empty state remains the default until something is published |
+| News & Events content | `/news` | ✅ **Editor-managed since 31 July 2026**, published from `/admin/news` |
 
 **The LinkedIn mark is drawn, not supplied.** The glyph in `AdflexFooter.tsx` is an inline SVG
 rendition, because an external icon package is out of scope for this build. LinkedIn publishes
@@ -126,10 +128,11 @@ without rights.
 | Item | Status |
 | --- | --- |
 | Funder | ✅ **Confirmed 30 July 2026: SEAI.** The hero tag now reads "SEAI-Funded Project". It previously read "EU-Funded Project", which was wrong — the supplied legal text states the project is "funded by SEAI under the National Energy RD&D Funding Programme". |
-| Funding programme | **Named in the legal text** as the National Energy RD&D Funding Programme, but not yet shown anywhere on the site. It belongs in the footer funding statement, which needs approved wording rather than a sentence assembled from the privacy policy. |
+| Funding statement | ⚠️ **"Funded by SEAI." published 31 July 2026** at the client's instruction. Every word of it is confirmed; it is simply the shortest true statement, chosen over a longer sentence assembled from the privacy policy. |
+| Funding programme | **Named in the legal text** as the National Energy RD&D Funding Programme, and still **not shown on the site**. It belongs in the footer statement, which needs approved wording rather than a sentence assembled from the privacy policy. Extending `footer.funding.statement` needs no layout change. |
 | Grant number | **Not supplied.** |
 | Funding disclaimer | **Not supplied.** No disclaimer text has been written or approved, so none is shown. |
-| EU emblem | **Not supplied.** The emblem has strict usage rules and no approved file was provided. |
+| SEAI / EU emblem | **Not supplied.** Emblems have strict usage rules and no approved file was provided. `footer.funding.emblem` is built and unused — setting it publishes the artwork beside the statement with no layout change. |
 | Legal pages (privacy, cookies, terms) | **Draft text published** 30 July 2026 from `ADFLEX_Legal_Pages_Draft_v2.docx`. See *Legal pages* below for what is still open in it. |
 
 The footer now has a **dedicated funding row**, reserved and already styled, sitting between the
@@ -197,7 +200,7 @@ the project to, so each needs a decision.
 | Cookies Policy names **LinkedIn Ireland** for "embedded LinkedIn content" | **There is no embedded LinkedIn content.** The footer's LinkedIn block is not even a link yet — its URL has not been supplied. |
 | Privacy Policy 2.2: "Newsletter subscription: we ask only for your email address" | Has **no newsletter**. The sign-up block was removed on 30 July 2026 at the team's request. |
 | Privacy Policy 3.2: "Inform you of project news… if you have subscribed to updates" | There is nothing to subscribe to. |
-| Privacy Policy 2.1: "we collect your email address, name, subject, and message content" via the contact form | The contact form is a **disabled template** with no backend. It cannot collect or send anything. |
+| Privacy Policy 2.1: "we collect your email address, name, subject, and message content" via the contact form | ✅ **Now true.** The form went live on 31 July 2026 and stores exactly those four fields. This is the one mismatch the admin closed rather than widened — but note it closed by making the *site* match a **draft** policy, so the wording still needs signing off before either goes public. See [ADMIN.md](ADMIN.md) §6. |
 
 **v2 made this sharper, not softer.** Where v1 said "analytics tool TBC", v2 names Matomo and
 LinkedIn specifically. A policy that names the exact tools setting cookies on a site that sets none
@@ -249,9 +252,11 @@ asset is supplied. Once one exists, add it as `src/app/icon.png` and the 404 dis
 
 | Item | Status |
 | --- | --- |
-| Hosting and domain | **Not part of this first build.** No deployment configuration, no Docker, no CI. |
+| Hosting and domain | ⚠️ **Changed 31 July 2026.** The site is **no longer a static export** — `/admin/*`, `/outputs`, `/news`, `/contact` and `/media/[id]` are server-rendered, so the host must run Node and carry `DATABASE_URL` and `SESSION_SECRET`. A Postgres database (Neon or Supabase) has **not been created**; until one is, the public site works exactly as before and the admin shows a setup notice. See [ADMIN.md](ADMIN.md). |
 | Analytics | **Not part of this first build.** No analytics, tag manager or cookie banner. |
-| Content-publishing process | **Not decided.** Copy is edited in `src/content/adflex.ts` and released by committing. Whether a CMS is eventually wanted is an open question — the discovery report discusses WordPress, but that was explicitly out of scope here. |
+| Content-publishing process | ⚠️ **Now split.** Findings, publications, news and events are editor-managed at `/admin`. **Everything else** — hero, About, Technologies, Consortium, Pilot, contact details, footer and all three legal pages — is still edited in `src/content/adflex.ts` and released by committing. Whether the rest should move too is open. |
+| Automated tests for the admin | **None committed.** The SQL (16 checks) and the browser flows (33 checks) were both exercised for real when this was built, but those harnesses lived in a scratch directory and are not in the repository. A change to `src/lib/repo.ts` or `src/app/admin/` has no regression net. |
+| Admin accounts | **None created** on any real database. `npm run db:user` creates them; there is no self-service sign-up and no web password reset, by design. |
 | Accessibility audit | **Not carried out.** The implementation follows the guardrails in `docs/HANDOVER.md`, but no independent audit has been performed and no formal WCAG conformance is claimed. |
 | Automated tests | **None.** Verification is `npm run lint`, `npm run typecheck`, `npm run build` and a manual responsive pass. |
 | Multilingual support | **Not part of this first build.** |

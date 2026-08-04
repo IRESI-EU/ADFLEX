@@ -7,25 +7,45 @@ shaped this way, and how to extend it without breaking the parts that matter.
 
 - **Framework:** Next.js 16 (App Router), React 19, TypeScript, ESLint. Created with
   `create-next-app`, `src/` directory, no Tailwind, no UI library.
-- **Rendering:** every route is fully static. `npm run build` prerenders `/`, `/about`,
-  `/outputs`, `/contact`, `/news`, the three `/legal/[slug]` pages and `/design-system`; there is
-  no server logic, no API route and no data fetching.
+- **Rendering:** mixed since 31 July 2026, when the admin was added. `/`, `/about`,
+  `/design-system` and the three `/legal/[slug]` pages are still prerendered with no server logic.
+  `/outputs`, `/news`, `/contact`, `/media/[id]` and everything under `/admin` are server-rendered
+  on demand, because their content now lives in Postgres rather than in the repository.
+  **The site is therefore no longer a static export**, and its host has to run Node.
+
+### The admin
+
+`/admin` lets an editor publish project findings, publications, news and events, and read contact
+form submissions. It is documented on its own in **[ADMIN.md](ADMIN.md)** — read that before
+touching anything under `src/lib/db.ts`, `src/lib/auth.ts`, `src/lib/repo.ts`, `src/app/admin/`
+or `src/proxy.ts`.
+
+Two things from it are load-bearing enough to repeat here:
+
+1. **The public site must keep building and rendering with no database.** `npm run build` is run
+   with no `DATABASE_URL` as part of verifying any change. Every public read goes through
+   `safeRead()`, which falls back to the empty state rather than throwing.
+2. **`requireEditor()` at the top of every Server Action is the security boundary**, not
+   `src/proxy.ts`. Server Actions are POST endpoints reachable without loading the page that
+   renders the form.
 
 ### Routes that exist but have no content
 
-`/news` is **structure without content**, on purpose. It renders a visible empty state saying
-nothing is published yet.
+`/news` and `/outputs` are **structure without content** until an editor publishes something. Both
+render a visible empty state saying so.
 
-Do not fill it with sample entries. A placeholder news post or an invented event date reads as
-real the moment someone lands on it, and on a publicly funded project site that is a false statement
-rather than a design detail. Add real content by editing `src/content/adflex.ts`; the empty state
-disappears when there is something to show.
+Do not fill them with sample entries. A placeholder news post, an invented event date or a made-up
+DOI reads as real the moment someone lands on it, and on a publicly funded project site that is a
+false statement rather than a design detail. **This rule survived the admin unchanged** — the only
+difference is that real content now arrives from an editor instead of a commit.
 
 News and Events were two routes until 30 July 2026, when they were merged. Both were empty, so
 the navigation offered a visitor two dead ends instead of one.
 
-The same rule governs the contact form, which is **disabled**: a form that looks live but
-discards messages loses real enquiries silently.
+The contact form followed the same rule and was **disabled** until 31 July 2026, because a form
+that looks live but discards messages loses real enquiries silently. It is live now that
+submissions land in a table someone reads — and it goes back to disabled automatically on any
+deployment with no database, which is the same rule still doing its job.
 
 ### The legal pages
 
@@ -52,10 +72,15 @@ Three decisions worth knowing:
    `Draft_v2` and still end "version 1.0", so no reader should mistake them for settled policy.
 - **Styling:** one global token file plus one CSS Module per component. No CSS-in-JS, no
   preprocessor, no utility framework.
-- **Client JavaScript:** two client components — `AdflexHeader` for the mobile menu toggle and
-  `GlossaryTerm` for the inline definition in the hero. Everything else is a server component.
-- **Dependencies:** only `next`, `react` and `react-dom` in production. Nothing was added for
-  icons, animation, carousels or components.
+- **Client JavaScript:** four client components — `AdflexHeader` for the mobile menu toggle,
+  `GlossaryTerm` for the inline definition in the hero, `ContactForm`, and the admin's `forms.tsx`.
+  The last two are client components only because `useActionState` has to be; everything they
+  submit to is a Server Action, so there is no fetch layer and no API surface of our own.
+  Everything else is a server component.
+- **Dependencies:** `next`, `react`, `react-dom`, plus `pg` and `server-only` added on
+  31 July 2026 for the admin. **Still nothing for icons, animation, carousels, components, forms,
+  validation or authentication** — the schema is hand-written SQL, passwords use `node:crypto`
+  scrypt, and sessions are an HMAC-signed cookie.
 
 ## 2. Component responsibilities
 
@@ -78,7 +103,8 @@ Three decisions worth knowing:
 | `HeroCommunity` | The hero illustration — a small energy community with one shared arc of energy passing over it. Decorative inline SVG: no JavaScript, `aria-hidden`, CSS-only motion. See *The hero illustration*. |
 | `MotionScript` | Inline script adding `adflex-js` before first paint, so the reveal styles are safe. Not a visual component. |
 | `RevealObserver` | One IntersectionObserver for every `[data-reveal]` on the page. Mounted once in the root layout. |
-| `ContactForm` | Contact form template. **Every control is `disabled`** — there is no backend, and a form that silently discards messages is worse than no form. |
+| `ContactForm` | Contact form. Live since 31 July 2026; submissions go to a Server Action and land in the `messages` table. Falls back to every control `disabled` when there is no database, because a form that silently discards messages is worse than no form. |
+| `PublishedList` | Renders editor-managed content on `/outputs` and `/news` — findings, publications, news and events. **Everything is text, never markup**: bodies are split into paragraphs on blank lines and rendered as text nodes, with no `dangerouslySetInnerHTML` anywhere. |
 | `PageHero` | Opening emphasis band for the simple routes — About, Contact, Project Outputs. Carries the page's single `h1`. Shared so the three cannot drift apart, and a band rather than the plain page colour so a visitor landing on a sub-page arrives in the same site rather than on a blank white page. |
 | `NavLink` | Small internal helper, not a UI-library component. Renders a plain `<a>` for **any href containing a fragment** and `next/link` only for fragment-less routes. Shared by the header and footer. The fragment rule is load-bearing — see *Why anchors are never `next/link`*. |
 

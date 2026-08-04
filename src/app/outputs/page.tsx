@@ -1,28 +1,47 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { adflexContent, resolveNavigation } from "@/content/adflex";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHero } from "@/components/PageHero";
+import { FindingList, PublicationList } from "@/components/PublishedList";
+import listStyles from "@/components/PublishedList.module.css";
+import { listPublishedFindings, listPublishedPublications } from "@/lib/repo";
 import styles from "./outputs.module.css";
 
 const { brand, navigation, results } = adflexContent;
 
 export const metadata: Metadata = {
-  title: `${results.title} â€” ADFLEX`,
+  title: `${results.title} — ADFLEX`,
   description: results.pageDescription,
 };
 
 /**
- * Project Outputs on its own route.
+ * Project Outputs.
  *
- * The page is an intentional empty state: findings are not final. When real
- * publications exist, replace the EmptyState with a list rendered from a new
- * `results.items` array in the content file. Until then, nothing here may be
- * filled in with placeholder publications, dates, DOIs or download links.
+ * Editor-managed since 31 July 2026 — findings and publications are written in
+ * `/admin/outputs` and stored in Postgres, so publishing one has to show here
+ * without a redeploy. That is why the route renders per request rather than
+ * being prerendered.
+ *
+ * **The empty state is the default, not a fallback.** Both reads go through
+ * `safeRead`, so no database, an unreachable database and nothing published yet
+ * all land in the same place: the honest "not final" message this page has
+ * always shown. The old rule still holds exactly as written — no placeholder
+ * publications, dates, DOIs or download links. The difference is only that real
+ * ones now arrive from an editor instead of a commit.
  */
-export default function OutputsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function OutputsPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
+
+  const [findings, publications] = await Promise.all([
+    listPublishedFindings(),
+    listPublishedPublications(),
+  ]);
+
+  const hasContent = findings.length > 0 || publications.length > 0;
 
   return (
     <>
@@ -33,13 +52,42 @@ export default function OutputsPage() {
 
         <div className={styles.body}>
           <div className="adflex-container">
-            {/* h2 because it sits directly under the page h1 â€” using the
-                default h3 here would skip a heading level. */}
-            <EmptyState
-              heading={results.heading}
-              body={results.body}
-              headingLevel="h2"
-            />
+            {hasContent ? (
+              <>
+                {findings.length > 0 ? (
+                  <section className={listStyles.section} aria-labelledby="findings-heading">
+                    {/* h2 under the page h1, and h3 for each entry inside the
+                        lists — the heading order has to stay unbroken now that
+                        this page has real sections in it. */}
+                    <h2 id="findings-heading" className={listStyles.sectionTitle}>
+                      Project findings
+                    </h2>
+                    <div className={listStyles.sectionList}>
+                      <FindingList findings={findings} />
+                    </div>
+                  </section>
+                ) : null}
+
+                {publications.length > 0 ? (
+                  <section className={listStyles.section} aria-labelledby="publications-heading">
+                    <h2 id="publications-heading" className={listStyles.sectionTitle}>
+                      Publications
+                    </h2>
+                    <div className={listStyles.sectionList}>
+                      <PublicationList publications={publications} />
+                    </div>
+                  </section>
+                ) : null}
+              </>
+            ) : (
+              /* h2 because it sits directly under the page h1 — using the
+                 default h3 here would skip a heading level. */
+              <EmptyState
+                heading={results.heading}
+                body={results.body}
+                headingLevel="h2"
+              />
+            )}
           </div>
         </div>
       </main>

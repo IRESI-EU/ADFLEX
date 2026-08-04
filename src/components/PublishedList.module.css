@@ -1,0 +1,160 @@
+/*
+ * The published lists on /outputs and /news.
+ *
+ * One stylesheet for both, because a finding, a news post and an event are the
+ * same shape on the page: an optional picture, a heading, a line of metadata and
+ * some prose. Their differences are in the metadata line, not the layout.
+ */
+
+.list {
+  display: grid;
+  gap: var(--adflex-space-6);
+  list-style: none;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: var(--adflex-space-5);
+  align-items: start;
+  padding-bottom: var(--adflex-space-6);
+  border-bottom: 1px solid var(--adflex-color-border);
+}
+
+/* The last entry has nothing after it, so its rule would sit as a stray line
+   above the footer. */
+.entry:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.entryNoImage {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Fixed 3:2 frame with `cover`, matching how every other image on the site is
+   framed: the space is reserved before the image loads, so nothing shifts, and
+   an editor's photograph of any shape fills it rather than distorting. */
+.media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  background: var(--adflex-plate-media-light);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+}
+
+.title {
+  font-size: var(--adflex-text-xl);
+  line-height: var(--adflex-leading-snug);
+  color: var(--adflex-color-ink);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--adflex-space-2) var(--adflex-space-3);
+  align-items: center;
+  margin-top: var(--adflex-space-2);
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+.kind {
+  padding: 2px 10px;
+  font-size: var(--adflex-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--adflex-tracking-wide);
+  text-transform: uppercase;
+  color: var(--adflex-color-primary);
+  background: var(--adflex-color-surface-soft);
+  border-radius: 999px;
+}
+
+.summary {
+  max-width: 68ch;
+  margin-top: var(--adflex-space-3);
+  color: var(--adflex-color-text);
+}
+
+.body {
+  max-width: 68ch;
+  margin-top: var(--adflex-space-3);
+  color: var(--adflex-color-muted);
+}
+
+/* Paragraphs come from a plain-text field split on blank lines, so they need
+   their own rhythm — the editor typed prose, not markup. */
+.body p + p {
+  margin-top: var(--adflex-space-3);
+}
+
+/* --- Publications ------------------------------------------------------- */
+
+.publications {
+  display: grid;
+  gap: var(--adflex-space-4);
+  list-style: none;
+}
+
+.publication {
+  padding-bottom: var(--adflex-space-4);
+  border-bottom: 1px solid var(--adflex-color-border);
+}
+
+.publication:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.publicationTitle {
+  font-size: var(--adflex-text-lg);
+  line-height: var(--adflex-leading-snug);
+  color: var(--adflex-color-ink);
+}
+
+.publicationMeta {
+  margin-top: var(--adflex-space-1);
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--adflex-space-4);
+  margin-top: var(--adflex-space-2);
+  font-size: var(--adflex-text-sm);
+}
+
+/* A DOI is long and has no spaces, so it needs somewhere to break or it pushes
+   the page sideways on a phone. */
+.doi {
+  overflow-wrap: anywhere;
+}
+
+.sectionTitle {
+  font-size: var(--adflex-text-2xl);
+}
+
+.section + .section {
+  margin-top: var(--adflex-space-7);
+}
+
+.sectionIntro {
+  max-width: 68ch;
+  margin-top: var(--adflex-space-2);
+  color: var(--adflex-color-muted);
+}
+
+.sectionList {
+  margin-top: var(--adflex-space-5);
+}
+
+@media (max-width: 780px) {
+  .entry {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--adflex-space-4);
+  }
+}

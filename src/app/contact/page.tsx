@@ -1,16 +1,17 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { adflexContent, resolveNavigation } from "@/content/adflex";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { ContactBlock } from "@/components/ContactBlock";
 import { ContactForm } from "@/components/ContactForm";
 import { PageHero } from "@/components/PageHero";
+import { isDatabaseConfigured } from "@/lib/db";
 import styles from "./contact.module.css";
 
 const { brand, navigation, contact, contactForm } = adflexContent;
 
 export const metadata: Metadata = {
-  title: `${contact.title} â€” ADFLEX`,
+  title: `${contact.title} — ADFLEX`,
   description: contact.pageDescription,
 };
 
@@ -19,9 +20,17 @@ export const metadata: Metadata = {
  *
  * Section anchors in the navigation only resolve on the home page, so they are
  * resolved here with `onHome: false`.
+ *
+ * Rendered per request only so the form knows whether a database exists to
+ * receive a submission. Without one it renders exactly as it did before the
+ * admin was built: disabled, with the note saying so. The email address beside
+ * it is the working route either way.
  */
+export const dynamic = "force-dynamic";
+
 export default function ContactPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
+  const formEnabled = isDatabaseConfigured();
 
   return (
     <>
@@ -37,7 +46,7 @@ export default function ContactPage() {
         <div className={styles.body}>
           <div className={`adflex-container ${styles.layout}`}>
             <ContactBlock contact={contact} showIntro={false} />
-            <ContactForm form={contactForm} />
+            <ContactForm form={contactForm} enabled={formEnabled} />
           </div>
         </div>
       </main>

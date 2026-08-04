@@ -32,6 +32,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the template, which carries no secrets and is how a new developer
+# learns which variables exist at all. Without this negation the `.env*` above
+# silently swallows it and the setup instructions point at a file that is not
+# in the repository.
+!.env.example
 
 # vercel
 .vercel
