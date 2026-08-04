@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { adflexContent, resolveNavigation } from "@/content/adflex";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
@@ -8,13 +8,13 @@ import styles from "./about.module.css";
 const { brand, navigation, about } = adflexContent;
 
 export const metadata: Metadata = {
-  title: `${about.title} â€” ADFLEX`,
+  title: `${about.title} — ADFLEX`,
   description: about.pageDescription,
 };
 
 /**
  * The full About content. The home page shows the opening sentence of one item
- * and links here for the rest â€” both read from the same `about.items`, so they
+ * and links here for the rest — both read from the same `about.items`, so they
  * cannot drift apart.
  *
  * Each item is an editorial row rather than a card: a numbered heading column

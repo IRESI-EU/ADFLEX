@@ -11,7 +11,7 @@ import styles from "./home.module.css";
 
 /**
  * The ADFLEX public website: one scrolling page of sections. Project Outputs
- * and Contact each live on their own route â€” see `src/app/outputs` and
+ * and Contact each live on their own route — see `src/app/outputs` and
  * `src/app/contact`.
  *
  * Section order matches the navigation order defined in
@@ -38,7 +38,7 @@ export default function HomePage() {
       <main id="main-content">
         <AdflexHero id="home" content={hero} />
 
-        {/* A glimpse of one About item only â€” the verbatim opening sentence of
+        {/* A glimpse of one About item only — the verbatim opening sentence of
             its full text, which lives on /about. The item's own title is not
             repeated here because the section heading already names it. */}
         {/* Split layout: this section is short, and stacked it left most of the

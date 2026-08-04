@@ -15,7 +15,7 @@ import { ContactBlock } from "@/components/ContactBlock";
 import styles from "./design-system.module.css";
 
 export const metadata: Metadata = {
-  title: `${designSystemContent.meta.title} â€” ADFLEX`,
+  title: `${designSystemContent.meta.title} — ADFLEX`,
   description: designSystemContent.meta.description,
 };
 
@@ -59,7 +59,7 @@ export default function DesignSystemPage() {
               </p>
             </div>
 
-            {/* 1 â€” Introduction ------------------------------------- */}
+            {/* 1 — Introduction ------------------------------------- */}
             <Section id="introduction" title={ds.sections[0].title}>
               <p className={styles.lead}>{ds.introduction.lead}</p>
               <ul className={styles.bullets}>
@@ -69,7 +69,7 @@ export default function DesignSystemPage() {
               </ul>
             </Section>
 
-            {/* 2 â€” Brand & Foundations ------------------------------ */}
+            {/* 2 — Brand & Foundations ------------------------------ */}
             <Section id="brand-foundations" title={ds.sections[1].title}>
               <h3 className={styles.subhead}>Bands</h3>
               <p className={styles.lead}>{ds.bands.lead}</p>
@@ -93,7 +93,7 @@ export default function DesignSystemPage() {
                 </div>
               </div>
 
-              <h3 className={styles.subhead}>Colour â€” page</h3>
+              <h3 className={styles.subhead}>Colour — page</h3>
               <ul className={styles.swatchGrid}>
                 {ds.colours.map((colour) => (
                   <li key={colour.token} className={styles.swatch}>
@@ -110,7 +110,7 @@ export default function DesignSystemPage() {
                 ))}
               </ul>
 
-              <h3 className={styles.subhead}>Colour â€” emphasis band</h3>
+              <h3 className={styles.subhead}>Colour — emphasis band</h3>
               <p className={styles.note}>
                 These are the values that <code className={styles.code}>.adflex-band</code>{" "}
                 rebinds the semantic tokens to. Components should not reference them directly,
@@ -138,7 +138,7 @@ export default function DesignSystemPage() {
               <ul className={styles.bullets}>
                 {ds.typefaces.faces.map((face) => (
                   <li key={face.token}>
-                    <code className={styles.code}>{face.token}</code> â€” {face.name}.{" "}
+                    <code className={styles.code}>{face.token}</code> — {face.name}.{" "}
                     {face.usage}
                   </li>
                 ))}
@@ -213,7 +213,7 @@ export default function DesignSystemPage() {
               />
             </Section>
 
-            {/* 3 â€” Logo & Imagery ----------------------------------- */}
+            {/* 3 — Logo & Imagery ----------------------------------- */}
             <Section id="logo-imagery" title={ds.sections[2].title}>
               <p className={styles.lead}>{ds.logoRules.intro}</p>
 
@@ -282,7 +282,7 @@ export default function DesignSystemPage() {
               </ul>
             </Section>
 
-            {/* 4 â€” Components --------------------------------------- */}
+            {/* 4 — Components --------------------------------------- */}
             <Section id="components" title={ds.sections[3].title}>
               <p className={styles.lead}>
                 Each example below is the production component or production CSS
@@ -291,7 +291,7 @@ export default function DesignSystemPage() {
 
               <Example
                 label="Primary call to action"
-                note=".adflex-cta â€” one primary action per view."
+                note=".adflex-cta — one primary action per view."
               >
                 <Link className="adflex-cta" href="/outputs">
                   {hero.cta.label}
@@ -300,7 +300,7 @@ export default function DesignSystemPage() {
 
               <Example
                 label="Text link"
-                note=".adflex-link â€” underlined, meaningful on its own."
+                note=".adflex-link — underlined, meaningful on its own."
               >
                 <Link className="adflex-link" href="/contact">
                   Contact the ADFLEX team
@@ -309,7 +309,7 @@ export default function DesignSystemPage() {
 
               <Example
                 label="Tags"
-                note=".adflex-tag inside .adflex-tag-list â€” labelling only, never interactive."
+                note=".adflex-tag inside .adflex-tag-list — labelling only, never interactive."
               >
                 <ul className="adflex-tag-list">
                   {hero.tags.map((tag) => (
@@ -322,7 +322,7 @@ export default function DesignSystemPage() {
 
               <Example
                 label="Inline glossary term"
-                note="Opens on hover, focus and tap; closes on Escape. Never hover-only â€” the definition is always in the accessibility tree."
+                note="Opens on hover, focus and tap; closes on Escape. Never hover-only — the definition is always in the accessibility tree."
               >
                 <p>
                   Turning community buildings into{" "}
@@ -350,7 +350,7 @@ export default function DesignSystemPage() {
 
               <Example
                 label="Figure in running text"
-                note="Picks out the number a sentence turns on. A plain span, not <strong> â€” the emphasis is visual, and the supplied copy does not mark the figure as important."
+                note="Picks out the number a sentence turns on. A plain span, not <strong> — the emphasis is visual, and the supplied copy does not mark the figure as important."
               >
                 <p>
                   <FigureText
@@ -375,7 +375,7 @@ export default function DesignSystemPage() {
               </Example>
             </Section>
 
-            {/* 5 â€” Layout & Patterns -------------------------------- */}
+            {/* 5 — Layout & Patterns -------------------------------- */}
             <Section id="layout-patterns" title={ds.sections[4].title}>
               <p className={styles.lead}>
                 These patterns are page-level structures. They are described
@@ -395,7 +395,7 @@ export default function DesignSystemPage() {
               ))}
             </Section>
 
-            {/* 6 â€” Accessibility & Content Rules -------------------- */}
+            {/* 6 — Accessibility & Content Rules -------------------- */}
             <Section id="accessibility" title={ds.sections[5].title}>
               {ds.accessibilityRules.map((group) => (
                 <div key={group.title} className={styles.patternBlock}>
