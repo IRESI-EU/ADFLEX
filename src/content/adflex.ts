@@ -991,11 +991,16 @@ export const adflexContent = {
   },
 
   footer: {
-    // Funding programme, grant number, disclaimer wording and EU emblem have
-    // none of them been supplied or approved — see docs/OPEN-ITEMS.md. Nothing
-    // is shown until they are, because a guessed attribution is worse than no
-    // attribution.
-    funding: null,
+    // Confirmed 30 July 2026: the funder is SEAI. Published 31 July 2026 at the
+    // client's instruction, deliberately as the shortest true statement.
+    //
+    // The programme name (National Energy RD&D Funding Programme) is named in
+    // the supplied legal text but has not been approved as footer wording, and
+    // the grant number, the disclaimer and an SEAI emblem file have never been
+    // supplied at all — see docs/OPEN-ITEMS.md. None of them is guessed at
+    // here. Extending this statement later needs no layout change: add to
+    // `statement`, and add `emblem` when an approved file arrives.
+    funding: { statement: "Funded by SEAI." },
     linkedin: {
       label: "Follow us on LinkedIn",
       // URL awaited from the project team.
