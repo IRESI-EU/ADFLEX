@@ -9,7 +9,7 @@ import listStyles from "@/components/PublishedList.module.css";
 import newsStyles from "./news.module.css";
 import { listPublishedNews } from "@/lib/repo";
 
-const { brand, navigation, news, contact } = adflexContent;
+const { brand, navigation, news } = adflexContent;
 
 export const metadata: Metadata = {
   title: `${news.title} — ADFLEX`,
@@ -37,6 +37,19 @@ export default async function NewsPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
   const items = await listPublishedNews();
 
+  /*
+   * News and events are stored in one table and shown in two sections.
+   *
+   * They are genuinely different things to a reader — an event is something to
+   * turn up to on a date, a news post is something that already happened — and
+   * interleaving them by date buried the next event among older announcements.
+   *
+   * A section only appears when it has entries, so the page never shows an
+   * "Events" heading above nothing.
+   */
+  const events = items.filter((item) => item.kind === "event");
+  const posts = items.filter((item) => item.kind === "news");
+
   return (
     <>
       <AdflexHeader logo={brand.logo} navigation={nav} homeHref="/" />
@@ -46,13 +59,32 @@ export default async function NewsPage() {
 
         {items.length > 0 ? (
           <div className={newsStyles.body}>
-            <div className={`adflex-container ${listStyles.sectionList}`}>
-              <h2 className="adflex-visually-hidden">Published news and events</h2>
-              <NewsList items={items} />
+            <div className="adflex-container">
+              {events.length > 0 ? (
+                <section className={listStyles.section} aria-labelledby="events-heading">
+                  <h2 id="events-heading" className={listStyles.sectionTitle}>
+                    Events
+                  </h2>
+                  <div className={listStyles.sectionList}>
+                    <NewsList items={events} />
+                  </div>
+                </section>
+              ) : null}
+
+              {posts.length > 0 ? (
+                <section className={listStyles.section} aria-labelledby="news-heading">
+                  <h2 id="news-heading" className={listStyles.sectionTitle}>
+                    News
+                  </h2>
+                  <div className={listStyles.sectionList}>
+                    <NewsList items={posts} />
+                  </div>
+                </section>
+              ) : null}
             </div>
           </div>
         ) : (
-          <AwaitingContent page={news} contact={contact} />
+          <AwaitingContent page={news} />
         )}
       </main>
       <AdflexFooter logo={brand.logo} />

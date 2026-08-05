@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import type { AdflexContent } from "@/content/adflex";
@@ -33,6 +33,36 @@ type ContactFormProps = {
  * because there is no state in which they become usable on that deployment.
  */
 export function ContactForm({ form, enabled }: ContactFormProps) {
+  /**
+   * Sending a second message without reloading the page.
+   *
+   * The reset has to happen by **remounting**, which is why this thin wrapper
+   * exists at all. `useActionState` keeps its result until the action runs
+   * again, so there is no "clear it" call to make; and re-rendering the same
+   * form in place would leave the previous answers sitting in the fields.
+   * Changing the key throws the old instance away and mounts a fresh one, which
+   * clears the confirmation and the inputs in one move.
+   *
+   * Holding the counter in the same component as `useActionState` would not
+   * work — the state to be discarded lives inside the thing being replaced.
+   */
+  const [attempt, setAttempt] = useState(0);
+
+  return (
+    <ContactFormBody
+      key={attempt}
+      form={form}
+      enabled={enabled}
+      onSendAnother={() => setAttempt((n) => n + 1)}
+    />
+  );
+}
+
+function ContactFormBody({
+  form,
+  enabled,
+  onSendAnother,
+}: ContactFormProps & { onSendAnother: () => void }) {
   const [state, action] = useActionState(submitContact, {});
 
   if (state.sent) {
@@ -45,6 +75,11 @@ export function ContactForm({ form, enabled }: ContactFormProps) {
           <strong>Thank you — your message has been sent.</strong> Someone on the
           project team will read it. If it is urgent, email us at the address
           above rather than waiting for a reply here.
+        </p>
+        <p className={styles.actions}>
+          <button type="button" className="adflex-cta-quiet" onClick={onSendAnother}>
+            Send another message
+          </button>
         </p>
       </section>
     );

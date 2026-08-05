@@ -141,7 +141,20 @@ export function PublicationList({ publications }: { publications: Publication[] 
  * News and events
  * ----------------------------------------------------------------------- */
 
-export function NewsList({ items }: { items: NewsItem[] }) {
+/**
+ * `showKind` adds a News/Event pill to each entry.
+ *
+ * Off by default because `/news` now groups entries under their own "Events"
+ * and "News" headings, which says the same thing once instead of on every row.
+ * Turn it on for any future list that mixes the two.
+ */
+export function NewsList({
+  items,
+  showKind = false,
+}: {
+  items: NewsItem[];
+  showKind?: boolean;
+}) {
   return (
     <ul className={styles.list}>
       {items.map((item) => (
@@ -162,9 +175,11 @@ export function NewsList({ items }: { items: NewsItem[] }) {
 
           <div>
             <p className={styles.meta}>
-              <span className={styles.kind}>
-                {item.kind === "event" ? "Event" : "News"}
-              </span>
+              {showKind ? (
+                <span className={styles.kind}>
+                  {item.kind === "event" ? "Event" : "News"}
+                </span>
+              ) : null}
               {/* A real <time> element, so the date is machine-readable as well
                   as legible. An event leads with when it happens; a news post
                   leads with when it was posted. */}

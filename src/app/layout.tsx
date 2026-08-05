@@ -42,6 +42,14 @@ export const metadata: Metadata = {
  * know whether JavaScript will run, so that class legitimately differs between
  * the server markup and the DOM. It is scoped to this one element and does not
  * extend to any children.
+ *
+ * `data-scroll-behavior="smooth"` is **not decorative**. globals.css sets
+ * `scroll-behavior: smooth` on `<html>` so anchor jumps animate, and without
+ * this attribute Next cannot suspend that during a route change — so moving
+ * from one page to another scrolled the whole document instead of jumping,
+ * which reads as the new page sliding or lagging into place. The attribute is
+ * how Next is told it may switch smooth scrolling off for the transition and
+ * back on afterwards.
  */
 export default function RootLayout({
   children,
@@ -52,6 +60,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${sora.variable} ${inter.variable}`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <head>

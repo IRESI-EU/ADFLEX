@@ -25,6 +25,7 @@ import {
   deletePublication,
   markMessageRead,
   normaliseDoi,
+  setPublished,
   updateFinding,
   updateNewsItem,
   updatePublication,
@@ -215,6 +216,21 @@ export async function removeFinding(form: FormData): Promise<void> {
   revalidate("/admin/outputs", "/outputs");
 }
 
+/**
+ * Publishes or unpublishes without opening the editor.
+ *
+ * The desired state is sent explicitly rather than flipped from whatever is in
+ * the database. Toggling from a stale page — two tabs open, or a browser back —
+ * would act on what the editor saw rather than what they asked for, which is
+ * the wrong way round for the one control that decides whether something is
+ * publicly visible.
+ */
+export async function setFindingPublished(form: FormData): Promise<void> {
+  await requireEditor();
+  await setPublished("findings", int(form, "id"), form.get("publish") === "1");
+  revalidate("/admin/outputs", "/outputs", "/admin");
+}
+
 /* --------------------------------------------------------------------------
  * Publications
  * ----------------------------------------------------------------------- */
@@ -277,6 +293,12 @@ export async function removePublication(form: FormData): Promise<void> {
   revalidate("/admin/outputs", "/outputs");
 }
 
+export async function setPublicationPublished(form: FormData): Promise<void> {
+  await requireEditor();
+  await setPublished("publications", int(form, "id"), form.get("publish") === "1");
+  revalidate("/admin/outputs", "/outputs", "/admin");
+}
+
 /* --------------------------------------------------------------------------
  * News and events
  * ----------------------------------------------------------------------- */
@@ -326,6 +348,12 @@ export async function removeNewsItem(form: FormData): Promise<void> {
   await requireEditor();
   await deleteNewsItem(int(form, "id"));
   revalidate("/admin/news", "/news");
+}
+
+export async function setNewsPublished(form: FormData): Promise<void> {
+  await requireEditor();
+  await setPublished("news_items", int(form, "id"), form.get("publish") === "1");
+  revalidate("/admin/news", "/news", "/admin");
 }
 
 /* --------------------------------------------------------------------------

@@ -255,11 +255,14 @@
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+/* `contain` here too, so the editor's thumbnail shows the same framing the
+   public page will — a cropped preview of an uncropped image is misleading. */
 .thumb {
   width: 84px;
   aspect-ratio: 3 / 2;
-  object-fit: cover;
-  background: var(--adflex-plate-media-dark);
+  object-fit: contain;
+  background: var(--adflex-plate-media-light);
+  border: 1px solid var(--adflex-color-border);
   border-radius: var(--adflex-radius-sm);
 }
 

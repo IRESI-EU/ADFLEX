@@ -35,6 +35,42 @@ function Submit({ label = "Save" }: { label?: string }) {
   );
 }
 
+/**
+ * The publish checkbox.
+ *
+ * Its label is the tense of what the tick means. Unticked it reads **Publish**,
+ * because that is the action about to be taken; ticked it reads **Published**,
+ * because that is then the state. Labelling it "Published" while unticked
+ * described a state the entry was not in, which is exactly the wrong thing for
+ * the one control that decides public visibility.
+ *
+ * Controlled, so the wording changes as it is ticked rather than only after the
+ * save comes back.
+ */
+function PublishCheck({ defaultChecked }: { defaultChecked: boolean }) {
+  const [checked, setChecked] = useState(defaultChecked);
+
+  return (
+    <label className={styles.check}>
+      <input
+        type="checkbox"
+        name="published"
+        checked={checked}
+        onChange={(event) => setChecked(event.target.checked)}
+      />
+      {checked ? (
+        <span>
+          <strong>Published</strong> — visible on the public site
+        </span>
+      ) : (
+        <span>
+          <strong>Publish</strong> — tick to make this visible on the public site
+        </span>
+      )}
+    </label>
+  );
+}
+
 function Banner({ state }: { state: ActionState }) {
   if (state.error) {
     return (
@@ -278,14 +314,7 @@ export function FindingForm({ finding }: { finding?: Finding }) {
           <span className={styles.hint}>Lower numbers first.</span>
         </p>
 
-        <label className={styles.check}>
-          <input
-            type="checkbox"
-            name="published"
-            defaultChecked={finding?.published ?? false}
-          />
-          Published — visible on the public site
-        </label>
+        <PublishCheck defaultChecked={finding?.published ?? false} />
       </div>
 
       <p className={styles.actions}>
@@ -413,14 +442,7 @@ export function PublicationForm({ publication }: { publication?: Publication }) 
           />
         </p>
 
-        <label className={styles.check}>
-          <input
-            type="checkbox"
-            name="published"
-            defaultChecked={publication?.published ?? false}
-          />
-          Published — visible on the public site
-        </label>
+        <PublishCheck defaultChecked={publication?.published ?? false} />
       </div>
 
       <p className={styles.actions}>
@@ -554,10 +576,7 @@ export function NewsForm({ item }: { item?: NewsItem }) {
         existingAlt={item?.image_alt ?? null}
       />
 
-      <label className={styles.check}>
-        <input type="checkbox" name="published" defaultChecked={item?.published ?? false} />
-        Published — visible on the public site
-      </label>
+      <PublishCheck defaultChecked={item?.published ?? false} />
 
       <p className={styles.actions}>
         <Submit />

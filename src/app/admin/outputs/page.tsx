@@ -8,7 +8,13 @@ import {
   listAllFindings,
   listAllPublications,
 } from "@/lib/repo";
-import { removeFinding, removePublication } from "../actions";
+import {
+  removeFinding,
+  removePublication,
+  setFindingPublished,
+  setPublicationPublished,
+} from "../actions";
+import { ConfirmSubmit } from "../ConfirmSubmit";
 import { FindingForm, PublicationForm } from "../forms";
 import styles from "../admin.module.css";
 
@@ -128,15 +134,33 @@ export default async function AdminOutputsPage({
                   <Link className={styles.tab} href={`/admin/outputs?editFinding=${finding.id}`}>
                     Edit
                   </Link>
-                  {/* No confirm dialog: a Server Action form posts straight
-                      through. The delete is one row and re-adding is quick;
-                      a modal here would need a client component for no real
-                      protection. */}
+                  {/* Publish without opening the editor. The target state goes
+                      in the form, so the button does what its label says even
+                      if this page is a little stale. */}
+                  <form action={setFindingPublished}>
+                    <input type="hidden" name="id" value={finding.id} />
+                    <input type="hidden" name="publish" value={finding.published ? "0" : "1"} />
+                    <ConfirmSubmit
+                      className={styles.tab}
+                      pendingLabel="Working…"
+                      message={
+                        finding.published
+                          ? `Unpublish “${finding.title}”?\n\nIt will be removed from the public Outputs page immediately. Nothing is deleted — it goes back to being a draft.`
+                          : `Publish “${finding.title}”?\n\nIt will appear on the public Outputs page immediately.`
+                      }
+                    >
+                      {finding.published ? "Unpublish" : "Publish"}
+                    </ConfirmSubmit>
+                  </form>
                   <form action={removeFinding}>
                     <input type="hidden" name="id" value={finding.id} />
-                    <button type="submit" className={styles.danger}>
+                    <ConfirmSubmit
+                      className={styles.danger}
+                      pendingLabel="Deleting…"
+                      message={`Delete “${finding.title}”?\n\nThis cannot be undone. The finding and its text are removed permanently.`}
+                    >
                       Delete
-                    </button>
+                    </ConfirmSubmit>
                   </form>
                 </div>
               </li>
@@ -212,11 +236,34 @@ export default async function AdminOutputsPage({
                   >
                     Edit
                   </Link>
+                  <form action={setPublicationPublished}>
+                    <input type="hidden" name="id" value={publication.id} />
+                    <input
+                      type="hidden"
+                      name="publish"
+                      value={publication.published ? "0" : "1"}
+                    />
+                    <ConfirmSubmit
+                      className={styles.tab}
+                      pendingLabel="Working…"
+                      message={
+                        publication.published
+                          ? `Unpublish “${publication.title}”?\n\nIt will be removed from the public Outputs page immediately. Nothing is deleted — it goes back to being a draft.`
+                          : `Publish “${publication.title}”?\n\nIt will appear on the public Outputs page immediately.`
+                      }
+                    >
+                      {publication.published ? "Unpublish" : "Publish"}
+                    </ConfirmSubmit>
+                  </form>
                   <form action={removePublication}>
                     <input type="hidden" name="id" value={publication.id} />
-                    <button type="submit" className={styles.danger}>
+                    <ConfirmSubmit
+                      className={styles.danger}
+                      pendingLabel="Deleting…"
+                      message={`Delete “${publication.title}”?\n\nThis cannot be undone. The publication and its DOI are removed permanently.`}
+                    >
                       Delete
-                    </button>
+                    </ConfirmSubmit>
                   </form>
                 </div>
               </li>

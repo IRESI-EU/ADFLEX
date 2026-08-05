@@ -2,7 +2,8 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { getNewsItem, listAllNews } from "@/lib/repo";
-import { removeNewsItem } from "../actions";
+import { removeNewsItem, setNewsPublished } from "../actions";
+import { ConfirmSubmit } from "../ConfirmSubmit";
 import { NewsForm } from "../forms";
 import styles from "../admin.module.css";
 
@@ -117,11 +118,30 @@ export default async function AdminNewsPage({
                   <Link className={styles.tab} href={`/admin/news?edit=${item.id}`}>
                     Edit
                   </Link>
+                  <form action={setNewsPublished}>
+                    <input type="hidden" name="id" value={item.id} />
+                    <input type="hidden" name="publish" value={item.published ? "0" : "1"} />
+                    <ConfirmSubmit
+                      className={styles.tab}
+                      pendingLabel="Working…"
+                      message={
+                        item.published
+                          ? `Unpublish “${item.title}”?\n\nIt will be removed from the public News and Events page immediately. Nothing is deleted — it goes back to being a draft.`
+                          : `Publish “${item.title}”?\n\nIt will appear on the public News and Events page immediately.`
+                      }
+                    >
+                      {item.published ? "Unpublish" : "Publish"}
+                    </ConfirmSubmit>
+                  </form>
                   <form action={removeNewsItem}>
                     <input type="hidden" name="id" value={item.id} />
-                    <button type="submit" className={styles.danger}>
+                    <ConfirmSubmit
+                      className={styles.danger}
+                      pendingLabel="Deleting…"
+                      message={`Delete “${item.title}”?\n\nThis cannot be undone. The entry and its text are removed permanently.`}
+                    >
                       Delete
-                    </button>
+                    </ConfirmSubmit>
                   </form>
                 </div>
               </li>

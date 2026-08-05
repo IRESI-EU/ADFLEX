@@ -110,9 +110,23 @@ Sign in at `/admin/login`.
 | **News & Events** | Both, in one list, because they are one public route |
 | **Messages** | Contact form submissions |
 
-**Nothing is public until "Published" is ticked.** Saving stores a draft; the
-public page ignores it. That is the safety net that lets a half-written finding
-sit in the database without appearing on a publicly funded project site.
+**Nothing is public until it is published.** Saving stores a draft; the public
+page ignores it. That is the safety net that lets a half-written finding sit in
+the database without appearing on a publicly funded project site.
+
+There are two ways to publish, and they do the same thing:
+
+- The **checkbox in the form**, which reads *Publish* while unticked and
+  *Published* once ticked — the tense follows the state, so it never describes
+  the entry as something it is not.
+- The **Publish / Unpublish button on each row**, for changing visibility
+  without opening the editor.
+
+**Publishing, unpublishing and deleting all ask for confirmation**, naming the
+entry and saying what will happen. Unpublishing is reversible and says so;
+deleting is not, and says that too. The confirmation is a browser-side guard
+against a mis-click — it is not authorisation, which is `requireEditor()` inside
+the action.
 
 ### Text is text
 

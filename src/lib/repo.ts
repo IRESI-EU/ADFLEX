@@ -324,6 +324,37 @@ export async function deleteNewsItem(id: number): Promise<void> {
 }
 
 /* --------------------------------------------------------------------------
+ * Publishing
+ * ----------------------------------------------------------------------- */
+
+/** The three tables carrying a `published` flag. */
+export type PublishableTable = "findings" | "publications" | "news_items";
+
+const PUBLISHABLE: readonly PublishableTable[] = ["findings", "publications", "news_items"];
+
+/**
+ * Sets an entry's published flag.
+ *
+ * The table name cannot be parameterised in SQL, so it is interpolated — and is
+ * therefore checked against a fixed list first. That check is the only thing
+ * standing between a caller's string and the query text, so do not remove it
+ * and do not widen it to accept arbitrary input.
+ */
+export async function setPublished(
+  table: PublishableTable,
+  id: number,
+  published: boolean,
+): Promise<void> {
+  if (!PUBLISHABLE.includes(table)) {
+    throw new Error(`Refusing to publish against an unknown table: ${table}`);
+  }
+  await query(
+    `UPDATE ${table} SET published = $2, updated_at = now() WHERE id = $1`,
+    [id, published],
+  );
+}
+
+/* --------------------------------------------------------------------------
  * Contact messages
  * ----------------------------------------------------------------------- */
 
