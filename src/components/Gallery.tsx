@@ -50,17 +50,27 @@ export function columnsFor(count: number): number {
   return 4;
 }
 
+/**
+ * A magnifier with a plus in it.
+ *
+ * This was four bracket corners, which is the generic "fullscreen" mark and
+ * reads as "expand this panel" rather than "look at this picture closely". A
+ * magnifier says what the control does without a label.
+ */
 function ExpandIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path
-        d="M9 3H4a1 1 0 0 0-1 1v5M15 3h5a1 1 0 0 1 1 1v5M9 21H4a1 1 0 0 1-1-1v-5M15 21h5a1 1 0 0 0 1-1v-5"
+      <g
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
+      >
+        <circle cx="10.5" cy="10.5" r="6.5" />
+        <path d="M15.4 15.4 21 21" />
+        <path d="M10.5 7.8v5.4M7.8 10.5h5.4" />
+      </g>
     </svg>
   );
 }

@@ -151,31 +151,37 @@
 /* --- The expand control -------------------------------------------------- */
 
 /*
- * Always visible, not hover-only. A control that only appears on hover cannot
+ * Bottom right, and always visible.
+ *
+ * Bottom right because the top of a picture is usually its subject — a sky, a
+ * chart title, a face — while the bottom corner is the quietest part of most
+ * images, and it is the corner a reader's eye leaves the picture from.
+ *
+ * Always visible, not hover-only: a control that only appears on hover cannot
  * be found on a touch screen at all, and is invisible to anyone who has not
  * happened to move a pointer over the picture.
  */
 .expand {
   position: absolute;
-  inset-block-start: var(--adflex-space-2);
+  inset-block-end: var(--adflex-space-2);
   inset-inline-end: var(--adflex-space-2);
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   color: var(--adflex-color-ink);
   /* Its own light plate, so it stays legible over a dark photograph as well as
      a pale chart. */
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   border: 1px solid var(--adflex-color-border);
-  border-radius: var(--adflex-radius-sm);
-  box-shadow: 0 2px 6px rgba(13, 26, 24, 0.18);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(13, 26, 24, 0.22);
   pointer-events: none;
 }
 
 .expand svg {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
 }
 
 .trigger:hover .expand,
@@ -191,16 +197,17 @@
   }
 }
 
-/* Too small to be a comfortable target, and too fussy over a thumbnail. */
+/* Scaled down over a thumbnail, where the full-size badge would cover a
+   meaningful share of the picture. */
 @container (max-width: 260px) {
   .expand {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
   }
 
   .expand svg {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
   }
 }
 
@@ -258,14 +265,25 @@
   }
 }
 
+/*
+ * A column with one flexible row, so the caption is always on screen.
+ *
+ * The bar and the caption take the height they need; the picture takes what is
+ * left. Before this the image had its own `max-height: 78vh` and the dialog
+ * simply clipped whatever did not fit, which cut the description off the
+ * bottom edge — the one piece of text in the viewer.
+ */
 .lightboxBody {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--adflex-space-3);
+  max-height: 94vh;
   padding: var(--adflex-space-3) var(--adflex-space-4) var(--adflex-space-4);
 }
 
 .lightboxBar {
   display: flex;
+  flex: 0 0 auto;
   gap: var(--adflex-space-3);
   align-items: center;
   justify-content: space-between;
@@ -292,25 +310,42 @@
   background: var(--adflex-color-surface-soft);
 }
 
+/* `min-height: 0` is what lets this shrink below its content so the caption
+   below it keeps its space. A flex item defaults to `min-height: auto`, which
+   refuses to go smaller than the image inside it. */
 .lightboxStage {
   position: relative;
   display: grid;
+  flex: 1 1 auto;
   place-items: center;
   min-height: 0;
 }
 
 /*
- * The point of the whole feature: the image as large as the screen allows,
- * whole, at its own shape. `vh`/`vw` rather than percentages because the
- * dialog's own height is content-driven — a percentage here would resolve
- * against a box that does not exist yet.
+ * The point of the whole feature: the image as large as the space allows,
+ * whole, at its own shape.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THIS IS ARITHMETIC AND NOT `max-height: 100%`
+ * ---------------------------------------------------------------------------
+ * `100%` looks like the obvious answer and silently does nothing here. A
+ * percentage height only resolves against a parent with a *definite* height,
+ * and the dialog is `fit-content` — its height comes from this image, so the
+ * image cannot take its height from the dialog. The declaration was ignored, a
+ * 900x1600 portrait rendered at its full 1600px inside a 720px window, and
+ * `overflow: hidden` quietly cropped it. Everything measured fine; the picture
+ * was simply cut off.
+ *
+ * So the room is worked out instead. 13rem is the chrome above and below: the
+ * bar, the two gaps, the padding, and the caption's own capped height. Keep
+ * that number in step with `.lightboxCaption`'s `max-height` if either moves.
  */
 .lightboxImage {
   display: block;
   width: auto;
   height: auto;
   max-width: min(92vw, 1340px);
-  max-height: 78vh;
+  max-height: calc(94vh - 13rem);
   object-fit: contain;
   border-radius: var(--adflex-radius-md);
 }
@@ -346,13 +381,26 @@
   inset-inline-end: var(--adflex-space-2);
 }
 
-/* Capped so a long description cannot stretch the fit-content dialog wider
-   than the picture it belongs to. */
+/*
+ * Capped in width so a long description cannot stretch the fit-content dialog
+ * wider than the picture it belongs to, and `flex: 0 0 auto` so it always keeps
+ * its own height — the image gives way, not the text.
+ *
+ * A very long description scrolls within itself rather than pushing the picture
+ * off the screen.
+ */
 .lightboxCaption {
+  flex: 0 0 auto;
   max-width: 62ch;
+  /* About five lines, which covers any description an editor is likely to
+     write; anything longer scrolls rather than pushing the picture out of the
+     dialog. This cap is part of the 13rem allowance in `.lightboxImage` — move
+     one and you must move the other. */
+  max-height: 7rem;
+  overflow-y: auto;
   margin-inline: auto;
   font-size: var(--adflex-text-sm);
-  color: var(--adflex-color-muted);
+  color: var(--adflex-color-text);
   text-align: center;
 }
 

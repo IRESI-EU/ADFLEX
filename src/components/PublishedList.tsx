@@ -74,20 +74,46 @@ function entryClass(images: MediaRef[], size: ImageSize): string {
   return styles.entry;
 }
 
+/** True when the images sit above the text rather than beside it. */
+function isStacked(images: MediaRef[], size: ImageSize): boolean {
+  return images.length > 0 && size === "large";
+}
+
 export function FindingList({ findings }: { findings: Finding[] }) {
   return (
     <ul className={styles.list}>
-      {findings.map((finding) => (
-        <li key={finding.id} className={entryClass(finding.images, finding.image_size)}>
-          <Gallery images={finding.images} size={finding.image_size} />
-
+      {findings.map((finding) => {
+        const gallery = <Gallery images={finding.images} size={finding.image_size} />;
+        const body = (
           <div className={styles.entryBody}>
             <h3 className={styles.title}>{finding.title}</h3>
             {finding.summary ? <p className={styles.summary}>{finding.summary}</p> : null}
             <Prose text={finding.body} className={styles.body} />
           </div>
-        </li>
-      ))}
+        );
+
+        return (
+          <li key={finding.id} className={entryClass(finding.images, finding.image_size)}>
+            {/* Stacked entries lead with the heading and summary, then the
+                images — a reader should know what they are looking at before
+                they look at it. Beside-the-text layouts keep the image first,
+                where the heading is already level with it. The order is set in
+                the markup rather than with CSS, so what a screen reader hears
+                matches what the page shows. */}
+            {isStacked(finding.images, finding.image_size) ? (
+              <>
+                {body}
+                {gallery}
+              </>
+            ) : (
+              <>
+                {gallery}
+                {body}
+              </>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -161,10 +187,9 @@ export function NewsList({
 }) {
   return (
     <ul className={styles.list}>
-      {items.map((item) => (
-        <li key={item.id} className={entryClass(item.images, item.image_size)}>
-          <Gallery images={item.images} size={item.image_size} />
-
+      {items.map((item) => {
+        const gallery = <Gallery images={item.images} size={item.image_size} />;
+        const body = (
           <div className={styles.entryBody}>
             <p className={styles.meta}>
               {showKind ? (
@@ -187,8 +212,26 @@ export function NewsList({
             {item.summary ? <p className={styles.summary}>{item.summary}</p> : null}
             <Prose text={item.body} className={styles.body} />
           </div>
-        </li>
-      ))}
+        );
+
+        return (
+          <li key={item.id} className={entryClass(item.images, item.image_size)}>
+            {/* Heading first when the images are stacked above the text — see
+                the note in FindingList. */}
+            {isStacked(item.images, item.image_size) ? (
+              <>
+                {body}
+                {gallery}
+              </>
+            ) : (
+              <>
+                {gallery}
+                {body}
+              </>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }
