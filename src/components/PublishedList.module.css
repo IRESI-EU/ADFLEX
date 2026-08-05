@@ -12,9 +12,28 @@
   list-style: none;
 }
 
+/*
+ * The media column, sized against what a real editorial page does.
+ *
+ * The content row is 1112px at desktop width. The first version put `medium` at
+ * a fixed 320px — 29% of the row — and `small` at 200px, which is 18%. Next to
+ * a full-width heading and paragraph those read as thumbnails, not as part of
+ * the entry. For comparison, an inline image in a Guardian or BBC article runs
+ * the full ~640px text column, and a university news listing card sits around
+ * 340–400px.
+ *
+ * So the sizes are now a proportion with a ceiling, not a fixed pixel width:
+ *
+ *   small   30%, up to 300px  — a listing thumbnail: a logo, a portrait, a detail
+ *   medium  46%, up to 520px  — a genuine half-and-half with the text
+ *   large   the whole row     — see `.entryStacked`
+ *
+ * Expressing it as `min(px, %)` also removes a breakpoint: the column shrinks
+ * with the page instead of holding a fixed width until it squeezes the text.
+ */
 .entry {
   display: grid;
-  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, min(520px, 46%)) minmax(0, 1fr);
   gap: var(--adflex-space-5);
   align-items: start;
   padding-bottom: var(--adflex-space-6);
@@ -32,10 +51,10 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-/* `small`: a narrower media column, for a logo or a detail shot that would look
-   overblown at the default width. */
+/* `small`: a listing-thumbnail column, for a logo, a portrait or a detail shot
+   that would look overblown at the default width. */
 .entrySmallMedia {
-  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, min(300px, 30%)) minmax(0, 1fr);
 }
 
 /* `large`: images across the full width, text beneath. A chart that needs the

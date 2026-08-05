@@ -19,13 +19,16 @@
   container-type: inline-size;
 }
 
-/* `large` is the only size that changes the wrapper itself: the entry layout
-   gives it the full row, and a single small graphic should not be stretched
-   across all of it. */
-.large .gallery {
-  max-width: 1000px;
-  margin-inline: auto;
-}
+/*
+ * `large` means the whole row, for a gallery and for a single image alike.
+ *
+ * A single one was briefly capped at 900px and centred, which measured fine but
+ * looked wrong: the heading beneath it starts at the left margin, so a centred
+ * image sat visibly inset from the text on both sides. A lead image on an
+ * article page runs the full content width and lines up with the copy, which is
+ * what this does now. The height cap below is what stops a portrait running
+ * away with the page.
+ */
 
 .gallery {
   display: grid;
@@ -63,7 +66,12 @@
   width: auto;
   max-width: 100%;
   height: auto;
-  max-height: 460px;
+  /* Roughly the tallest an inline article image runs before it starts pushing
+     everything else off the screen. A portrait is scaled down to reach it, not
+     cropped. */
+  max-height: 560px;
+  /* Centred only within its own cell, which matters when the height cap has
+     made a portrait narrower than the column it sits in. */
   margin-inline: auto;
   background: var(--adflex-plate-media-light);
   border: 1px solid var(--adflex-color-border);
@@ -71,9 +79,9 @@
 }
 
 /* A single large image is the one case that should command the space, so it
-   gets more height before the cap bites. */
+   gets more height before the cap bites — a full-width lead image. */
 .large .gallery[data-count="1"] .image {
-  max-height: 620px;
+  max-height: 740px;
 }
 
 /*
@@ -88,27 +96,24 @@
 }
 
 /*
- * One column until there is genuinely room for more.
+ * One column until there is genuinely room for more. Both thresholds are about
+ * the width each image ends up at, not about any particular device.
  *
- * 360px is where two images are about 170px each — the point at which a chart
- * is still readable. 620px is the same judgement for three. Below that the
- * gallery stacks, which is why a narrow `medium` column shows a vertical strip
- * rather than a row of thumbnails.
+ * 380px  two images land at ~180px each, still readable, and it sits above a
+ *        phone's content width so a gallery always stacks on a phone.
+ * 760px  three land at ~240px each. Below this, three images stay two across
+ *        rather than becoming a row of thumbnails.
  */
-@container (min-width: 360px) {
-  .gallery[data-count="2"],
-  .gallery[data-count="4"] {
+@container (min-width: 380px) {
+  .gallery:not([data-count="1"]) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@container (min-width: 620px) {
+@container (min-width: 760px) {
+  /* Four sit better as a 2x2 block than as a row of four with one orphan. */
   .gallery:not([data-count="1"]):not([data-count="2"]):not([data-count="4"]) {
-    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
-  }
-
-  .gallery[data-count="4"] {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   }
 
   .gallery {

@@ -265,13 +265,13 @@ function ImagesField({
         name="imageSize"
         defaultValue={size}
       >
-        <option value="small">Small — a narrow column beside the text</option>
-        <option value="medium">Medium — the default, beside the text</option>
-        <option value="large">Large — full width, above the text</option>
+        <option value="small">Small — a thumbnail beside the text (about a quarter of the width)</option>
+        <option value="medium">Medium — beside the text, about half the width</option>
+        <option value="large">Large — the full width, with the text underneath</option>
       </select>
       <span className={styles.hint}>
         With more than one image they are laid out as a gallery at the chosen
-        size. Each image keeps its own shape, so nothing is cropped.
+        size. Each image keeps its own shape, so nothing is cropped or padded.
       </span>
     </fieldset>
   );

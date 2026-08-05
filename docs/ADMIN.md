@@ -182,13 +182,29 @@ Rows uploaded before this existed have no stored size and fall back to the old
 
 #### Size, and how the layout adapts
 
-Each entry carries an **image size** the editor picks:
+Each entry carries an **image size** the editor picks. The content row is 1112px
+at desktop width, and these are the widths that produces:
 
-| Size | Where the images go |
-| --- | --- |
-| `small` | A narrow column beside the text — a logo, a portrait, a detail |
-| `medium` | The default column beside the text |
-| `large` | Full width above the text, for a chart that needs the room |
+| Size | Width | Share of the row | Reads as |
+| --- | --- | --- | --- |
+| `small` | ~300px | 26% | A listing thumbnail — a logo, a portrait, a detail |
+| `medium` | ~510px | 44% | A genuine half-and-half with the text |
+| `large` | full row | 100% | An article lead image, with the text beneath |
+
+Those numbers are the point, and they were wrong first time round. `small` was
+200px and `medium` 320px — 18% and 29% of the row — which next to a full-width
+heading and paragraph read as thumbnails rather than as part of the entry. For
+comparison, an inline image in a Guardian or BBC article runs the full ~640px
+text column, and a university news listing card sits around 340–400px.
+
+The two side-by-side sizes are written as `min(px, %)` rather than a fixed
+width, so the column shrinks with the page instead of holding its width until it
+squeezes the text. Everything goes full width on a phone.
+
+`large` spans the whole row rather than being capped and centred. It was briefly
+capped at 900px, which measured fine but looked wrong: the heading beneath it
+starts at the left margin, so a centred image sat visibly inset from its own
+text on both sides.
 
 **The arrangement is not configured** — it follows from the width available and
 the number of images. The gallery is a CSS *container query* context, so it
