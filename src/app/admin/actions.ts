@@ -13,7 +13,7 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { queryOne } from "@/lib/db";
-import { readUpload } from "@/lib/upload";
+import { readUploads } from "@/lib/upload";
 import {
   createFinding,
   createMedia,
@@ -25,7 +25,9 @@ import {
   deletePublication,
   markMessageRead,
   normaliseDoi,
+  setMediaAlt,
   setPublished,
+  toImageSize,
   updateFinding,
   updateNewsItem,
   updatePublication,
@@ -74,32 +76,55 @@ const date = (form: FormData, key: string): string | null => {
 };
 
 /**
- * Handles the image field shared by findings and news items.
+ * Works out the final, ordered set of images for an entry.
  *
- * Returns the id to store: a new upload, the existing id when nothing was
- * chosen, or null when "remove" was ticked. Throws with a readable message on a
- * bad file so the caller can surface it rather than failing the whole save
- * silently.
+ * Three inputs are combined, in this order:
+ *
+ *  1. `keepImage` — the ids already attached, in the order the form listed
+ *     them. Unticking one drops it; the field order is the display order.
+ *  2. `imageAlt:<id>` — updated alt text for any kept image, saved in place.
+ *  3. `images` — newly chosen files, appended after the kept ones.
+ *
+ * Throws with a readable message on a bad file, so the caller can show it
+ * rather than the save failing silently.
  */
-async function resolveImage(
-  form: FormData,
-  userId: number,
-  existing: number | null,
-): Promise<number | null> {
-  if (flag(form, "removeImage")) return null;
+async function resolveImages(form: FormData, userId: number): Promise<number[]> {
+  const kept = form
+    .getAll("keepImage")
+    .map((value) => Number(value))
+    .filter((id) => Number.isInteger(id) && id > 0);
 
-  const upload = await readUpload(form.get("image") as File | null);
-  if (!upload) return existing;
-  if (!upload.ok) throw new Error(upload.error);
+  for (const id of kept) {
+    const alt = text(form, `imageAlt:${id}`);
+    await setMediaAlt(id, alt);
+  }
 
-  return createMedia({
-    filename: upload.filename,
-    mime: upload.mime,
-    data: upload.data,
-    alt: text(form, "imageAlt"),
-    uploadedBy: userId,
-  });
+  // `getAll` on a multiple file input returns every chosen file. An untouched
+  // input still yields one empty `File`, which `readUploads` skips.
+  const files = form.getAll("images").filter((v): v is File => v instanceof File);
+  const uploaded = await readUploads(files);
+  if (!uploaded.ok) throw new Error(uploaded.error);
+
+  const newAlt = text(form, "newImageAlt");
+  const created: number[] = [];
+  for (const upload of uploaded.uploads) {
+    created.push(
+      await createMedia({
+        filename: upload.filename,
+        mime: upload.mime,
+        data: upload.data,
+        alt: newAlt,
+        width: upload.width,
+        height: upload.height,
+        uploadedBy: userId,
+      }),
+    );
+  }
+
+  return [...kept, ...created];
 }
+
+const imageSize = (form: FormData) => toImageSize(text(form, "imageSize"));
 
 /** Refreshes both the admin list and the public page an edit affects. */
 function revalidate(...paths: string[]) {
@@ -190,12 +215,12 @@ export async function saveFinding(
   const id = int(form, "id", 0);
 
   try {
-    const imageId = await resolveImage(form, user.id, int(form, "existingImageId") || null);
     const input = {
       title,
       summary: text(form, "summary"),
       body: text(form, "body"),
-      imageId,
+      imageIds: await resolveImages(form, user.id),
+      imageSize: imageSize(form),
       published: flag(form, "published"),
       sortOrder: int(form, "sortOrder"),
     };
@@ -321,13 +346,13 @@ export async function saveNewsItem(
   const id = int(form, "id", 0);
 
   try {
-    const imageId = await resolveImage(form, user.id, int(form, "existingImageId") || null);
     const input = {
       kind: kind as "news" | "event",
       title,
       summary: text(form, "summary"),
       body: text(form, "body"),
-      imageId,
+      imageIds: await resolveImages(form, user.id),
+      imageSize: imageSize(form),
       publishedOn: date(form, "publishedOn") ?? new Date().toISOString().slice(0, 10),
       eventDate: kind === "event" ? eventDate : null,
       location: kind === "event" ? text(form, "location") || null : null,

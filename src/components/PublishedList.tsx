@@ -1,5 +1,6 @@
-import type { Finding, NewsItem, Publication } from "@/lib/repo";
+import type { Finding, ImageSize, MediaRef, NewsItem, Publication } from "@/lib/repo";
 import { doiUrl } from "@/lib/repo";
+import { Gallery } from "./Gallery";
 import styles from "./PublishedList.module.css";
 
 /**
@@ -58,26 +59,29 @@ export function formatDate(iso: string): string {
  * Findings
  * ----------------------------------------------------------------------- */
 
+/**
+ * Which layout an entry takes.
+ *
+ * `large` stacks — images across the full width, text underneath — because a
+ * chart that needs the width has nothing to sit beside. Everything else puts
+ * the images in a column next to the text, `small` narrower than `medium`.
+ * No images at all means the text takes the whole row.
+ */
+function entryClass(images: MediaRef[], size: ImageSize): string {
+  if (images.length === 0) return `${styles.entry} ${styles.entryNoImage}`;
+  if (size === "large") return `${styles.entry} ${styles.entryStacked}`;
+  if (size === "small") return `${styles.entry} ${styles.entrySmallMedia}`;
+  return styles.entry;
+}
+
 export function FindingList({ findings }: { findings: Finding[] }) {
   return (
     <ul className={styles.list}>
       {findings.map((finding) => (
-        <li
-          key={finding.id}
-          className={`${styles.entry} ${finding.image_id ? "" : styles.entryNoImage}`}
-        >
-          {finding.image_id ? (
-            // eslint-disable-next-line @next/next/no-img-element -- see the note above
-            <img
-              className={styles.media}
-              src={`/media/${finding.image_id}`}
-              alt={finding.image_alt || ""}
-              loading="lazy"
-              decoding="async"
-            />
-          ) : null}
+        <li key={finding.id} className={entryClass(finding.images, finding.image_size)}>
+          <Gallery images={finding.images} size={finding.image_size} />
 
-          <div>
+          <div className={styles.entryBody}>
             <h3 className={styles.title}>{finding.title}</h3>
             {finding.summary ? <p className={styles.summary}>{finding.summary}</p> : null}
             <Prose text={finding.body} className={styles.body} />
@@ -158,22 +162,10 @@ export function NewsList({
   return (
     <ul className={styles.list}>
       {items.map((item) => (
-        <li
-          key={item.id}
-          className={`${styles.entry} ${item.image_id ? "" : styles.entryNoImage}`}
-        >
-          {item.image_id ? (
-            // eslint-disable-next-line @next/next/no-img-element -- see the note above
-            <img
-              className={styles.media}
-              src={`/media/${item.image_id}`}
-              alt={item.image_alt || ""}
-              loading="lazy"
-              decoding="async"
-            />
-          ) : null}
+        <li key={item.id} className={entryClass(item.images, item.image_size)}>
+          <Gallery images={item.images} size={item.image_size} />
 
-          <div>
+          <div className={styles.entryBody}>
             <p className={styles.meta}>
               {showKind ? (
                 <span className={styles.kind}>

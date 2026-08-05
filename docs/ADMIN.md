@@ -124,9 +124,19 @@ There are two ways to publish, and they do the same thing:
 
 **Publishing, unpublishing and deleting all ask for confirmation**, naming the
 entry and saying what will happen. Unpublishing is reversible and says so;
-deleting is not, and says that too. The confirmation is a browser-side guard
-against a mis-click — it is not authorisation, which is `requireEditor()` inside
-the action.
+deleting is not, and says that too.
+
+The dialogue is a native `<dialog>` opened with `showModal()`. That is worth
+knowing before anyone replaces it with a div: it gives focus trapping, an inert
+page behind, Escape-to-close and a real `::backdrop` without a line of code, and
+none of that is reimplemented here. It replaced `window.confirm`, which worked
+but could not be styled and read as a browser error.
+
+The confirm button is `type="button"`, so it cannot submit on its own —
+confirming calls `requestSubmit()` on the form. With JavaScript off the button
+does nothing at all, rather than deleting something without asking. The
+confirmation guards against a mis-click; it is not authorisation, which is
+`requireEditor()` inside the action.
 
 ### Text is text
 
@@ -145,7 +155,8 @@ stored and shown as a link that goes nowhere.
 
 ### Images
 
-PNG, JPEG, WebP or GIF, up to 5 MB.
+PNG, JPEG, WebP or GIF, up to 5 MB each. **Several can be attached to one
+entry** — choose them all at once, then reorder or remove them individually.
 
 **SVG is deliberately not accepted.** It can carry script, and uploads are
 served back from our own origin at `/media/[id]`.
@@ -153,6 +164,42 @@ served back from our own origin at `/media/[id]`.
 The format is checked from the file's leading bytes, not from its extension or
 the `Content-Type` the browser claimed — both of which are just text a client
 supplies. A `.png` containing HTML is rejected.
+
+#### Nothing is cropped or letterboxed
+
+The real pixel dimensions are read straight out of each file's header on upload
+(`src/lib/image-size.ts` — header parsing, not decoding, so no `sharp` and no
+native module to compile on a deploy target). Every image is then drawn at its
+own aspect ratio.
+
+That is what replaced the fixed 3:2 frame, which had to either crop the image —
+so a chart lost its axis labels — or pad it, so a portrait photograph sat in a
+wide grey field. Space is still reserved before the bytes arrive, so the page
+does not shift as images load.
+
+Rows uploaded before this existed have no stored size and fall back to the old
+3:2 frame. Nothing needs migrating; they just look as they did.
+
+#### Size, and how the layout adapts
+
+Each entry carries an **image size** the editor picks:
+
+| Size | Where the images go |
+| --- | --- |
+| `small` | A narrow column beside the text — a logo, a portrait, a detail |
+| `medium` | The default column beside the text |
+| `large` | Full width above the text, for a chart that needs the room |
+
+**The arrangement is not configured** — it follows from the width available and
+the number of images. The gallery is a CSS *container query* context, so it
+measures the column it is in rather than the browser window. That matters: the
+same component sits in a 200px column at `small` and across the whole page at
+`large`, and a viewport media query cannot tell those apart. The first version
+used one and put three images side by side inside the narrow column on a desktop
+screen, at about 60px each.
+
+Very tall images are capped by height and scaled down — never cropped — so one
+portrait photograph cannot bury the text beside it.
 
 #### Two limits, and they have to stay in step
 

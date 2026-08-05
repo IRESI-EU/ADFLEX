@@ -1,0 +1,126 @@
+/*
+ * The image gallery on /outputs and /news.
+ *
+ * ---------------------------------------------------------------------------
+ * IT SIZES ITSELF FROM ITS CONTAINER, NOT THE VIEWPORT
+ * ---------------------------------------------------------------------------
+ * The same component sits in a 200px column at `small`, a ~320px column at
+ * `medium`, and across the full page at `large`. A viewport media query cannot
+ * tell those apart — on a desktop screen it would happily put three images side
+ * by side inside the 200px column, producing charts about 60px wide.
+ *
+ * So the wrapper declares itself a size container and the grid asks *it* how
+ * much room there is. One set of breakpoints then works in every slot, and the
+ * editor's size choice is expressed purely as how wide the wrapper is allowed
+ * to be, which is the only thing it should control.
+ */
+
+.wrap {
+  container-type: inline-size;
+}
+
+/* `large` is the only size that changes the wrapper itself: the entry layout
+   gives it the full row, and a single small graphic should not be stretched
+   across all of it. */
+.large .gallery {
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+.gallery {
+  display: grid;
+  gap: var(--adflex-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  min-width: 0;
+}
+
+/*
+ * `height: auto` against an inline `aspect-ratio` taken from the file's real
+ * pixel dimensions.
+ *
+ * There is deliberately no `object-fit`: the box is already the image's own
+ * shape, so there is nothing to crop and nothing to letterbox. That is the
+ * whole reason dimensions are read on upload.
+ */
+.image {
+  display: block;
+  /*
+   * Both dimensions auto, bounded by `max-width` and `max-height`.
+   *
+   * The browser then fits the image inside those bounds at its own ratio. That
+   * is what stops a 500x1100 portrait rendering 704px tall in a 320px column
+   * and burying the text beside it — it scales down to fit, rather than being
+   * cropped or letterboxed to reach the cap.
+   *
+   * `width: auto` also means a small image is never blown up past its natural
+   * size, which would only make it blurry.
+   */
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 460px;
+  margin-inline: auto;
+  background: var(--adflex-plate-media-light);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+}
+
+/* A single large image is the one case that should command the space, so it
+   gets more height before the cap bites. */
+.large .gallery[data-count="1"] .image {
+  max-height: 620px;
+}
+
+/*
+ * Rows stored before dimensions were recorded have no ratio to work with, so
+ * they keep the old fixed frame — `contain`, so they still show whole rather
+ * than cropped. This only applies to those older rows.
+ */
+.image[data-unsized] {
+  aspect-ratio: 3 / 2;
+  object-fit: contain;
+  padding: var(--adflex-space-2);
+}
+
+/*
+ * One column until there is genuinely room for more.
+ *
+ * 360px is where two images are about 170px each — the point at which a chart
+ * is still readable. 620px is the same judgement for three. Below that the
+ * gallery stacks, which is why a narrow `medium` column shows a vertical strip
+ * rather than a row of thumbnails.
+ */
+@container (min-width: 360px) {
+  .gallery[data-count="2"],
+  .gallery[data-count="4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 620px) {
+  .gallery:not([data-count="1"]):not([data-count="2"]):not([data-count="4"]) {
+    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  }
+
+  .gallery[data-count="4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gallery {
+    gap: var(--adflex-space-4);
+  }
+}
+
+/* Side by side, images of different shapes have different heights. Centring
+   them splits the difference top and bottom instead of leaving one ragged edge
+   along the bottom of the row. */
+.gallery:not([data-count="1"]) .item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

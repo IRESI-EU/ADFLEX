@@ -16,13 +16,37 @@ import { query, queryOne, safeRead } from "./db";
  *    "your work is gone".
  */
 
+/**
+ * How large an entry's images are drawn on the public page.
+ *
+ * `small`  a narrow column beside the text — a logo, a portrait, a detail shot
+ * `medium` the default column beside the text
+ * `large`  full width above the text, for a chart or diagram that needs room
+ */
+export type ImageSize = "small" | "medium" | "large";
+
+const IMAGE_SIZES: readonly ImageSize[] = ["small", "medium", "large"];
+
+/** Anything else in the column — an older row, a hand-edited value — reads as the default. */
+export function toImageSize(value: unknown): ImageSize {
+  return IMAGE_SIZES.includes(value as ImageSize) ? (value as ImageSize) : "medium";
+}
+
+/** One image attached to an entry. `width`/`height` are null when unreadable. */
+export type MediaRef = {
+  id: number;
+  alt: string;
+  width: number | null;
+  height: number | null;
+};
+
 export type Finding = {
   id: number;
   title: string;
   summary: string;
   body: string;
-  image_id: number | null;
-  image_alt: string | null;
+  images: MediaRef[];
+  image_size: ImageSize;
   published: boolean;
   sort_order: number;
 };
@@ -45,8 +69,8 @@ export type NewsItem = {
   title: string;
   summary: string;
   body: string;
-  image_id: number | null;
-  image_alt: string | null;
+  images: MediaRef[];
+  image_size: ImageSize;
   published_on: string;
   event_date: string | null;
   location: string | null;
@@ -97,9 +121,31 @@ export function doiUrl(doi: string): string {
  * Findings
  * ----------------------------------------------------------------------- */
 
+/**
+ * The attached images, as a JSON array, built inside the query.
+ *
+ * A plain join would repeat the whole entry once per image and leave the caller
+ * to stitch the rows back together. Aggregating in SQL keeps one row per entry
+ * and hands back the images already ordered — `pg` parses the `json` column
+ * into a real array, so nothing is parsed by hand.
+ *
+ * `COALESCE(..., '[]')` matters: without it an entry with no images gets `null`
+ * rather than an empty array, and every reader would need a guard.
+ */
+const imagesJson = (table: string, fk: string, alias: string) => `
+  COALESCE((
+    SELECT json_agg(
+             json_build_object('id', m.id, 'alt', m.alt, 'width', m.width, 'height', m.height)
+             ORDER BY x.position, x.id
+           )
+    FROM ${table} x JOIN media m ON m.id = x.media_id
+    WHERE x.${fk} = ${alias}.id
+  ), '[]'::json) AS images
+`;
+
 const FINDING_COLUMNS = `
-  f.id, f.title, f.summary, f.body, f.image_id, m.alt AS image_alt,
-  f.published, f.sort_order
+  f.id, f.title, f.summary, f.body, f.published, f.sort_order, f.image_size,
+  ${imagesJson("finding_images", "finding_id", "f")}
 `;
 
 export function listPublishedFindings(): Promise<Finding[]> {
@@ -108,7 +154,6 @@ export function listPublishedFindings(): Promise<Finding[]> {
       query<Finding>(`
         SELECT ${FINDING_COLUMNS}
         FROM findings f
-        LEFT JOIN media m ON m.id = f.image_id
         WHERE f.published
         ORDER BY f.sort_order, f.created_at DESC
       `),
@@ -121,16 +166,13 @@ export function listAllFindings(): Promise<Finding[]> {
   return query<Finding>(`
     SELECT ${FINDING_COLUMNS}
     FROM findings f
-    LEFT JOIN media m ON m.id = f.image_id
     ORDER BY f.sort_order, f.created_at DESC
   `);
 }
 
 export function getFinding(id: number): Promise<Finding | null> {
   return queryOne<Finding>(
-    `SELECT ${FINDING_COLUMNS}
-     FROM findings f LEFT JOIN media m ON m.id = f.image_id
-     WHERE f.id = $1`,
+    `SELECT ${FINDING_COLUMNS} FROM findings f WHERE f.id = $1`,
     [id],
   );
 }
@@ -139,31 +181,53 @@ export type FindingInput = {
   title: string;
   summary: string;
   body: string;
-  imageId: number | null;
+  imageIds: number[];
+  imageSize: ImageSize;
   published: boolean;
   sortOrder: number;
 };
 
 export async function createFinding(input: FindingInput): Promise<number> {
   const row = await queryOne<{ id: number }>(
-    `INSERT INTO findings (title, summary, body, image_id, published, sort_order)
+    `INSERT INTO findings (title, summary, body, published, sort_order, image_size)
      VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-    [input.title, input.summary, input.body, input.imageId, input.published, input.sortOrder],
+    [input.title, input.summary, input.body, input.published, input.sortOrder, input.imageSize],
   );
+  await setFindingImages(row!.id, input.imageIds);
   return row!.id;
 }
 
 export async function updateFinding(id: number, input: FindingInput): Promise<void> {
   await query(
     `UPDATE findings
-     SET title = $2, summary = $3, body = $4, image_id = $5,
-         published = $6, sort_order = $7, updated_at = now()
+     SET title = $2, summary = $3, body = $4,
+         published = $5, sort_order = $6, image_size = $7, updated_at = now()
      WHERE id = $1`,
-    [id, input.title, input.summary, input.body, input.imageId, input.published, input.sortOrder],
+    [id, input.title, input.summary, input.body, input.published, input.sortOrder, input.imageSize],
   );
+  await setFindingImages(id, input.imageIds);
+}
+
+/**
+ * Replaces the whole set of attached images in their given order.
+ *
+ * Delete-then-insert rather than working out which rows changed. The set is a
+ * handful of rows, the order is part of the value, and reconciling additions,
+ * removals and moves separately is where an ordering bug would live.
+ */
+async function setFindingImages(findingId: number, mediaIds: number[]): Promise<void> {
+  await query("DELETE FROM finding_images WHERE finding_id = $1", [findingId]);
+  for (const [position, mediaId] of mediaIds.entries()) {
+    await query(
+      "INSERT INTO finding_images (finding_id, media_id, position) VALUES ($1, $2, $3)",
+      [findingId, mediaId, position],
+    );
+  }
 }
 
 export async function deleteFinding(id: number): Promise<void> {
+  // `finding_images` cascades; the `media` rows themselves are left alone so an
+  // image used by two entries does not vanish from the other.
   await query("DELETE FROM findings WHERE id = $1", [id]);
 }
 
@@ -240,10 +304,11 @@ export async function deletePublication(id: number): Promise<void> {
  * ----------------------------------------------------------------------- */
 
 const NEWS_COLUMNS = `
-  n.id, n.kind, n.title, n.summary, n.body, n.image_id, m.alt AS image_alt,
+  n.id, n.kind, n.title, n.summary, n.body, n.image_size,
   to_char(n.published_on, 'YYYY-MM-DD') AS published_on,
   to_char(n.event_date, 'YYYY-MM-DD') AS event_date,
-  n.location, n.published
+  n.location, n.published,
+  ${imagesJson("news_images", "news_id", "n")}
 `;
 
 /**
@@ -258,7 +323,7 @@ export function listPublishedNews(): Promise<NewsItem[]> {
     () =>
       query<NewsItem>(`
         SELECT ${NEWS_COLUMNS}
-        FROM news_items n LEFT JOIN media m ON m.id = n.image_id
+        FROM news_items n
         WHERE n.published
         ORDER BY COALESCE(n.event_date, n.published_on) DESC, n.id DESC
       `),
@@ -270,16 +335,14 @@ export function listPublishedNews(): Promise<NewsItem[]> {
 export function listAllNews(): Promise<NewsItem[]> {
   return query<NewsItem>(`
     SELECT ${NEWS_COLUMNS}
-    FROM news_items n LEFT JOIN media m ON m.id = n.image_id
+    FROM news_items n
     ORDER BY COALESCE(n.event_date, n.published_on) DESC, n.id DESC
   `);
 }
 
 export function getNewsItem(id: number): Promise<NewsItem | null> {
   return queryOne<NewsItem>(
-    `SELECT ${NEWS_COLUMNS}
-     FROM news_items n LEFT JOIN media m ON m.id = n.image_id
-     WHERE n.id = $1`,
+    `SELECT ${NEWS_COLUMNS} FROM news_items n WHERE n.id = $1`,
     [id],
   );
 }
@@ -289,7 +352,8 @@ export type NewsInput = {
   title: string;
   summary: string;
   body: string;
-  imageId: number | null;
+  imageIds: number[];
+  imageSize: ImageSize;
   publishedOn: string;
   eventDate: string | null;
   location: string | null;
@@ -299,24 +363,37 @@ export type NewsInput = {
 export async function createNewsItem(input: NewsInput): Promise<number> {
   const row = await queryOne<{ id: number }>(
     `INSERT INTO news_items
-       (kind, title, summary, body, image_id, published_on, event_date, location, published)
+       (kind, title, summary, body, published_on, event_date, location, published, image_size)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-    [input.kind, input.title, input.summary, input.body, input.imageId,
-     input.publishedOn, input.eventDate, input.location, input.published],
+    [input.kind, input.title, input.summary, input.body,
+     input.publishedOn, input.eventDate, input.location, input.published, input.imageSize],
   );
+  await setNewsImages(row!.id, input.imageIds);
   return row!.id;
 }
 
 export async function updateNewsItem(id: number, input: NewsInput): Promise<void> {
   await query(
     `UPDATE news_items
-     SET kind = $2, title = $3, summary = $4, body = $5, image_id = $6,
-         published_on = $7, event_date = $8, location = $9, published = $10,
-         updated_at = now()
+     SET kind = $2, title = $3, summary = $4, body = $5,
+         published_on = $6, event_date = $7, location = $8, published = $9,
+         image_size = $10, updated_at = now()
      WHERE id = $1`,
-    [id, input.kind, input.title, input.summary, input.body, input.imageId,
-     input.publishedOn, input.eventDate, input.location, input.published],
+    [id, input.kind, input.title, input.summary, input.body,
+     input.publishedOn, input.eventDate, input.location, input.published, input.imageSize],
   );
+  await setNewsImages(id, input.imageIds);
+}
+
+/** Same delete-then-insert reasoning as `setFindingImages`. */
+async function setNewsImages(newsId: number, mediaIds: number[]): Promise<void> {
+  await query("DELETE FROM news_images WHERE news_id = $1", [newsId]);
+  for (const [position, mediaId] of mediaIds.entries()) {
+    await query(
+      "INSERT INTO news_images (news_id, media_id, position) VALUES ($1, $2, $3)",
+      [newsId, mediaId, position],
+    );
+  }
 }
 
 export async function deleteNewsItem(id: number): Promise<void> {
@@ -411,14 +488,22 @@ export async function createMedia(input: {
   mime: string;
   data: Buffer;
   alt: string;
+  width: number | null;
+  height: number | null;
   uploadedBy: number;
 }): Promise<number> {
   const row = await queryOne<{ id: number }>(
-    `INSERT INTO media (filename, mime, byte_size, data, alt, uploaded_by)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-    [input.filename, input.mime, input.data.byteLength, input.data, input.alt, input.uploadedBy],
+    `INSERT INTO media (filename, mime, byte_size, data, alt, width, height, uploaded_by)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+    [input.filename, input.mime, input.data.byteLength, input.data, input.alt,
+     input.width, input.height, input.uploadedBy],
   );
   return row!.id;
+}
+
+/** Updates the alt text on images already attached to an entry. */
+export async function setMediaAlt(id: number, alt: string): Promise<void> {
+  await query("UPDATE media SET alt = $2 WHERE id = $1", [id, alt]);
 }
 
 export function listMedia(): Promise<MediaSummary[]> {

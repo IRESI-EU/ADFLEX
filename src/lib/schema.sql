@@ -100,6 +100,62 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- --------------------------------------------------------------------------
+-- Multiple images per entry                                    (5 August 2026)
+-- --------------------------------------------------------------------------
+-- `findings.image_id` and `news_items.image_id` held exactly one image each.
+-- These tables replace that with an ordered set.
+--
+-- Two tables rather than one polymorphic table with an `item_type` column. A
+-- polymorphic `item_id` cannot carry a foreign key, so deleting a finding would
+-- leave its image rows behind as orphans to be cleaned up by hand. Separate
+-- tables get `ON DELETE CASCADE` for free, and that is worth the duplication.
+CREATE TABLE IF NOT EXISTS finding_images (
+  id         SERIAL PRIMARY KEY,
+  finding_id INTEGER NOT NULL REFERENCES findings(id)  ON DELETE CASCADE,
+  media_id   INTEGER NOT NULL REFERENCES media(id)     ON DELETE CASCADE,
+  position   INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS news_images (
+  id       SERIAL PRIMARY KEY,
+  news_id  INTEGER NOT NULL REFERENCES news_items(id) ON DELETE CASCADE,
+  media_id INTEGER NOT NULL REFERENCES media(id)      ON DELETE CASCADE,
+  position INTEGER NOT NULL DEFAULT 0
+);
+
+-- Real pixel dimensions, read from the file header on upload. Null for anything
+-- uploaded before this existed, or whose header could not be parsed; the
+-- renderer falls back to a 3:2 box in that case.
+ALTER TABLE media ADD COLUMN IF NOT EXISTS width  INTEGER;
+ALTER TABLE media ADD COLUMN IF NOT EXISTS height INTEGER;
+
+-- How large the images should be drawn on the public page. See `ImageSize` in
+-- src/lib/repo.ts for what each value means.
+ALTER TABLE findings   ADD COLUMN IF NOT EXISTS image_size TEXT NOT NULL DEFAULT 'medium';
+ALTER TABLE news_items ADD COLUMN IF NOT EXISTS image_size TEXT NOT NULL DEFAULT 'medium';
+
+-- Carries anything stored under the old single-image columns into the new
+-- tables. Guarded by NOT EXISTS so re-running db:setup cannot duplicate a row.
+--
+-- `image_id` is deliberately **not dropped**. Dropping a column is irreversible,
+-- and making the drop safely re-runnable needs a dollar-quoted DO block, which
+-- the statement splitter in scripts/db-setup.mjs does not parse. It is dead
+-- weight and nothing reads it; leave it unless you also teach that splitter
+-- about `$$`.
+INSERT INTO finding_images (finding_id, media_id, position)
+SELECT f.id, f.image_id, 0 FROM findings f
+WHERE f.image_id IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM finding_images fi WHERE fi.finding_id = f.id);
+
+INSERT INTO news_images (news_id, media_id, position)
+SELECT n.id, n.image_id, 0 FROM news_items n
+WHERE n.image_id IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM news_images ni WHERE ni.news_id = n.id);
+
+CREATE INDEX IF NOT EXISTS finding_images_idx ON finding_images (finding_id, position);
+CREATE INDEX IF NOT EXISTS news_images_idx    ON news_images (news_id, position);
+
 CREATE INDEX IF NOT EXISTS findings_live_idx     ON findings (published, sort_order, created_at DESC);
 CREATE INDEX IF NOT EXISTS publications_live_idx ON publications (published, sort_order, year DESC);
 CREATE INDEX IF NOT EXISTS news_live_idx         ON news_items (published, published_on DESC);

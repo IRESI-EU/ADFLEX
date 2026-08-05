@@ -32,29 +32,21 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-/*
- * `contain`, not `cover` — the whole image has to be visible.
- *
- * `cover` fills the frame by cropping whatever does not fit, which is right for
- * a decorative banner and wrong here: these are charts, diagrams and photographs
- * an editor chose, and a cropped chart loses its axis labels. `contain` fits the
- * entire image inside the frame and pads whatever is left over.
- *
- * The frame itself stays. We deliberately do not store pixel dimensions for
- * uploads, so without a reserved box the page would reflow as each image
- * arrives. `aspect-ratio` holds the space; `contain` decides what happens
- * inside it. The padding is what stops a portrait image touching the border on
- * two sides while a landscape one touches it on the other two.
- */
-.media {
-  display: block;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: contain;
-  padding: var(--adflex-space-2);
-  background: var(--adflex-plate-media-light);
-  border: 1px solid var(--adflex-color-border);
-  border-radius: var(--adflex-radius-lg);
+/* `small`: a narrower media column, for a logo or a detail shot that would look
+   overblown at the default width. */
+.entrySmallMedia {
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+}
+
+/* `large`: images across the full width, text beneath. A chart that needs the
+   width has nothing to sit beside. */
+.entryStacked {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--adflex-space-4);
+}
+
+.entryBody {
+  min-width: 0;
 }
 
 .title {
@@ -165,7 +157,8 @@
 }
 
 @media (max-width: 780px) {
-  .entry {
+  .entry,
+  .entrySmallMedia {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--adflex-space-4);
   }

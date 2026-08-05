@@ -9,7 +9,7 @@ import {
   savePublication,
   signIn,
 } from "./actions";
-import type { Finding, NewsItem, Publication } from "@/lib/repo";
+import type { Finding, ImageSize, MediaRef, NewsItem, Publication } from "@/lib/repo";
 import { ACCEPT_ATTRIBUTE, MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
 import styles from "./admin.module.css";
 
@@ -90,76 +90,141 @@ function Banner({ state }: { state: ActionState }) {
 }
 
 /**
- * The image field, shared by findings and news.
+ * The images field, shared by findings and news.
  *
- * Shows what is already attached, offers to replace or remove it, and carries
- * the existing id forward in a hidden input so a save that does not touch the
- * picture keeps it.
+ * Handles an ordered set rather than one picture: each attached image can be
+ * moved, removed or re-described, and any number of new files can be added at
+ * once.
+ *
+ * **Order is expressed by the order of the `keepImage` inputs**, not by an index
+ * written into each one. Reordering therefore only has to reorder the array
+ * here; the server reads `form.getAll("keepImage")`, which preserves document
+ * order, so the two cannot disagree about what position 3 means.
  */
-function ImageField({
-  existingId,
-  existingAlt,
+function ImagesField({
+  existing,
+  size,
 }: {
-  existingId: number | null;
-  existingAlt: string | null;
+  existing: MediaRef[];
+  size: ImageSize;
 }) {
-  const [remove, setRemove] = useState(false);
+  const [kept, setKept] = useState(existing);
+  const [picked, setPicked] = useState<string[]>([]);
   const [tooBig, setTooBig] = useState<string | null>(null);
 
+  const move = (index: number, by: number) => {
+    const to = index + by;
+    if (to < 0 || to >= kept.length) return;
+    const next = [...kept];
+    [next[index], next[to]] = [next[to], next[index]];
+    setKept(next);
+  };
+
   /**
-   * Checks the size before the form is ever submitted.
+   * Checks sizes before the form is ever submitted.
    *
-   * Not a security control — `src/lib/upload.ts` re-checks on the server, which
-   * is the check that counts. This exists so an editor who picks a 12 MB
-   * photograph is told immediately, instead of waiting for a full upload that
-   * was always going to be refused.
+   * Not a security control — `src/lib/upload.ts` re-checks every file on the
+   * server, which is the check that counts. This exists so an editor who picks
+   * a 12 MB photograph is told at once, instead of waiting for a whole upload
+   * that was always going to be refused. Every file is checked, because one bad
+   * file in a multiple selection would otherwise fail the entire save.
    */
   const onPick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.size > MAX_UPLOAD_BYTES) {
+    const files = [...(event.target.files ?? [])];
+    const over = files.find((file) => file.size > MAX_UPLOAD_BYTES);
+
+    if (over) {
       setTooBig(
-        `That image is ${(file.size / 1024 / 1024).toFixed(1)} MB. The limit is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB — please resize it and choose it again.`,
+        `“${over.name}” is ${(over.size / 1024 / 1024).toFixed(1)} MB. The limit is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB per image — please resize it and choose again.`,
       );
       event.target.value = "";
+      setPicked([]);
       return;
     }
+
     setTooBig(null);
+    setPicked(files.map((file) => file.name));
   };
 
   return (
-    <div className={styles.field}>
-      <span className={styles.label}>Image</span>
-      <input type="hidden" name="existingImageId" value={existingId ?? ""} />
+    <fieldset className={styles.imagesField}>
+      <legend className={styles.label}>Images</legend>
 
-      {existingId ? (
-        <div className={styles.actions}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- served from
-              the database at /media/[id]; next/image needs intrinsic dimensions
-              we deliberately do not store. */}
-          <img
-            className={styles.thumb}
-            src={`/media/${existingId}`}
-            alt={existingAlt || ""}
-            width={84}
-          />
-          <label className={styles.check}>
-            <input
-              type="checkbox"
-              name="removeImage"
-              checked={remove}
-              onChange={(event) => setRemove(event.target.checked)}
-            />
-            Remove this image
-          </label>
-        </div>
-      ) : null}
+      {kept.length > 0 ? (
+        <ul className={styles.imageList}>
+          {kept.map((image, index) => (
+            <li key={image.id} className={styles.imageRow}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- served
+                  from the database at /media/[id]; next/image cannot optimise a
+                  route it has no build-time knowledge of. */}
+              <img className={styles.thumb} src={`/media/${image.id}`} alt="" />
 
+              {/* The position of this input in the document *is* the position
+                  of the image. */}
+              <input type="hidden" name="keepImage" value={image.id} />
+
+              <div className={styles.imageMeta}>
+                <label className={styles.hint} htmlFor={`alt-${image.id}`}>
+                  Description (for screen readers — leave empty if decorative)
+                </label>
+                <input
+                  id={`alt-${image.id}`}
+                  className={styles.input}
+                  name={`imageAlt:${image.id}`}
+                  defaultValue={image.alt}
+                  maxLength={300}
+                />
+                <span className={styles.hint}>
+                  {image.width && image.height
+                    ? `${image.width} × ${image.height} pixels`
+                    : "Size unknown — will be shown in a 3:2 frame"}
+                </span>
+              </div>
+
+              <div className={styles.imageButtons}>
+                <button
+                  type="button"
+                  className={styles.tab}
+                  onClick={() => move(index, -1)}
+                  disabled={index === 0}
+                  aria-label={`Move image ${index + 1} earlier`}
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  className={styles.tab}
+                  onClick={() => move(index, 1)}
+                  disabled={index === kept.length - 1}
+                  aria-label={`Move image ${index + 1} later`}
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  className={styles.danger}
+                  onClick={() => setKept(kept.filter((k) => k.id !== image.id))}
+                >
+                  Remove
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className={styles.hint}>No images attached yet.</p>
+      )}
+
+      <label className={styles.label} htmlFor="images">
+        Add images
+      </label>
       <input
+        id="images"
         className={styles.input}
         type="file"
-        name="image"
+        name="images"
         accept={ACCEPT_ATTRIBUTE}
-        disabled={remove}
+        multiple
         onChange={onPick}
       />
       {tooBig ? (
@@ -167,27 +232,48 @@ function ImageField({
           {tooBig}
         </span>
       ) : null}
+      {picked.length > 0 ? (
+        <span className={styles.hint}>
+          {picked.length} new image{picked.length === 1 ? "" : "s"}: {picked.join(", ")}
+        </span>
+      ) : null}
       <span className={styles.hint}>
-        PNG, JPEG, WebP or GIF, up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB. SVG is
-        not accepted. Leave empty to keep the current image.
+        PNG, JPEG, WebP or GIF, up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB each.
+        SVG is not accepted. Choose several at once if you want a gallery.
       </span>
 
-      <label className={styles.label} htmlFor="imageAlt">
-        Image description
+      <label className={styles.label} htmlFor="newImageAlt">
+        Description for the new images
       </label>
       <input
-        id="imageAlt"
+        id="newImageAlt"
         className={styles.input}
-        type="text"
-        name="imageAlt"
-        defaultValue={existingAlt ?? ""}
+        name="newImageAlt"
         maxLength={300}
       />
       <span className={styles.hint}>
-        What the image shows, for anyone using a screen reader. Leave empty if it
-        is purely decorative.
+        Applied to everything added in this save. Each one can be described
+        separately after saving.
       </span>
-    </div>
+
+      <label className={styles.label} htmlFor="imageSize">
+        How large should they appear?
+      </label>
+      <select
+        id="imageSize"
+        className={styles.select}
+        name="imageSize"
+        defaultValue={size}
+      >
+        <option value="small">Small — a narrow column beside the text</option>
+        <option value="medium">Medium — the default, beside the text</option>
+        <option value="large">Large — full width, above the text</option>
+      </select>
+      <span className={styles.hint}>
+        With more than one image they are laid out as a gallery at the chosen
+        size. Each image keeps its own shape, so nothing is cropped.
+      </span>
+    </fieldset>
   );
 }
 
@@ -294,9 +380,9 @@ export function FindingForm({ finding }: { finding?: Finding }) {
         </span>
       </p>
 
-      <ImageField
-        existingId={finding?.image_id ?? null}
-        existingAlt={finding?.image_alt ?? null}
+      <ImagesField
+        existing={finding?.images ?? []}
+        size={finding?.image_size ?? "medium"}
       />
 
       <div className={styles.row}>
@@ -571,10 +657,7 @@ export function NewsForm({ item }: { item?: NewsItem }) {
         </span>
       </p>
 
-      <ImageField
-        existingId={item?.image_id ?? null}
-        existingAlt={item?.image_alt ?? null}
-      />
+      <ImagesField existing={item?.images ?? []} size={item?.image_size ?? "medium"} />
 
       <PublishCheck defaultChecked={item?.published ?? false} />
 

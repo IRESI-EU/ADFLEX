@@ -106,14 +106,16 @@ export default async function AdminOutputsPage({
             {findings.map((finding) => (
               <li
                 key={finding.id}
-                className={`${styles.item} ${finding.image_id ? "" : styles.itemNoImage}`}
+                className={`${styles.item} ${finding.images.length > 0 ? "" : styles.itemNoImage}`}
               >
-                {finding.image_id ? (
+                {/* The first image stands for the set; the count says how many
+                    more there are, so the row stays one line tall. */}
+                {finding.images.length > 0 ? (
                   // eslint-disable-next-line @next/next/no-img-element -- database-backed route
                   <img
                     className={styles.thumb}
-                    src={`/media/${finding.image_id}`}
-                    alt={finding.image_alt || ""}
+                    src={`/media/${finding.images[0].id}`}
+                    alt={finding.images[0].alt || ""}
                     width={84}
                   />
                 ) : null}
@@ -122,6 +124,9 @@ export default async function AdminOutputsPage({
                   <p className={styles.itemTitle}>{finding.title}</p>
                   <p className={styles.itemMeta}>
                     {finding.summary || "No summary"} · order {finding.sort_order}
+                    {finding.images.length > 0
+                      ? ` · ${finding.images.length} image${finding.images.length === 1 ? "" : "s"} (${finding.image_size})`
+                      : ""}
                   </p>
                 </div>
 
@@ -143,11 +148,17 @@ export default async function AdminOutputsPage({
                     <ConfirmSubmit
                       className={styles.tab}
                       pendingLabel="Working…"
-                      message={
+                      title={
                         finding.published
-                          ? `Unpublish “${finding.title}”?\n\nIt will be removed from the public Outputs page immediately. Nothing is deleted — it goes back to being a draft.`
-                          : `Publish “${finding.title}”?\n\nIt will appear on the public Outputs page immediately.`
+                          ? `Unpublish “${finding.title}”?`
+                          : `Publish “${finding.title}”?`
                       }
+                      detail={
+                        finding.published
+                          ? "It will be removed from the public Outputs page immediately. Nothing is deleted — it goes back to being a draft and you can publish it again."
+                          : "It will appear on the public Outputs page immediately."
+                      }
+                      confirmLabel={finding.published ? "Unpublish" : "Publish"}
                     >
                       {finding.published ? "Unpublish" : "Publish"}
                     </ConfirmSubmit>
@@ -157,7 +168,10 @@ export default async function AdminOutputsPage({
                     <ConfirmSubmit
                       className={styles.danger}
                       pendingLabel="Deleting…"
-                      message={`Delete “${finding.title}”?\n\nThis cannot be undone. The finding and its text are removed permanently.`}
+                      destructive
+                      title={`Delete “${finding.title}”?`}
+                      detail="This cannot be undone. The finding, its text and its images are removed permanently."
+                      confirmLabel="Delete permanently"
                     >
                       Delete
                     </ConfirmSubmit>
@@ -246,11 +260,17 @@ export default async function AdminOutputsPage({
                     <ConfirmSubmit
                       className={styles.tab}
                       pendingLabel="Working…"
-                      message={
+                      title={
                         publication.published
-                          ? `Unpublish “${publication.title}”?\n\nIt will be removed from the public Outputs page immediately. Nothing is deleted — it goes back to being a draft.`
-                          : `Publish “${publication.title}”?\n\nIt will appear on the public Outputs page immediately.`
+                          ? `Unpublish “${publication.title}”?`
+                          : `Publish “${publication.title}”?`
                       }
+                      detail={
+                        publication.published
+                          ? "It will be removed from the public Outputs page immediately. Nothing is deleted — it goes back to being a draft and you can publish it again."
+                          : "It will appear on the public Outputs page immediately."
+                      }
+                      confirmLabel={publication.published ? "Unpublish" : "Publish"}
                     >
                       {publication.published ? "Unpublish" : "Publish"}
                     </ConfirmSubmit>
@@ -260,7 +280,10 @@ export default async function AdminOutputsPage({
                     <ConfirmSubmit
                       className={styles.danger}
                       pendingLabel="Deleting…"
-                      message={`Delete “${publication.title}”?\n\nThis cannot be undone. The publication and its DOI are removed permanently.`}
+                      destructive
+                      title={`Delete “${publication.title}”?`}
+                      detail="This cannot be undone. The publication and its DOI are removed permanently."
+                      confirmLabel="Delete permanently"
                     >
                       Delete
                     </ConfirmSubmit>

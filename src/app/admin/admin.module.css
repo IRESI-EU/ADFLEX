@@ -345,6 +345,175 @@
   background: #fdf2f0;
 }
 
+/* --- Confirmation dialogue ---------------------------------------------- */
+
+/*
+ * A native `<dialog>` opened with `showModal()`.
+ *
+ * The default user-agent styling is a thin border and a hard-coded margin, so
+ * the box, the centring and the backdrop are all restated here. `max-width` is
+ * in `ch` because the content is a sentence, not a layout.
+ */
+.dialog {
+  width: min(30rem, calc(100vw - 2rem));
+  padding: 0;
+  color: var(--adflex-color-text);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-lg);
+  box-shadow: 0 20px 50px -12px rgba(13, 26, 24, 0.35);
+  /*
+   * `margin: auto` is what centres a modal dialog, and restating it here is not
+   * redundant. The browser's own stylesheet sets it, but globals.css has a
+   * `* { margin: 0 }` reset that wins — so the dialogue opened pinned to the
+   * top-left corner of the viewport instead of the middle of the screen.
+   */
+  margin: auto;
+}
+
+.dialog::backdrop {
+  background: rgba(13, 26, 24, 0.45);
+}
+
+/* Only inside `no-preference`: a dialogue that animates in is the last thing
+   someone with vestibular sensitivity wants, and it must never delay the
+   confirmation appearing. */
+@media (prefers-reduced-motion: no-preference) {
+  .dialog[open] {
+    animation: adminDialogIn 140ms ease-out;
+  }
+
+  .dialog[open]::backdrop {
+    animation: adminBackdropIn 140ms ease-out;
+  }
+}
+
+@keyframes adminDialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
+@keyframes adminBackdropIn {
+  from {
+    opacity: 0;
+  }
+}
+
+.dialogBody {
+  padding: var(--adflex-space-5);
+}
+
+.dialogTitle {
+  font-size: var(--adflex-text-lg);
+  line-height: var(--adflex-leading-snug);
+  color: var(--adflex-color-ink);
+  /* The title carries a quoted entry name, which can be long and unbroken. */
+  overflow-wrap: anywhere;
+}
+
+.dialogDetail {
+  margin-top: var(--adflex-space-3);
+  font-size: var(--adflex-text-sm);
+  color: var(--adflex-color-muted);
+}
+
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--adflex-space-3);
+  justify-content: flex-end;
+  margin-top: var(--adflex-space-5);
+}
+
+.dialogCancel {
+  padding: var(--adflex-space-3) var(--adflex-space-5);
+  font: inherit;
+  font-size: var(--adflex-text-sm);
+  font-weight: 600;
+  color: var(--adflex-color-ink);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: var(--adflex-radius-md);
+  cursor: pointer;
+}
+
+.dialogCancel:hover {
+  background: var(--adflex-color-surface-soft);
+}
+
+/* Destructive confirm. Not colour alone — the button's own words say "Delete". */
+.dialogDanger {
+  padding: var(--adflex-space-3) var(--adflex-space-5);
+  font: inherit;
+  font-size: var(--adflex-text-sm);
+  font-weight: 600;
+  color: #ffffff;
+  background: #9b2417;
+  border: 1px solid #9b2417;
+  border-radius: var(--adflex-radius-md);
+  cursor: pointer;
+}
+
+.dialogDanger:hover {
+  background: #7a1b12;
+}
+
+/* --- Images field -------------------------------------------------------- */
+
+.imagesField {
+  display: grid;
+  gap: 6px;
+  padding: var(--adflex-space-4);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-md);
+}
+
+.imageList {
+  display: grid;
+  gap: var(--adflex-space-3);
+  margin-bottom: var(--adflex-space-3);
+  list-style: none;
+}
+
+.imageRow {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  gap: var(--adflex-space-3);
+  align-items: start;
+  padding: var(--adflex-space-3);
+  background: var(--adflex-color-surface-soft);
+  border-radius: var(--adflex-radius-sm);
+}
+
+.imageMeta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.imageButtons {
+  display: flex;
+  gap: var(--adflex-space-2);
+  align-items: center;
+}
+
+.imageButtons button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .imageRow {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .imageButtons {
+    grid-column: 1 / -1;
+  }
+}
+
 /* --- Login -------------------------------------------------------------- */
 
 .loginShell {

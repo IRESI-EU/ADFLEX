@@ -88,14 +88,16 @@ export default async function AdminNewsPage({
             {items.map((item) => (
               <li
                 key={item.id}
-                className={`${styles.item} ${item.image_id ? "" : styles.itemNoImage}`}
+                className={`${styles.item} ${item.images.length > 0 ? "" : styles.itemNoImage}`}
               >
-                {item.image_id ? (
+                {/* The first image stands for the set; the count follows in the
+                    metadata line, so the row stays one line tall. */}
+                {item.images.length > 0 ? (
                   // eslint-disable-next-line @next/next/no-img-element -- database-backed route
                   <img
                     className={styles.thumb}
-                    src={`/media/${item.image_id}`}
-                    alt={item.image_alt || ""}
+                    src={`/media/${item.images[0].id}`}
+                    alt={item.images[0].alt || ""}
                     width={84}
                   />
                 ) : null}
@@ -106,6 +108,9 @@ export default async function AdminNewsPage({
                     {item.kind === "event"
                       ? `Event · ${item.event_date ? formatDate(item.event_date) : "no date"}${item.location ? ` · ${item.location}` : ""}`
                       : `News · posted ${formatDate(item.published_on)}`}
+                    {item.images.length > 0
+                      ? ` · ${item.images.length} image${item.images.length === 1 ? "" : "s"} (${item.image_size})`
+                      : ""}
                   </p>
                 </div>
 
@@ -124,11 +129,17 @@ export default async function AdminNewsPage({
                     <ConfirmSubmit
                       className={styles.tab}
                       pendingLabel="Working…"
-                      message={
+                      title={
                         item.published
-                          ? `Unpublish “${item.title}”?\n\nIt will be removed from the public News and Events page immediately. Nothing is deleted — it goes back to being a draft.`
-                          : `Publish “${item.title}”?\n\nIt will appear on the public News and Events page immediately.`
+                          ? `Unpublish “${item.title}”?`
+                          : `Publish “${item.title}”?`
                       }
+                      detail={
+                        item.published
+                          ? "It will be removed from the public News and Events page immediately. Nothing is deleted — it goes back to being a draft and you can publish it again."
+                          : "It will appear on the public News and Events page immediately."
+                      }
+                      confirmLabel={item.published ? "Unpublish" : "Publish"}
                     >
                       {item.published ? "Unpublish" : "Publish"}
                     </ConfirmSubmit>
@@ -138,7 +149,10 @@ export default async function AdminNewsPage({
                     <ConfirmSubmit
                       className={styles.danger}
                       pendingLabel="Deleting…"
-                      message={`Delete “${item.title}”?\n\nThis cannot be undone. The entry and its text are removed permanently.`}
+                      destructive
+                      title={`Delete “${item.title}”?`}
+                      detail="This cannot be undone. The entry, its text and its images are removed permanently."
+                      confirmLabel="Delete permanently"
                     >
                       Delete
                     </ConfirmSubmit>

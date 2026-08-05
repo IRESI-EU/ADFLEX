@@ -10,9 +10,18 @@ import "server-only";
  */
 
 import { MAX_UPLOAD_BYTES } from "./upload-limits";
+import { readDimensions } from "./image-size";
 
 export type UploadResult =
-  | { ok: true; filename: string; mime: string; data: Buffer }
+  | {
+      ok: true;
+      filename: string;
+      mime: string;
+      data: Buffer;
+      /** Null when the header could not be read; the renderer falls back. */
+      width: number | null;
+      height: number | null;
+    }
   | { ok: false; error: string };
 
 /**
@@ -80,5 +89,36 @@ export async function readUpload(file: File | null): Promise<UploadResult | null
     };
   }
 
-  return { ok: true, filename: safeFilename(file.name), mime, data };
+  const size = readDimensions(data, mime);
+
+  return {
+    ok: true,
+    filename: safeFilename(file.name),
+    mime,
+    data,
+    width: size?.width ?? null,
+    height: size?.height ?? null,
+  };
+}
+
+/**
+ * Reads every file from one multi-file field.
+ *
+ * Stops at the first bad file and reports it, rather than storing the good ones
+ * and quietly dropping the rest — a partial save an editor did not ask for is
+ * harder to notice than an outright refusal.
+ */
+export async function readUploads(
+  files: File[],
+): Promise<{ ok: true; uploads: Extract<UploadResult, { ok: true }>[] } | { ok: false; error: string }> {
+  const uploads: Extract<UploadResult, { ok: true }>[] = [];
+
+  for (const file of files) {
+    const result = await readUpload(file);
+    if (!result) continue;
+    if (!result.ok) return { ok: false, error: `${file.name}: ${result.error}` };
+    uploads.push(result);
+  }
+
+  return { ok: true, uploads };
 }
