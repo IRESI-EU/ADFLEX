@@ -68,6 +68,21 @@
   min-width: 0;
 }
 
+/*
+ * The detail text of a stacked entry, which sits below the pictures.
+ *
+ * `.body` carries its own top margin for the beside-the-text layout, where it
+ * follows the summary directly. Here the grid gap already separates it from the
+ * images above, so that margin is removed rather than added to.
+ */
+.entryDetail {
+  min-width: 0;
+}
+
+.entryDetail > * {
+  margin-top: 0;
+}
+
 .title {
   font-size: var(--adflex-text-xl);
   line-height: var(--adflex-leading-snug);

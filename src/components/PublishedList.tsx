@@ -84,31 +84,41 @@ export function FindingList({ findings }: { findings: Finding[] }) {
     <ul className={styles.list}>
       {findings.map((finding) => {
         const gallery = <Gallery images={finding.images} size={finding.image_size} />;
-        const body = (
-          <div className={styles.entryBody}>
+        const heading = (
+          <>
             <h3 className={styles.title}>{finding.title}</h3>
             {finding.summary ? <p className={styles.summary}>{finding.summary}</p> : null}
-            <Prose text={finding.body} className={styles.body} />
-          </div>
+          </>
         );
+        const detail = <Prose text={finding.body} className={styles.body} />;
 
         return (
           <li key={finding.id} className={entryClass(finding.images, finding.image_size)}>
-            {/* Stacked entries lead with the heading and summary, then the
-                images — a reader should know what they are looking at before
-                they look at it. Beside-the-text layouts keep the image first,
-                where the heading is already level with it. The order is set in
-                the markup rather than with CSS, so what a screen reader hears
-                matches what the page shows. */}
+            {/*
+             * Stacked entries read heading, summary, picture, then the detail —
+             * the shape of an article. A reader should know what they are
+             * looking at before they look at it, and the long text belongs
+             * after the thing it describes rather than before it.
+             *
+             * Beside-the-text layouts keep the image first with all the text in
+             * one column, where the heading is already level with it.
+             *
+             * The order is set in the markup rather than with CSS, so what a
+             * screen reader hears matches what the page shows.
+             */}
             {isStacked(finding.images, finding.image_size) ? (
               <>
-                {body}
+                <div className={styles.entryBody}>{heading}</div>
                 {gallery}
+                <div className={styles.entryDetail}>{detail}</div>
               </>
             ) : (
               <>
                 {gallery}
-                {body}
+                <div className={styles.entryBody}>
+                  {heading}
+                  {detail}
+                </div>
               </>
             )}
           </li>
@@ -189,8 +199,8 @@ export function NewsList({
     <ul className={styles.list}>
       {items.map((item) => {
         const gallery = <Gallery images={item.images} size={item.image_size} />;
-        const body = (
-          <div className={styles.entryBody}>
+        const heading = (
+          <>
             <p className={styles.meta}>
               {showKind ? (
                 <span className={styles.kind}>
@@ -210,23 +220,27 @@ export function NewsList({
 
             <h3 className={styles.title}>{item.title}</h3>
             {item.summary ? <p className={styles.summary}>{item.summary}</p> : null}
-            <Prose text={item.body} className={styles.body} />
-          </div>
+          </>
         );
+        const detail = <Prose text={item.body} className={styles.body} />;
 
         return (
           <li key={item.id} className={entryClass(item.images, item.image_size)}>
-            {/* Heading first when the images are stacked above the text — see
+            {/* Heading and summary above the pictures, detail below them — see
                 the note in FindingList. */}
             {isStacked(item.images, item.image_size) ? (
               <>
-                {body}
+                <div className={styles.entryBody}>{heading}</div>
                 {gallery}
+                <div className={styles.entryDetail}>{detail}</div>
               </>
             ) : (
               <>
                 {gallery}
-                {body}
+                <div className={styles.entryBody}>
+                  {heading}
+                  {detail}
+                </div>
               </>
             )}
           </li>
