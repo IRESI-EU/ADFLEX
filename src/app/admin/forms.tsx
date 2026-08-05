@@ -68,6 +68,27 @@ function ImageField({
   existingAlt: string | null;
 }) {
   const [remove, setRemove] = useState(false);
+  const [tooBig, setTooBig] = useState<string | null>(null);
+
+  /**
+   * Checks the size before the form is ever submitted.
+   *
+   * Not a security control — `src/lib/upload.ts` re-checks on the server, which
+   * is the check that counts. This exists so an editor who picks a 12 MB
+   * photograph is told immediately, instead of waiting for a full upload that
+   * was always going to be refused.
+   */
+  const onPick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.size > MAX_UPLOAD_BYTES) {
+      setTooBig(
+        `That image is ${(file.size / 1024 / 1024).toFixed(1)} MB. The limit is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB — please resize it and choose it again.`,
+      );
+      event.target.value = "";
+      return;
+    }
+    setTooBig(null);
+  };
 
   return (
     <div className={styles.field}>
@@ -103,7 +124,13 @@ function ImageField({
         name="image"
         accept={ACCEPT_ATTRIBUTE}
         disabled={remove}
+        onChange={onPick}
       />
+      {tooBig ? (
+        <span className={styles.error} role="alert">
+          {tooBig}
+        </span>
+      ) : null}
       <span className={styles.hint}>
         PNG, JPEG, WebP or GIF, up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB. SVG is
         not accepted. Leave empty to keep the current image.

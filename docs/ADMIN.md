@@ -140,6 +140,26 @@ The format is checked from the file's leading bytes, not from its extension or
 the `Content-Type` the browser claimed — both of which are just text a client
 supplies. A `.png` containing HTML is rejected.
 
+#### Two limits, and they have to stay in step
+
+| Limit | Where | Value |
+| --- | --- | --- |
+| Our own file limit | `MAX_UPLOAD_BYTES` in `src/lib/upload-limits.ts` | 5 MB |
+| Next's Server Action body limit | `serverActions.bodySizeLimit` in `next.config.ts` | 6 MB |
+
+**The framework limit must stay comfortably above the file limit.** Next defaults
+to 1 MB, and at that default an editor attaching any ordinary photograph got a
+runtime error page — *"Body exceeded 1 MB limit"* — because the request was
+rejected before our validator ever ran. The limit applies to the raw HTTP body,
+so it also carries multipart boundaries, part headers and every other field in
+the form; the extra megabyte is that headroom.
+
+Raise one, raise the other.
+
+An oversized file is now caught twice: once in the browser as soon as it is
+picked, so the editor is told immediately rather than after a long upload, and
+again on the server, which is the check that counts.
+
 ---
 
 ## 4. What the admin does *not* control
