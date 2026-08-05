@@ -9,7 +9,7 @@ import "server-only";
  * anywhere near the database.
  */
 
-import { MAX_UPLOAD_BYTES } from "./upload-limits";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_TOTAL_BYTES, mb } from "./upload-limits";
 import { readDimensions } from "./image-size";
 
 export type UploadResult =
@@ -107,13 +107,29 @@ export async function readUpload(file: File | null): Promise<UploadResult | null
  * Stops at the first bad file and reports it, rather than storing the good ones
  * and quietly dropping the rest — a partial save an editor did not ask for is
  * harder to notice than an outright refusal.
+ *
+ * **Checks the combined size as well as each file.** Every chosen file arrives
+ * in one Server Action request body, so a batch can be far larger than any
+ * single file in it. Without this the framework's own body limit was the thing
+ * that refused the upload, and it does that with a runtime error page rather
+ * than something an editor can act on.
  */
 export async function readUploads(
   files: File[],
 ): Promise<{ ok: true; uploads: Extract<UploadResult, { ok: true }>[] } | { ok: false; error: string }> {
+  const chosen = files.filter((file) => file.size > 0);
+
+  const total = chosen.reduce((sum, file) => sum + file.size, 0);
+  if (total > MAX_UPLOAD_TOTAL_BYTES) {
+    return {
+      ok: false,
+      error: `Those ${chosen.length} images come to ${(total / 1024 / 1024).toFixed(1)} MB together. The limit is ${mb(MAX_UPLOAD_TOTAL_BYTES)} per save — add them in two goes, or resize them first.`,
+    };
+  }
+
   const uploads: Extract<UploadResult, { ok: true }>[] = [];
 
-  for (const file of files) {
+  for (const file of chosen) {
     const result = await readUpload(file);
     if (!result) continue;
     if (!result.ok) return { ok: false, error: `${file.name}: ${result.error}` };

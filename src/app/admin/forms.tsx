@@ -10,7 +10,12 @@ import {
   signIn,
 } from "./actions";
 import type { Finding, ImageSize, MediaRef, NewsItem, Publication } from "@/lib/repo";
-import { ACCEPT_ATTRIBUTE, MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
+import {
+  ACCEPT_ATTRIBUTE,
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_TOTAL_BYTES,
+  mb,
+} from "@/lib/upload-limits";
 import styles from "./admin.module.css";
 
 /**
@@ -123,23 +128,38 @@ function ImagesField({
   /**
    * Checks sizes before the form is ever submitted.
    *
-   * Not a security control — `src/lib/upload.ts` re-checks every file on the
-   * server, which is the check that counts. This exists so an editor who picks
-   * a 12 MB photograph is told at once, instead of waiting for a whole upload
-   * that was always going to be refused. Every file is checked, because one bad
-   * file in a multiple selection would otherwise fail the entire save.
+   * Not a security control — `src/lib/upload.ts` re-checks on the server, which
+   * is the check that counts. This exists so an editor who picks a 12 MB
+   * photograph is told at once, instead of waiting for a whole upload that was
+   * always going to be refused.
+   *
+   * **Both limits, and the total is the one that was missing.** Every chosen
+   * file goes up in a single request, so a batch of individually-legal images
+   * can still be far too large together. Checking only per-file let four 4 MB
+   * photographs through to the framework's own body limit, which fails with a
+   * runtime error page instead of anything useful.
    */
   const onPick = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = [...(event.target.files ?? [])];
-    const over = files.find((file) => file.size > MAX_UPLOAD_BYTES);
 
-    if (over) {
-      setTooBig(
-        `“${over.name}” is ${(over.size / 1024 / 1024).toFixed(1)} MB. The limit is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB per image — please resize it and choose again.`,
-      );
+    const reject = (message: string) => {
+      setTooBig(message);
       event.target.value = "";
       setPicked([]);
-      return;
+    };
+
+    const over = files.find((file) => file.size > MAX_UPLOAD_BYTES);
+    if (over) {
+      return reject(
+        `“${over.name}” is ${(over.size / 1024 / 1024).toFixed(1)} MB. The limit is ${mb(MAX_UPLOAD_BYTES)} per image — please resize it and choose again.`,
+      );
+    }
+
+    const total = files.reduce((sum, file) => sum + file.size, 0);
+    if (total > MAX_UPLOAD_TOTAL_BYTES) {
+      return reject(
+        `Those ${files.length} images come to ${(total / 1024 / 1024).toFixed(1)} MB together. The limit is ${mb(MAX_UPLOAD_TOTAL_BYTES)} per save — add them in two goes, or resize them first.`,
+      );
     }
 
     setTooBig(null);
@@ -238,8 +258,9 @@ function ImagesField({
         </span>
       ) : null}
       <span className={styles.hint}>
-        PNG, JPEG, WebP or GIF, up to {MAX_UPLOAD_BYTES / 1024 / 1024} MB each.
-        SVG is not accepted. Choose several at once if you want a gallery.
+        PNG, JPEG, WebP or GIF, up to {mb(MAX_UPLOAD_BYTES)} each and{" "}
+        {mb(MAX_UPLOAD_TOTAL_BYTES)} in one save. SVG is not accepted. Choose
+        several at once if you want a gallery.
       </span>
 
       <label className={styles.label} htmlFor="newImageAlt">
