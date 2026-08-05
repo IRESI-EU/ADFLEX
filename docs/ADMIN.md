@@ -211,13 +211,44 @@ heading and body beneath a large image start at the left margin, so the image
 sat visibly inset from its own copy on both sides. The width was never the
 problem — the centring was.
 
-**The arrangement is not configured** — it follows from the width available and
-the number of images. The gallery is a CSS *container query* context, so it
-measures the column it is in rather than the browser window. That matters: the
-same component sits in a 200px column at `small` and across the whole page at
-`large`, and a viewport media query cannot tell those apart. The first version
-used one and put three images side by side inside the narrow column on a desktop
-screen, at about 60px each.
+**The arrangement is not configured** — it follows from the number of images and
+the width available.
+
+`columnsFor()` in `src/components/Gallery.tsx` picks how many go across, chosen
+so a gallery never ends with one stranded image:
+
+| Images | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10+ |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Rows | 1 | 2 | 3 | 2+2 | 3+2 | 3+3 | 4+3 | 4+4 | 3+3+3 | 4 across |
+
+A **shorter last row is centred**, which is why the gallery is flexbox rather
+than grid — CSS grid has no way to centre a partial final row. `flex-grow` is
+off for the same reason: with it on, the last row's images stretch to fill the
+width and end up larger than every row above them.
+
+That count is then **capped by how wide the column actually is**, using CSS
+container queries — the gallery measures the column it sits in, not the browser
+window. That distinction matters: the same component sits in a 300px column at
+`small` and an 800px block at `large`, and a viewport media query cannot tell
+those apart. The first version used one and put three images side by side inside
+the narrow column on a desktop screen, at about 60px each. Everything stacks on
+a phone.
+
+#### Expanding an image
+
+Every image carries a small expand control and opens full size in a viewer, with
+previous/next, arrow-key navigation, a counter, and the description as a caption.
+
+The control is a **link to the image file**, not a button. With JavaScript
+unavailable it still opens the full-size image rather than doing nothing; the
+click handler takes over when JavaScript is there. Modified clicks are left
+alone, so "open in new tab" still works.
+
+The viewer is a native `<dialog>` opened with `showModal()` — focus trapping, an
+inert page behind, Escape-to-close and a real backdrop, none of it reimplemented.
+Closing returns focus to the thumbnail that opened it, whether it was closed by
+the button, the backdrop or Escape; **all three paths go through `onClose`** for
+exactly that reason, because Escape does not pass through a click handler.
 
 Very tall images are capped by height and scaled down — never cropped — so one
 portrait photograph cannot bury the text beside it.

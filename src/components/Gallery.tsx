@@ -1,30 +1,70 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ImageSize, MediaRef } from "@/lib/repo";
 import styles from "./Gallery.module.css";
 
 /**
  * The images attached to a finding or a news entry.
  *
- * Two things decide the layout, and neither is guessed:
+ * ---------------------------------------------------------------------------
+ * HOW THE LAYOUT IS DECIDED
+ * ---------------------------------------------------------------------------
+ * Two inputs, and neither is guessed:
  *
  * **The chosen size** (`small` / `medium` / `large`) sets how much room the
- * images get. `large` puts them across the full width above the text; the other
- * two put them in a column beside it. That is the editor's call, stored on the
- * entry.
+ * images get — a narrow column beside the text, a wider one, or a wide block
+ * above it. That is the editor's call, stored on the entry.
  *
- * **The number of images** decides the arrangement within that room. One image
- * stands alone; two sit side by side; three or more flow into a grid that wraps.
- * Nothing here needs configuring — a gallery of five should not look like five
- * separate figures.
+ * **The number of images** sets how many go across, via `columnsFor` below.
+ * That count is then capped by how wide the column actually is, using container
+ * queries in the stylesheet — so the same gallery is three across in a wide
+ * block and one across in a narrow one, without the component knowing anything
+ * about screen sizes.
  *
- * Each image is drawn **at its own aspect ratio**, taken from the pixel
- * dimensions read out of the file on upload. That is what removed both the crop
- * and the grey letterbox: there is no shared frame for a portrait photograph to
- * be poured into. The `width`/`height` attributes reserve the right space
- * before the bytes arrive, so the page still does not shift as images load.
- *
- * Images uploaded before dimensions were stored have none, and fall back to a
- * 3:2 box — the old behaviour, for the old rows only.
+ * Each image is drawn **at its own aspect ratio**, from the pixel dimensions
+ * read out of the file on upload. Nothing is cropped and nothing is padded.
+ * Images stored before dimensions were recorded fall back to a 3:2 box.
  */
+
+/**
+ * How many images should sit across a full-width row, for a given total.
+ *
+ * Chosen to avoid a last row holding a single stranded image, which is what
+ * makes a gallery look unfinished. Three go three-across rather than two-plus-
+ * one; four go two-by-two rather than three-plus-one; nine go three-by-three.
+ *
+ *   1→1  2→2  3→3  4→2x2  5→3+2  6→3+3  7→4+3  8→4+4  9→3x3  10+→4
+ *
+ * A shorter last row is fine — the stylesheet centres it — so the only thing
+ * being avoided here is a row of one.
+ */
+export function columnsFor(count: number): number {
+  if (count <= 1) return 1;
+  if (count === 2) return 2;
+  if (count === 3) return 3;
+  if (count === 4) return 2;
+  if (count <= 6) return 3;
+  if (count <= 8) return 4;
+  if (count === 9) return 3;
+  return 4;
+}
+
+function ExpandIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        d="M9 3H4a1 1 0 0 0-1 1v5M15 3h5a1 1 0 0 1 1 1v5M9 21H4a1 1 0 0 1-1-1v-5M15 21h5a1 1 0 0 0 1-1v-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function Gallery({
   images,
   size,
@@ -34,46 +74,179 @@ export function Gallery({
   size: ImageSize;
   className?: string;
 }) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const triggersRef = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  /**
+   * Only ever asks the dialog to close.
+   *
+   * Everything that has to happen afterwards — clearing the index, returning
+   * focus — lives in `onClose`, because a `<dialog>` can also be dismissed by
+   * Escape, which does not come through here. Doing the tidying in both places
+   * meant Escape left focus on `<body>`, so a keyboard user had to tab from the
+   * top of the page again.
+   */
+  const close = useCallback(() => {
+    dialogRef.current?.close();
+  }, []);
+
+  const open = (index: number) => {
+    setOpenIndex(index);
+    dialogRef.current?.showModal();
+  };
+
+  const step = useCallback(
+    (by: number) => {
+      setOpenIndex((current) =>
+        current === null ? null : (current + by + images.length) % images.length,
+      );
+    },
+    [images.length],
+  );
+
+  // Arrow keys move through the set. Escape is handled by <dialog> itself.
+  useEffect(() => {
+    if (openIndex === null) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight") { event.preventDefault(); step(1); }
+      if (event.key === "ArrowLeft") { event.preventDefault(); step(-1); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [openIndex, step]);
+
   if (images.length === 0) return null;
 
+  const current = openIndex === null ? null : images[openIndex];
+
   return (
-    /*
-     * The wrapper is the query container, and it has to be a separate element:
-     * an element cannot respond to its own container query, so the grid inside
-     * asks this one how wide it is.
-     *
-     * Sizing on the container rather than the viewport is what makes one set of
-     * rules work in every slot. The same gallery sits in a 200px column at
-     * `small` and across the full page at `large`; a viewport media query would
-     * put three images side by side in that narrow column on a desktop screen,
-     * which is how the first attempt produced 155px-wide charts.
-     */
+    /* The wrapper is the container-query context. An element cannot respond to
+       its own container query, so the list inside asks this one how wide it is. */
     <div className={[styles.wrap, styles[size], className].filter(Boolean).join(" ")}>
-      <ul className={styles.gallery} data-count={images.length}>
-        {images.map((image) => (
+      <ul
+        className={styles.gallery}
+        data-cols={columnsFor(images.length)}
+        data-count={images.length}
+      >
+        {images.map((image, index) => (
           <li key={image.id} className={styles.item}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- served from
-                the database at /media/[id]. next/image needs a build-time known
-                source or a configured loader; this route has neither, and the
-                bytes are already sized appropriately on upload. */}
-            <img
-              className={styles.image}
-              src={`/media/${image.id}`}
-              alt={image.alt}
-              width={image.width ?? undefined}
-              height={image.height ?? undefined}
-              style={
-                image.width && image.height
-                  ? { aspectRatio: `${image.width} / ${image.height}` }
-                  : undefined
+            {/*
+             * A link, not a button, and that is deliberate. It points at the
+             * image itself, so with JavaScript unavailable it still opens the
+             * full-size file rather than doing nothing. The click handler takes
+             * over when JavaScript is there.
+             */}
+            <a
+              ref={(node) => { triggersRef.current[index] = node; }}
+              className={styles.trigger}
+              href={`/media/${image.id}`}
+              aria-label={
+                image.alt
+                  ? `View “${image.alt}” at full size`
+                  : `View image ${index + 1} of ${images.length} at full size`
               }
-              data-unsized={image.width && image.height ? undefined : ""}
-              loading="lazy"
-              decoding="async"
-            />
+              onClick={(event) => {
+                // Leave modified clicks alone so "open in new tab" still works.
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                event.preventDefault();
+                open(index);
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- served from
+                  the database at /media/[id]; next/image needs a build-time known
+                  source or a configured loader, and this route has neither. */}
+              <img
+                className={styles.image}
+                src={`/media/${image.id}`}
+                alt={image.alt}
+                width={image.width ?? undefined}
+                height={image.height ?? undefined}
+                style={
+                  image.width && image.height
+                    ? { aspectRatio: `${image.width} / ${image.height}` }
+                    : undefined
+                }
+                data-unsized={image.width && image.height ? undefined : ""}
+                loading="lazy"
+                decoding="async"
+              />
+              <span className={styles.expand} aria-hidden="true">
+                <ExpandIcon />
+              </span>
+            </a>
           </li>
         ))}
       </ul>
+
+      <dialog
+        ref={dialogRef}
+        className={styles.lightbox}
+        aria-label="Image viewer"
+        // The single exit point, whether it was closed by the button, the
+        // backdrop, or Escape.
+        onClose={() => {
+          const index = openIndex;
+          setOpenIndex(null);
+          if (index !== null) triggersRef.current[index]?.focus();
+        }}
+        // With showModal() the backdrop belongs to the dialog element, so a
+        // click on it targets the dialog. That is how "click outside to close"
+        // is detected without an overlay element of our own.
+        onClick={(event) => {
+          if (event.target === dialogRef.current) close();
+        }}
+      >
+        {current ? (
+          <div className={styles.lightboxBody}>
+            <div className={styles.lightboxBar}>
+              <span className={styles.lightboxCount}>
+                {images.length > 1 ? `${openIndex! + 1} of ${images.length}` : null}
+              </span>
+              <button type="button" className={styles.lightboxClose} onClick={close}>
+                Close
+              </button>
+            </div>
+
+            <div className={styles.lightboxStage}>
+              {images.length > 1 ? (
+                <button
+                  type="button"
+                  className={`${styles.lightboxNav} ${styles.lightboxPrev}`}
+                  onClick={() => step(-1)}
+                  aria-label="Previous image"
+                >
+                  <span aria-hidden="true">‹</span>
+                </button>
+              ) : null}
+
+              {/* eslint-disable-next-line @next/next/no-img-element -- as above */}
+              <img
+                className={styles.lightboxImage}
+                src={`/media/${current.id}`}
+                alt={current.alt}
+                width={current.width ?? undefined}
+                height={current.height ?? undefined}
+              />
+
+              {images.length > 1 ? (
+                <button
+                  type="button"
+                  className={`${styles.lightboxNav} ${styles.lightboxNext}`}
+                  onClick={() => step(1)}
+                  aria-label="Next image"
+                >
+                  <span aria-hidden="true">›</span>
+                </button>
+              ) : null}
+            </div>
+
+            {current.alt ? (
+              <p className={styles.lightboxCaption}>{current.alt}</p>
+            ) : null}
+          </div>
+        ) : null}
+      </dialog>
     </div>
   );
 }
