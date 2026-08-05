@@ -20,15 +20,28 @@
 }
 
 /*
- * `large` means the whole row, for a gallery and for a single image alike.
+ * `large` is a wide column, not the whole row.
  *
- * A single one was briefly capped at 900px and centred, which measured fine but
- * looked wrong: the heading beneath it starts at the left margin, so a centred
- * image sat visibly inset from the text on both sides. A lead image on an
- * article page runs the full content width and lines up with the copy, which is
- * what this does now. The height cap below is what stops a portrait running
- * away with the page.
+ * It ran the full 1112px content width for a while and that was too much: on a
+ * listing page where several entries follow one another, a full-bleed image per
+ * entry is most of a screen each. 800px keeps the step up from `medium` obvious
+ * — the three sizes land at roughly 26%, 44% and 72% of the row — without one
+ * entry swallowing the page.
+ *
+ * **Left-aligned, not centred.** The heading and text beneath a large image
+ * start at the left margin, so centring the image inset it from its own copy on
+ * both sides. An earlier 900px version was centred and looked misaligned for
+ * exactly this reason; the width was never the problem, the centring was.
  */
+.large .gallery {
+  max-width: 800px;
+}
+
+/* Overrides the auto margins that centre an image inside its cell, so a large
+   image starts where its heading starts. */
+.large .image {
+  margin-inline: 0;
+}
 
 .gallery {
   display: grid;
@@ -78,10 +91,11 @@
   border-radius: var(--adflex-radius-lg);
 }
 
-/* A single large image is the one case that should command the space, so it
-   gets more height before the cap bites — a full-width lead image. */
+/* A single large image gets a little more height than the rest before the cap
+   bites, but far less than when it ran full width — at 800px wide a standard
+   3:2 photograph is only about 530px tall, so this now only catches portraits. */
 .large .gallery[data-count="1"] .image {
-  max-height: 740px;
+  max-height: 620px;
 }
 
 /*

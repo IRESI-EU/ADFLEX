@@ -267,7 +267,7 @@ function ImagesField({
       >
         <option value="small">Small — a thumbnail beside the text (about a quarter of the width)</option>
         <option value="medium">Medium — beside the text, about half the width</option>
-        <option value="large">Large — the full width, with the text underneath</option>
+        <option value="large">Large — a wide image with the text underneath (about two thirds)</option>
       </select>
       <span className={styles.hint}>
         With more than one image they are laid out as a gallery at the chosen

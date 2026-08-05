@@ -189,7 +189,7 @@ at desktop width, and these are the widths that produces:
 | --- | --- | --- | --- |
 | `small` | ~300px | 26% | A listing thumbnail — a logo, a portrait, a detail |
 | `medium` | ~510px | 44% | A genuine half-and-half with the text |
-| `large` | full row | 100% | An article lead image, with the text beneath |
+| `large` | 800px | 69% | A wide lead image, with the text beneath |
 
 Those numbers are the point, and they were wrong first time round. `small` was
 200px and `medium` 320px — 18% and 29% of the row — which next to a full-width
@@ -201,10 +201,15 @@ The two side-by-side sizes are written as `min(px, %)` rather than a fixed
 width, so the column shrinks with the page instead of holding its width until it
 squeezes the text. Everything goes full width on a phone.
 
-`large` spans the whole row rather than being capped and centred. It was briefly
-capped at 900px, which measured fine but looked wrong: the heading beneath it
-starts at the left margin, so a centred image sat visibly inset from its own
-text on both sides.
+`large` is a wide column, **not** the whole row. It ran the full 1112px for a
+while and that was too much: on a listing page where several entries follow one
+another, a full-bleed image per entry is most of a screen each.
+
+It is also **left-aligned rather than centred**, which is the part that took two
+attempts to get right. An earlier version capped it at 900px and centred it; the
+heading and body beneath a large image start at the left margin, so the image
+sat visibly inset from its own copy on both sides. The width was never the
+problem — the centring was.
 
 **The arrangement is not configured** — it follows from the width available and
 the number of images. The gallery is a CSS *container query* context, so it
