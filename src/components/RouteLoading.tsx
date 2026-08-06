@@ -1,5 +1,6 @@
 import { adflexContent, resolveNavigation } from "@/content/adflex";
 import { AdflexHeader } from "./AdflexHeader";
+import { AdflexFooter } from "./AdflexFooter";
 import { PageHero } from "./PageHero";
 import styles from "./RouteLoading.module.css";
 
@@ -11,9 +12,24 @@ import styles from "./RouteLoading.module.css";
  * no `loading.tsx` the browser sits on the old page for that whole time and the
  * site reads as unresponsive — the click appears to have done nothing.
  *
- * The header and the page hero are rendered for real, because they are known
+ * The header, hero and footer are rendered for real, because they are known
  * before any query runs. Only the part that depends on the database is a
- * placeholder, so the page does not visibly jump when the content arrives.
+ * placeholder.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THE FOOTER IS RENDERED HERE TOO
+ * ---------------------------------------------------------------------------
+ * It was missing, and that made this shell substantially shorter than the page
+ * it stands in for — so the document grew when the content arrived and the
+ * whole layout jumped, which is the thing a loading shell exists to prevent.
+ * With it, the placeholder and the finished page come out within a few pixels
+ * of each other.
+ *
+ * The height mismatch also used to break scrolling: opening these routes from a
+ * scrolled page left the reader part-way down them. That turned out to be a
+ * Next scroll-handler bug rather than a height problem, and is fixed by
+ * `experimental.appNewScrollHandler` — see the long note in `next.config.ts`.
+ * Rendering the footer is worth doing on its own merits regardless.
  */
 export function RouteLoading({
   eyebrow,
@@ -45,6 +61,7 @@ export function RouteLoading({
           </div>
         </div>
       </main>
+      <AdflexFooter logo={adflexContent.brand.logo} />
     </>
   );
 }
