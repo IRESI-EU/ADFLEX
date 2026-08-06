@@ -20,8 +20,16 @@ export default async function AdminLoginPage() {
 
   const configured = isDatabaseConfigured();
 
+  /*
+   * A `<main>`, not a `<div>`.
+   *
+   * The signed-out branch of the admin layout renders `{children}` bare, so
+   * this page was the only route on the site with no main landmark at all —
+   * and the skip link the root layout puts above it pointed at a
+   * `#main-content` that did not exist here.
+   */
   return (
-    <div className={styles.loginShell}>
+    <main id="main-content" className={styles.loginShell}>
       <div className={styles.loginCard}>
         <h1 className={styles.pageTitle}>ADFLEX admin</h1>
 
@@ -56,6 +64,6 @@ export default async function AdminLoginPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

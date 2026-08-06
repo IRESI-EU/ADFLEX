@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { adflexContent, resolveNavigation } from "@/content/adflex";
+import { canonical } from "@/lib/site";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexHero } from "@/components/AdflexHero";
 import { SectionShell } from "@/components/SectionShell";
@@ -8,6 +10,13 @@ import { PartnerCard } from "@/components/PartnerCard";
 import { PilotSection } from "@/components/PilotSection";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import styles from "./home.module.css";
+
+/**
+ * Title and description come from the root layout — this is the page they
+ * describe. Only the canonical address is added, because the root deliberately
+ * declares none for anyone to inherit.
+ */
+export const metadata: Metadata = canonical("/");
 
 /**
  * The ADFLEX public website: one scrolling page of sections. Project Outputs

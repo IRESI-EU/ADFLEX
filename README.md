@@ -4,32 +4,61 @@ The public website for **ADFLEX — Advanced Demonstrators for Flexibility and L
 Exchange in Sustainable Energy Communities**, plus a small design-system page that documents
 how the site is built.
 
-This is a deliberately small first release: a static marketing site and its design
-documentation. There is no CMS, no backend and no database.
+The site is a Next.js 16 App Router application with no UI framework and no component
+library — CSS Modules over a single token file. Alongside the public pages it carries a
+small editor admin at `/admin`, backed by PostgreSQL, through which the project team
+publishes findings, publications, news and events, and reads contact-form messages.
+
+**The public site does not need the database.** With `DATABASE_URL` unset every public
+page still builds and renders: the database-backed lists show their empty states and the
+contact form is hidden. Only `/admin` requires it.
 
 ## Routes
 
-| Route                | What it is                                                     | Status |
-| -------------------- | -------------------------------------------------------------- | ------ |
-| `/`                  | The ADFLEX public website — one scrolling page of sections       | Live |
-| `/about`             | The full About ADFLEX content                                    | Live |
-| `/outputs`           | Project Outputs (navigation label: "Outputs")                    | Awaiting content |
-| `/contact`           | Contact details, plus a contact form template                    | Live (form inactive) |
-| `/news`              | News & Events — one route since 30 July 2026, merged from two    | Awaiting content |
-| `/legal/privacy`     | Privacy Policy                                                   | Live (draft text) |
-| `/legal/cookies`     | Cookies Policy                                                   | Live (draft text) |
-| `/legal/terms`       | Terms of Use                                                     | Live (draft text) |
-| `/design-system`     | Documentation of the tokens, components and rules used by the site | Live |
+| Route                | What it is                                                       | Status |
+| -------------------- | ---------------------------------------------------------------- | ------ |
+| `/`                  | The ADFLEX public website — one scrolling page of sections        | Live |
+| `/about`             | The full About ADFLEX content                                     | Live |
+| `/outputs`           | Project Outputs — findings and publications from the database     | Live (awaiting content) |
+| `/contact`           | Contact details and a working contact form                        | Live |
+| `/news`              | News & Events — one route since 30 July 2026, merged from two     | Live (awaiting content) |
+| `/legal/privacy`     | Privacy Policy                                                    | Live (draft text) |
+| `/legal/cookies`     | Cookies Policy                                                    | Live (draft text) |
+| `/legal/terms`       | Terms of Use                                                      | Live (draft text) |
+| `/design-system`     | Documentation of the tokens, components and rules used by the site | Live (`noindex`) |
+| `/admin`             | Editor admin — findings, publications, news, events, messages     | Live (sign-in required) |
+| `/admin/login`       | Sign-in for the admin                                             | Live |
+| `/media/[id]`        | Serves an uploaded image out of the database                      | Live |
 
 **"Awaiting content" means the route, layout and components exist and are
-reviewable, but nothing is published there yet** — the page says so plainly
-instead of showing sample entries. See
+reviewable, but nothing has been published through the admin yet** — the page says so
+plainly instead of showing sample entries. See
 [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md).
+
+`/robots.txt` and `/sitemap.xml` are generated from
+[src/app/robots.ts](src/app/robots.ts) and [src/app/sitemap.ts](src/app/sitemap.ts). The
+sitemap is empty until `NEXT_PUBLIC_SITE_URL` is set — see **Environment** below.
 
 ## Requirements
 
 - Node.js 20.9 or newer (Next.js 16 minimum)
 - npm
+- PostgreSQL 14 or newer — **only for `/admin`**. Skip it to work on the public site.
+
+## Environment
+
+Copy [.env.example](.env.example) to `.env.local` and fill it in. That file documents
+each variable in full; in short:
+
+| Variable               | Needed for                    | Unset means |
+| ---------------------- | ----------------------------- | ----------- |
+| `DATABASE_URL`         | `/admin` and published content | Public pages render their empty states; the contact form is hidden |
+| `SESSION_SECRET`       | Signing the admin session cookie | `/admin` shows the login page and cannot sign anyone in |
+| `NEXT_PUBLIC_SITE_URL` | Canonical links, Open Graph URLs, the sitemap | No canonical tag, no Open Graph URL, an empty sitemap. Nothing else changes |
+
+`NEXT_PUBLIC_SITE_URL` is deliberately unset: no production domain has been supplied,
+and a canonical link pointing at a guessed host is worse than none at all. Set it at
+launch.
 
 ## Installation
 
@@ -48,7 +77,13 @@ npm run typecheck  # tsc --noEmit
 npm run build      # production build
 npm run start      # serve the production build
 npm run check      # lint + typecheck + build
+
+npm run db:setup   # create the tables — safe to re-run, see docs/ADMIN.md
+npm run db:user    # create or update an admin user, prompting for the password
 ```
+
+The two `db:` commands read `DATABASE_URL` from `.env.local` and are only needed for
+`/admin`.
 
 ## Folder structure
 
@@ -59,10 +94,13 @@ public/
     adflex-system-concept.png    supplied 3D system diagram (production copy)
 src/
   app/
-    layout.tsx                   root layout, .adflex-scope wrapper, skip link
+    layout.tsx                   root layout, .adflex-scope wrapper, skip link, site metadata
     globals.css                  minimal reset + shared .adflex-* utility classes
     page.tsx                     the public website (/)
     home.module.css              home page layout grids
+    not-found.tsx                the 404 page, in the same shell as every other route
+    robots.ts                    generates /robots.txt
+    sitemap.ts                   generates /sitemap.xml
     about/
       page.tsx                   About ADFLEX (/about)
       about.module.css
@@ -77,24 +115,58 @@ src/
     design-system/
       page.tsx                   the design-system page (/design-system)
       design-system.module.css
+    media/[id]/route.ts          serves an uploaded image out of the database
+    admin/                       the editor admin — see docs/ADMIN.md
+      layout.tsx                 the admin shell and its section tabs
+      AdminTabs.tsx              the tabs, client-side only so they know the current page
+      actions.ts                 every Server Action, each guarded by requireEditor()
+      forms.tsx                  the editor forms
+      ConfirmSubmit.tsx          a submit button that opens a real <dialog> first
+      admin.module.css
+      login/ outputs/ news/ messages/
   components/                    the production components (one CSS module each)
   content/
     adflex.ts                    all ADFLEX project copy — single source of truth
     design-system.ts             explanatory copy for the design-system page
+  lib/
+    auth.ts                      password hashing, the signed session cookie, login throttling
+    db.ts                        the Postgres pool and the read-with-fallback helper
+    repo.ts                      every SQL query, and the types the pages read
+    schema.sql                   the tables
+    site.ts                      the configured site URL, and the canonical-link helper
+    image-size.ts                reads pixel dimensions out of an upload's header bytes
+    upload.ts, upload-limits.ts  upload validation and the size ceilings
+  proxy.ts                       what Middleware was called before Next 16 — an optimistic
+                                 /admin redirect, NOT the security boundary
   styles/
     adflex-tokens.css            all design tokens, scoped to .adflex-scope
+scripts/
+  db-setup.mjs                   npm run db:setup
+  db-user.mjs                    npm run db:user
+  load-env.mjs                   reads .env.local for the two scripts above
 docs/
   HANDOVER.md                    architecture and how to extend it safely
+  ADMIN.md                       running, seeding and operating the admin
   OPEN-ITEMS.md                  what has not been supplied or decided yet
   CONTENT-SOURCE.md              where every fact on the site came from
+  DEPLOYMENT-NETLIFY.md          the team-review deployment
+.env.example                     every environment variable, documented
 project-inputs/                  supplied source material — git-ignored, never loaded at runtime
 ```
 
 ## How to update content
 
-All ADFLEX project copy lives in [`src/content/adflex.ts`](src/content/adflex.ts). Components
-receive it through props and contain no project paragraphs of their own. Editing that one file
-changes the site.
+Content comes from two places, and they do not overlap:
+
+- **The site's own copy** — headings, section text, contact details, the legal pages, the
+  navigation — lives in [`src/content/adflex.ts`](src/content/adflex.ts). Components receive it
+  through props and contain no project paragraphs of their own. Editing that one file changes
+  the site, and it needs a commit and a deploy.
+- **Published entries** — findings, publications, news items and events, with their images —
+  are created by an editor at `/admin` and stored in the database. They need no code change.
+  See [docs/ADMIN.md](docs/ADMIN.md).
+
+Everything below this heading is about the first kind.
 
 **Do not add ADFLEX facts, statistics, partner details, publications or funding claims that
 have not been supplied and approved.** See [docs/CONTENT-SOURCE.md](docs/CONTENT-SOURCE.md).
@@ -253,10 +325,12 @@ The content object is still keyed `results` in `src/content/adflex.ts`, but it i
 still reads "Results and publications from ADFLEX…" — left verbatim on purpose.
 
 
-`/outputs` renders an intentional `EmptyState`, because findings are not final. When real
-publications exist, replace the empty state in [src/app/outputs/page.tsx](src/app/outputs/page.tsx)
-with a list rendered from a new `results.items` array in the content file. Until then, do not
-add placeholder publications, dates, DOIs or download buttons.
+The findings and publications themselves are **not** in the content file — they are
+published through `/admin` and read from the database. `/outputs` renders whatever is
+published and falls back to an `EmptyState` when nothing is, which is what it shows today.
+The surrounding page copy (`results.title`, `results.body`) does live in the content file.
+
+Do not add placeholder publications, dates or DOIs to either place.
 
 The hero's "See Pilot Results" call to action points at this page — its target is
 `hero.cta.href` in the content file.
@@ -357,14 +431,19 @@ reproducing them out of context would mean building a second copy of the product
 
 ## Deliberately out of scope
 
-WordPress or any CMS, a database, authentication, user accounts, an admin area, a backend or
-APIs, contact-form processing, newsletter integration, analytics, a cookie banner, multilingual
-support, a news or events system, search, dark mode, Storybook, a token generator, a separate
+WordPress or any third-party CMS, newsletter integration, analytics, a cookie banner,
+multilingual support, site search, dark mode, Storybook, a token generator, a separate
 design-system application, a UI component library, an external icon package, an animation
-library, video, social embeds, external stock imagery, deployment infrastructure and Docker.
+library, video, social embeds, external stock imagery and Docker.
 
-None of these were requested for this release. See [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) for
-what is still undecided.
+None of these were requested. See [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) for what is still
+undecided.
+
+**This list shrank on 5 August 2026.** A database, authentication, an admin area,
+contact-form processing and a news and events system were all on it, and were all
+subsequently requested and built — see [docs/ADMIN.md](docs/ADMIN.md). Nothing on the list
+above has been built; if you are adding something that is on it, that is a scope change and
+belongs in a conversation before a commit.
 
 **There is motion, but no animation dependency.** The scroll reveals, the hero network and the
 hover states are CSS plus one `IntersectionObserver` — no Framer Motion, no GSAP, nothing added to

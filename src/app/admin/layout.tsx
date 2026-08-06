@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { countUnreadMessages } from "@/lib/repo";
 import { signOut } from "./actions";
+import { AdminTabs } from "./AdminTabs";
 import styles from "./admin.module.css";
 
 /**
@@ -18,7 +18,9 @@ import styles from "./admin.module.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "ADFLEX admin",
+  // `absolute` opts out of the root layout's "%s — ADFLEX" template, which
+  // would otherwise render this as "ADFLEX admin — ADFLEX".
+  title: { absolute: "ADFLEX admin" },
   robots: { index: false, follow: false },
 };
 
@@ -50,36 +52,24 @@ export default async function AdminLayout({
           <span className={styles.brandTag}>Admin</span>
         </span>
 
-        <nav aria-label="Admin sections">
-          <ul className={styles.tabs}>
-            <li>
-              <Link className={styles.tab} href="/admin">
-                Overview
-              </Link>
-            </li>
-            <li>
-              <Link className={styles.tab} href="/admin/outputs">
-                Outputs
-              </Link>
-            </li>
-            <li>
-              <Link className={styles.tab} href="/admin/news">
-                News &amp; Events
-              </Link>
-            </li>
-            <li>
-              <Link className={styles.tab} href="/admin/messages">
-                Messages
-                {unread > 0 ? (
+        <AdminTabs
+          tabs={[
+            { href: "/admin", label: "Overview" },
+            { href: "/admin/outputs", label: "Outputs" },
+            { href: "/admin/news", label: "News & Events" },
+            {
+              href: "/admin/messages",
+              label: "Messages",
+              badge:
+                unread > 0 ? (
                   <span className={styles.badge}>
                     {unread}
                     <span className="adflex-visually-hidden"> unread</span>
                   </span>
-                ) : null}
-              </Link>
-            </li>
-          </ul>
-        </nav>
+                ) : null,
+            },
+          ]}
+        />
 
         <div className={styles.who}>
           <span>{user.name}</span>
@@ -91,7 +81,14 @@ export default async function AdminLayout({
         </div>
       </header>
 
-      <main className={styles.main}>{children}</main>
+      {/* `id="main-content"` is the target of the skip link, which the root
+          layout renders on every route including these. Without it the first
+          tab stop on every admin screen pointed at a fragment that did not
+          exist, so the one control that exists to bypass the navigation
+          silently did nothing. */}
+      <main id="main-content" className={styles.main}>
+        {children}
+      </main>
     </div>
   );
 }

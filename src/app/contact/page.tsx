@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { adflexContent, resolveNavigation } from "@/content/adflex";
+import { canonical } from "@/lib/site";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { ContactBlock } from "@/components/ContactBlock";
@@ -11,8 +12,9 @@ import styles from "./contact.module.css";
 const { brand, navigation, contact, contactForm } = adflexContent;
 
 export const metadata: Metadata = {
-  title: `${contact.title} — ADFLEX`,
+  title: contact.title,
   description: contact.pageDescription,
+  ...canonical("/contact"),
 };
 
 /**

@@ -137,14 +137,50 @@ deployment down once the review is complete.
 
 ## Current environment variables
 
-No environment variables are required for the current ADFLEX build.
+**This section was rewritten on 5 August 2026.** It previously said no
+environment variables were required and that the application contained no
+reference to `process.env`. Both statements were true when written and are no
+longer: the site now has a database-backed editor admin at `/admin`.
 
-The application contains no reference to `process.env`, no `NEXT_PUBLIC_*`
-variables, no API keys, no database connection and no external service calls.
-Nothing needs to be entered in Netlify's environment variables screen.
+**None of the three is required for the two routes this preview exists to
+review.** `/` and `/design-system` build and render with all of them unset, and
+so do `/about`, `/news`, `/outputs`, `/contact` and `/legal/*` — the
+database-backed lists show their empty states and the contact form is hidden.
 
-If that ever changes, every required variable must be listed in this section
-before the deployment is updated.
+| Variable               | Set it if…                                                     | Left unset |
+| ---------------------- | -------------------------------------------------------------- | ---------- |
+| `DATABASE_URL`         | the reviewers need `/admin`, or published entries on the site   | Public pages show empty states; the contact form is hidden; `/admin` cannot sign in |
+| `SESSION_SECRET`       | `DATABASE_URL` is set — the two go together                     | `/admin` shows the login page and refuses every sign-in |
+| `NEXT_PUBLIC_SITE_URL` | you want canonical links, Open Graph URLs and a sitemap         | No canonical tag, no Open Graph URL, an empty `/sitemap.xml`. Nothing visible on any page changes |
+
+### For this team-review preview, set none of them
+
+A review deployment does not need the admin, and pointing it at a real database
+would put project content on a temporary public URL. Leave the environment
+variables screen empty, exactly as step 12 says.
+
+`NEXT_PUBLIC_SITE_URL` in particular should stay unset here: this is a
+short-lived preview at a `*.netlify.app` address, and telling search engines
+that address is the canonical home of the ADFLEX site is the opposite of what
+anyone wants.
+
+### If a later deployment does need the admin
+
+1. Provision Postgres separately — Neon and Supabase both have a free tier and
+   both are listed with a worked connection string in [`.env.example`](../.env.example).
+   Use the **pooled** connection string.
+2. Add `DATABASE_URL` and `SESSION_SECRET` under **Project configuration →
+   Environment variables**. Generate the secret with:
+   `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+3. Run `npm run db:setup` and `npm run db:user` against that database from a
+   local machine — see [ADMIN.md](ADMIN.md). Netlify does not run them.
+4. Redeploy — **do not just restart.** `DATABASE_URL` and `SESSION_SECRET` are
+   read per request, but `NEXT_PUBLIC_SITE_URL` is inlined during `next build`,
+   and `/robots.txt` and `/sitemap.xml` are generated at build time from it.
+   Adding it to the environment screen changes nothing until a build runs.
+
+Never paste a connection string or a session secret into this file, a commit
+message or a pull request.
 
 ## Known limitations at the time of writing
 
@@ -155,6 +191,9 @@ the deployment.
   only by typing the URL directly. The footer link to it was intentionally
   removed during the footer simplification. Send the team the
   `/design-system` URL explicitly.
-- **`/favicon.ico` returns 404.** No favicon file has been added yet, so browsers
-  show a default icon and log a single 404 in developer tools. It has no effect
-  on the pages themselves.
+- **`/favicon.ico` returns 404.** No square icon asset has been supplied, so
+  browsers show a default icon and log a single 404 in developer tools. The
+  supplied logo is a 3.3:1 wordmark and is illegible at 32×32, and cropping or
+  redrawing it would be inventing brand artwork. Listed in
+  [OPEN-ITEMS.md](OPEN-ITEMS.md) as artwork still needed from the project team.
+  It has no effect on the pages themselves.

@@ -14,9 +14,17 @@ import { EmptyState } from "@/components/EmptyState";
 import { ContactBlock } from "@/components/ContactBlock";
 import styles from "./design-system.module.css";
 
+/**
+ * `noindex` because this is internal documentation, not a page of the ADFLEX
+ * website. It stays publicly reachable — the team reviews it on the deployed
+ * URL — but it should not turn up in a search for the project, sitting next to
+ * the real pages as though it were one of them. `follow` is left on so the
+ * links out of it to the live routes still count.
+ */
 export const metadata: Metadata = {
-  title: `${designSystemContent.meta.title} — ADFLEX`,
+  title: designSystemContent.meta.title,
   description: designSystemContent.meta.description,
+  robots: { index: false, follow: true },
 };
 
 const ds = designSystemContent;

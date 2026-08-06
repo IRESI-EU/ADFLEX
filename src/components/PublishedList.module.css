@@ -180,12 +180,6 @@
   margin-top: var(--adflex-space-7);
 }
 
-.sectionIntro {
-  max-width: 68ch;
-  margin-top: var(--adflex-space-2);
-  color: var(--adflex-color-muted);
-}
-
 .sectionList {
   margin-top: var(--adflex-space-5);
 }

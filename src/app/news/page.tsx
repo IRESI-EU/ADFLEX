@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { adflexContent, resolveNavigation } from "@/content/adflex";
+import { canonical } from "@/lib/site";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { PageHero } from "@/components/PageHero";
@@ -12,8 +13,9 @@ import { listPublishedNews } from "@/lib/repo";
 const { brand, navigation, news } = adflexContent;
 
 export const metadata: Metadata = {
-  title: `${news.title} — ADFLEX`,
+  title: news.title,
   description: news.pageDescription,
+  ...canonical("/news"),
 };
 
 /**

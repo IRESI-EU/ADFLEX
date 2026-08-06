@@ -230,14 +230,23 @@ Still unavailable:
 - Monochrome variant
 - Reversed / dark-background variant
 - Favicon and app icons
+- **A social share card** (Open Graph image, 1200 × 630)
 - Any brand guideline document
 
 None of these may be produced by tracing, redrawing or recolouring the supplied PNG. They have
 to come from whoever owns the brand.
 
-**Consequence today:** the site ships without a favicon, so a browser's automatic request for
+**Consequence today, favicon:** the site ships without one, so a browser's automatic request for
 `/favicon.ico` returns 404. This is visible in the browser console and is expected until an icon
-asset is supplied. Once one exists, add it as `src/app/icon.png` and the 404 disappears.
+asset is supplied. Once one exists, add it as `src/app/icon.png` and the 404 disappears. The
+supplied wordmark is not a substitute — at 3.3:1 it is illegible in a 32 px square.
+
+**Consequence today, share card:** the root layout sets Open Graph title, description, type,
+locale and site name, but **no `og:image`**. A link to the site pasted into LinkedIn, Teams or
+WhatsApp therefore previews as text with no picture. Placing the wordmark in a 1200 × 630 frame
+would produce a card that is almost entirely white space, so nothing is set rather than
+something poor. Once a card exists, add `openGraph.images` in
+[`src/app/layout.tsx`](../src/app/layout.tsx).
 
 ## Imagery
 
@@ -253,6 +262,7 @@ asset is supplied. Once one exists, add it as `src/app/icon.png` and the 404 dis
 | Item | Status |
 | --- | --- |
 | Hosting and domain | ⚠️ **Changed 31 July 2026.** The site is **no longer a static export** — `/admin/*`, `/outputs`, `/news`, `/contact` and `/media/[id]` are server-rendered, so the host must run Node and carry `DATABASE_URL` and `SESSION_SECRET`. A Postgres database (Neon or Supabase) has **not been created**; until one is, the public site works exactly as before and the admin shows a setup notice. See [ADMIN.md](ADMIN.md). |
+| Public domain / `NEXT_PUBLIC_SITE_URL` | ⚠️ **Not supplied, and deliberately not guessed.** Canonical links, Open Graph URLs and the sitemap all need an absolute address. Until this variable is set the site omits all three — no `<link rel="canonical">`, no `og:url`, and `/sitemap.xml` is a valid but empty document. `/robots.txt` is served either way, without its `Sitemap:` line. A canonical link pointing at a domain that does not exist is worse than none, which is why nothing is defaulted. Set it at launch; see [`.env.example`](../.env.example). |
 | Analytics | **Not part of this first build.** No analytics, tag manager or cookie banner. |
 | Content-publishing process | ⚠️ **Now split.** Findings, publications, news and events are editor-managed at `/admin`. **Everything else** — hero, About, Technologies, Consortium, Pilot, contact details, footer and all three legal pages — is still edited in `src/content/adflex.ts` and released by committing. Whether the rest should move too is open. |
 | Automated tests for the admin | **None committed.** The SQL (16 checks) and the browser flows (33 checks) were both exercised for real when this was built, but those harnesses lived in a scratch directory and are not in the repository. A change to `src/lib/repo.ts` or `src/app/admin/` has no regression net. |

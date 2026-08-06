@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import { adflexContent } from "@/content/adflex";
+import { siteUrl } from "@/lib/site";
 import { MotionScript } from "@/components/MotionScript";
 import { RevealObserver } from "@/components/RevealObserver";
 import "@/styles/adflex-tokens.css";
@@ -26,9 +27,56 @@ const inter = Inter({
   display: "swap",
 });
 
+/**
+ * Site-wide metadata.
+ *
+ * `title.template` is what every other route's `title` is slotted into, so a
+ * page sets `title: "About ADFLEX"` and gets "About ADFLEX — ADFLEX". Each page
+ * used to spell out the `— ADFLEX` suffix itself, in eight separate files, and
+ * changing the site's name meant finding all eight. `title.default` is the home
+ * page, which has no suffix because its title already ends in the project name.
+ *
+ * `metadataBase` is only set when a site URL has been configured — see
+ * `siteUrl()` for why an invented domain is worse than none.
+ *
+ * ---------------------------------------------------------------------------
+ * TWO THINGS DELIBERATELY NOT SET HERE
+ * ---------------------------------------------------------------------------
+ * **No `alternates.canonical`.** Metadata is merged shallowly from the root
+ * down, so a canonical set here becomes the canonical of every route that does
+ * not override it — which had `/design-system` and the 404 page both declaring
+ * the home page as their canonical address. Each page names its own with
+ * `canonical()`; a page with none is a page that should not have one.
+ *
+ * **No `openGraph.url`.** A page that defines `openGraph` *replaces* this whole
+ * object rather than merging into it, so giving each page its own `og:url`
+ * would cost it `og:site_name`, `og:type` and `og:locale`. One shared `og:url`
+ * pointing at the home page from every route is worse than none at all, and
+ * `og:url` is optional — a reader that needs the address already has it.
+ */
+const base = siteUrl();
+
 export const metadata: Metadata = {
-  title: adflexContent.meta.title,
+  ...(base ? { metadataBase: base } : {}),
+  title: {
+    default: adflexContent.meta.title,
+    template: "%s — ADFLEX",
+  },
   description: adflexContent.meta.description,
+  applicationName: "ADFLEX",
+  openGraph: {
+    type: "website",
+    siteName: "ADFLEX",
+    locale: "en_IE",
+    title: adflexContent.meta.title,
+    description: adflexContent.meta.description,
+  },
+  /*
+   * No `openGraph.images`. A share card is a designed asset and none has been
+   * supplied; pointing this at the wordmark would produce a 1200x630 card that
+   * is mostly white space. Recorded in docs/OPEN-ITEMS.md as artwork still
+   * needed from the project team.
+   */
 };
 
 

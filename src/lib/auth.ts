@@ -217,8 +217,29 @@ export function tooManyAttempts(key: string): boolean {
   return record.count >= MAX_ATTEMPTS;
 }
 
+/**
+ * Drops records whose window has closed.
+ *
+ * Without this the map only ever grows: keys are `<ip>:<email>` and both halves
+ * come from the request, so anyone posting the login form with a fresh address
+ * each time adds an entry that is never read again and never removed —
+ * `tooManyAttempts` ignores an expired record but does not delete it, and
+ * `clearAttempts` only fires on a *successful* sign-in, which an attacker never
+ * reaches. A few million failed attempts is not a hard thing to send.
+ *
+ * Sweeping on write keeps it to the number of genuinely active windows, with no
+ * timer to own and nothing to clean up on shutdown.
+ */
+function pruneExpired(now: number): void {
+  for (const [key, record] of attempts) {
+    if (now - record.first > WINDOW_MS) attempts.delete(key);
+  }
+}
+
 export function recordFailedAttempt(key: string): void {
   const now = Date.now();
+  pruneExpired(now);
+
   const record = attempts.get(key);
   if (!record || now - record.first > WINDOW_MS) {
     attempts.set(key, { count: 1, first: now });

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { adflexContent, resolveNavigation } from "@/content/adflex";
+import { canonical } from "@/lib/site";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { PageHero } from "@/components/PageHero";
@@ -25,8 +26,9 @@ export async function generateMetadata({
   if (!page) return {};
 
   return {
-    title: `${page.title} — ADFLEX`,
+    title: page.title,
     description: page.pageDescription,
+    ...canonical(`/legal/${page.slug}`),
   };
 }
 

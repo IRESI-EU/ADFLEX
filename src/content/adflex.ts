@@ -253,6 +253,13 @@ export type LegalPage = {
 
 export type AdflexContent = {
   meta: { title: string; description: string; skipLinkLabel: string };
+  /** Copy for the 404 page. States what happened and offers a way back. */
+  notFound: {
+    eyebrow: string;
+    title: string;
+    lead: string;
+    cta: { label: string; href: string };
+  };
   brand: BrandAssets;
   navigation: readonly NavigationItem[];
   hero: HeroContent;
@@ -333,6 +340,18 @@ export const adflexContent = {
     description:
       "ADFLEX develops and validates a digital framework that helps Sustainable Energy Communities in mixed-use buildings provide flexibility and take part in local energy markets, piloted in Ringsend, Dublin.",
     skipLinkLabel: "Skip to main content",
+  },
+
+  /*
+   * Deliberately plain. A 404 is usually a moved page or a mistyped address,
+   * not a fault the reader caused, so the copy says what happened and points
+   * back to the site rather than apologising or being clever about it.
+   */
+  notFound: {
+    eyebrow: "Page not found",
+    title: "We could not find that page",
+    lead: "The address may have changed, or it may have been typed incorrectly. The main sections of the ADFLEX website are in the navigation above.",
+    cta: { label: "Go to the ADFLEX home page", href: "/" },
   },
 
   brand: {
