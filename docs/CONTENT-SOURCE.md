@@ -222,14 +222,14 @@ supplied are unmodified in the client's own source.
   not rewritten — so no condensed or paraphrased ADFLEX wording exists anywhere on the site.
   "Objective of ADFLEX" is a section heading written for this build, not supplied copy.
 - The section the PDF calls "Results & publications" renders its status wording as an intentional
-  empty state, on its own `/outputs` route rather than as a section of the home page, at the
+  empty state, on its own `/outcomes` route rather than as a section of the home page, at the
   client's request after the first build. No placeholder publications were created.
 - **It is presented under a different name.** At the client's request it is headed "Project
-  Outputs" and appears in the navigation as "Outputs", rather than the PDF's "Results &
+  Outcomes" and appears in the navigation as "Outcomes", rather than the PDF's "Results &
   publications". Only the heading and the navigation label changed — the supplied paragraph is
   unaltered and still opens "Results and publications from ADFLEX are still being finalised…".
 - Because that section moved off the home page, the hero's "See Pilot Results" button now points
-  at `/outputs`. Its label is the supplied wording and is unchanged.
+  at `/outcomes`. Its label is the supplied wording and is unchanged.
 
 ### Figures on the site
 
@@ -256,7 +256,7 @@ Seven short pieces of connective copy were written for this build. They add no p
 2. The contact page lead: *"For questions about ADFLEX, please get in touch."*
 3. The `/contact` meta description: *"Contact details for the ADFLEX project at Maynooth
    University."*
-4. The `/outputs` meta description: *"Project outputs from ADFLEX, updated as findings,
+4. The `/outcomes` meta description: *"Project outcomes from ADFLEX, updated as findings,
    deliverables and papers become available."*
 5. The home page section heading *"Objective of ADFLEX"* and the button label *"Know more about
    ADFLEX"*.

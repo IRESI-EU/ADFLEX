@@ -8,7 +8,7 @@ This deployment is a temporary public team-review environment for:
 - `/design-system`
 
 Both routes are served from a single Netlify project. The rest of the site
-(`/about`, `/news`, `/outputs`, `/contact`, `/legal/*`) builds and
+(`/about`, `/news`, `/outcomes`, `/contact`, `/legal/*`) builds and
 deploys alongside them, because they are part of the same Next.js application.
 The two routes above are the ones the team is being asked to review.
 
@@ -144,7 +144,7 @@ longer: the site now has a database-backed editor admin at `/admin`.
 
 **None of the three is required for the two routes this preview exists to
 review.** `/` and `/design-system` build and render with all of them unset, and
-so do `/about`, `/news`, `/outputs`, `/contact` and `/legal/*` — the
+so do `/about`, `/news`, `/outcomes`, `/contact` and `/legal/*` — the
 database-backed lists show their empty states and the contact form is hidden.
 
 | Variable               | Set it if…                                                     | Left unset |

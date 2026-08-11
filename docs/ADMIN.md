@@ -18,7 +18,7 @@ With no `DATABASE_URL` set, every public page still builds and renders:
 | Route | With no database | With a database |
 | --- | --- | --- |
 | `/`, `/about`, `/design-system`, `/legal/*` | Unchanged, still prerendered | Unchanged, still prerendered |
-| `/outputs` | The "not final" empty state | Published findings and publications |
+| `/outcomes` | The "not final" empty state | Published findings and publications |
 | `/news` | The "nothing published" empty state | Published news and events |
 | `/contact` | Form disabled, with the note saying so | Form live, submissions stored |
 | `/admin/*` | A setup notice explaining what to configure | The editor surface |
@@ -78,9 +78,15 @@ npm run db:setup                              # creates the tables
 npm run db:user -- ann@mu.ie "Ann McKeon"     # asks for a password
 ```
 
-`db:setup` is safe to re-run: every statement in `src/lib/schema.sql` is
-`IF NOT EXISTS`, and it applies them one at a time so a failure names the
-statement that failed.
+`db:setup` applies any migration in `migrations/` the database has not seen
+yet, in filename order, and records it in a `schema_migrations` table. Safe to
+re-run: applied files are skipped. **Each file runs inside a transaction**, so a
+migration that fails part-way is rolled back rather than leaving the schema in a
+state no version describes.
+
+To change the schema, add `migrations/00N_short_name.sql`. Never edit a file that
+has already been applied anywhere — the ledger records filenames, so an edited
+file will not run again.
 
 `db:user` asks for the password interactively rather than taking it as an
 argument, so it never lands in shell history or a process list. Running it again
@@ -92,7 +98,7 @@ password reset flow, because there deliberately isn't one on the web.
 Set `DATABASE_URL` and `SESSION_SECRET` in the host's environment settings, then
 run `npm run db:setup` once against the production database from your machine.
 
-**The site is no longer a static export.** `/admin/*`, `/outputs`, `/news`,
+**The site is no longer a static export.** `/admin/*`, `/outcomes`, `/news`,
 `/contact` and `/media/[id]` are server-rendered on demand, so the host needs to
 run Node — on Netlify that means its Next.js runtime rather than a plain static
 deploy. Check `docs/DEPLOYMENT-NETLIFY.md` alongside this.
@@ -106,7 +112,7 @@ Sign in at `/admin/login`.
 | Section | Contents |
 | --- | --- |
 | **Overview** | Counts of what is live and what is still a draft |
-| **Outputs** | Project findings (with an image) and publications (with a DOI) |
+| **Outcomes** | Project findings (with images) and publications (with a link) |
 | **News & Events** | Both, in one list, because they are one public route |
 | **Messages** | Contact form submissions |
 
@@ -138,6 +144,135 @@ does nothing at all, rather than deleting something without asking. The
 confirmation guards against a mis-click; it is not authorisation, which is
 `requireEditor()` inside the action.
 
+### When a save is refused
+
+A failed save **keeps everything else you typed**. The action hands the
+submitted text back with the response, so a mistyped DOI no longer costs an
+editor the body they had just written.
+
+The one field that caused the problem comes back **empty**, marked
+`aria-invalid`, with its message directly underneath it rather than only in a
+banner at the top of the form. That is deliberate: the message says what was
+wrong with *that* field, and clearing it makes the thing to retype obvious.
+
+**Chosen files are the exception and cannot be restored.** No browser lets a
+page set the value of a file input — that would let a site read arbitrary files
+off your disk — so images have to be chosen again after a refused save. Nothing
+that was already attached to the entry is lost.
+
+### Date posted
+
+**There is no date field.** An entry's posting date is stamped by the database
+when it is first saved, and editing it later does not move it, so an entry
+cannot drift to the top of the list because someone fixed a typo in it three
+weeks on.
+
+An **event date** is a different thing and is still a field: it is when the
+event happens, which only the editor knows. It is required for an event and
+ignored for a news post.
+
+### Events
+
+An entry is one of three types, chosen at the top of the form:
+
+| Type | Shows | Extra fields |
+| --- | --- | --- |
+| **News** | Under *News*, dated when it was posted | — |
+| **Upcoming event** | Under *Events*, at the top, and announced on the home page with a countdown | Date, start **and end time** (both required), location, booking link, *no places left* |
+| **Event (already held)** | Under *Events*, below the upcoming ones, as a record | Date, start and end time (both optional), location |
+
+**The type is fixed once an entry is saved.** Editing shows it as text rather
+than a menu: changing it would silently discard the fields the other types do
+not have. Delete and re-add if it really was the wrong type.
+
+**Upcoming events always come first** in the Events list, soonest first;
+events already held follow, most recent first. That is not a setting — "what is
+happening next" and "what has happened" want opposite orders, and sorting the
+whole list one way makes one half read backwards.
+
+**Times are on a 24-hour clock, with no timezone**: an event at 14:30 is at
+14:30 where it happens. An event cannot run past midnight — the end time belongs
+to the same day as the start, and one that appears to finish earlier than it
+begins is refused rather than accepted and treated as already over.
+
+**An upcoming event needs both times.** The start is what the home-page
+countdown runs to. The end is when the entry comes off the public page — see
+below. An event already held needs neither: it is a record of something that
+happened, and the project has events going back before anyone was writing the
+hour down.
+
+### An upcoming event comes off the page when it finishes
+
+At its end time, an upcoming event disappears from the public News & Events page
+by itself. Nothing has to be taken down by hand, and there is no window where
+the site is advertising something that is over.
+
+**It is not deleted.** In the admin it stays in the entries list, at the top,
+marked **Expired**, so you can see what has come off and decide what to do with
+it. It is still published — expiry is about the date, not about publishing.
+
+Three things follow from that:
+
+- It happens **on the clock, not on the next deploy**. The public page is built
+  per request, so an event that ended a minute ago is already gone.
+- It uses **Irish time**, not the server's. The database runs in UTC and would
+  otherwise hold an event open an extra hour every summer.
+- **Only upcoming events expire.** An event marked as already held is a record
+  and stays on the page for good.
+
+An expired entry cannot be switched to *Event (already held)* — the type is
+fixed once saved. To keep it as a record, add it again with that type and delete
+the expired one.
+
+### Arranging entries
+
+The page order is fixed: **upcoming events, then events already held, then
+news**. There was briefly a switch for putting News above Events; it was removed
+on 9 August 2026, because the thing worth arranging turned out to be the entries
+themselves.
+
+Every entry has an **Order** field — the same one findings and publications
+already have. Lower numbers first, everything at 0 by default, so an untouched
+site is entirely date-ordered and stays that way. Set one entry to `-1` to pin it
+above the rest of its list.
+
+**It arranges entries within their own list, never between lists.** A news post
+numbered `-999` goes to the top of *News*; it does not climb above the Events
+section, and it does not overtake an upcoming event. Group first, then your
+number, then the date:
+
+| | Order within the group |
+| --- | --- |
+| Upcoming events | soonest first |
+| Events already held | most recent first |
+| News | most recently posted first |
+
+Set orders show in the entries list as `· order -1`, so you can see the
+arrangement without opening each entry. Entries left at 0 say nothing.
+
+**A booking link belongs to an upcoming event only.** An event that has already
+been held has nothing to book, so the field is not offered for it. The link
+becomes a *Book your place* button on the News & Events page and in the home-page
+announcement. It is checked for `http://` or `https://` so a typo cannot become
+a button that goes nowhere.
+
+**The date has the final word.** An upcoming event whose date has passed stops
+offering its booking link on its own, with nobody editing anything.
+
+### When an event is full
+
+Tick **no places left** in the form, or use the **Mark full** button on the row,
+which is quicker and reversible in one click. Then:
+
+- The News & Events page says *Fully booked* in place of the booking button.
+- **The home page stops announcing it.** The announcement exists to get someone
+  to book; interrupting a reader to tell them a thing is full is an
+  advertisement for a disappointment. If another upcoming event still has
+  places, that one is announced instead.
+
+The event is not hidden — it stays on News & Events, marked full, for anyone who
+wants to know it is happening.
+
 ### Text is text
 
 Body fields are plain text. Blank lines start a new paragraph, and nothing else
@@ -146,12 +281,26 @@ paragraphs, and in exchange there is no injection surface and no half-supported
 syntax leaking onto the public site. Adding rich text means a real editor and a
 real sanitiser, not a `dangerouslySetInnerHTML`.
 
-### DOIs
+### Links and DOIs
 
-Paste either a bare DOI (`10.1234/abcd`) or a full `https://doi.org/…` link.
-Both are normalised down to the bare identifier and stored that way, then
-rendered as a doi.org link. Anything that is not a DOI is rejected rather than
-stored and shown as a link that goes nowhere.
+A publication has a **Link** and a **DOI**, and **neither is required**. A paper
+can be listed before it is online, and plenty of outputs — a report, a
+deliverable, a dataset, a conference talk — have a web address and no DOI at
+all.
+
+**Link** is the ordinary way to reach the publication: a publisher page, a
+repository copy or a PDF. It must start with `http://` or `https://`, and it is
+shown to readers as *Read the paper*.
+
+**DOI** is optional and secondary. Paste either a bare DOI (`10.1234/abcd`) or a
+full `https://doi.org/…` link — both are normalised down to the bare identifier
+and stored that way, then rendered as a short `DOI: 10.1234/abcd` link. Anything
+that is not a DOI is rejected rather than stored and shown as a link that goes
+nowhere.
+
+This order was reversed on 6 August 2026. The DOI used to lead, with the URL
+offered only as a fallback "when there is no DOI", and the public page printed
+the whole doi.org URL as its own link text.
 
 ### Images
 
@@ -164,6 +313,33 @@ served back from our own origin at `/media/[id]`.
 The format is checked from the file's leading bytes, not from its extension or
 the `Content-Type` the browser claimed — both of which are just text a client
 supplies. A `.png` containing HTML is rejected.
+
+#### Uploads are resized and stripped before they are stored
+
+Anything wider than 1600 pixels is scaled down to it, and the file is
+re-encoded in the same format. Two reasons, both raised in the external review:
+a 5 MB photograph was previously downloaded by every visitor at 5 MB even in a
+small box, and a photograph off a phone carries EXIF — including **GPS
+coordinates** and the device. Re-encoding removes all of it. Animated GIFs are
+left untouched, because re-encoding one would flatten it to a single frame.
+
+You do not have to resize anything yourself. The 5 MB limit is still there, but
+it is a limit on what you can send, not on what gets stored.
+
+#### Draft images are private
+
+An image is only reachable at its public `/media/[id]` address once it is
+attached to something **published**. Before that, only a signed-in editor can
+open it.
+
+Two things follow, and they are the point:
+
+- A draft's photographs are not visible to anyone who guesses the number.
+- **Deleting or unpublishing an entry takes its images offline in the same
+  moment.** There is nothing to remember to tidy up, and a picture you retract
+  is genuinely retracted.
+
+The same rule covers documents at `/files/[id]`.
 
 #### Nothing is cropped or letterboxed
 
@@ -182,8 +358,16 @@ Rows uploaded before this existed have no stored size and fall back to the old
 
 #### Size, and how the layout adapts
 
-Each entry carries an **image size** the editor picks. The content row is 1112px
-at desktop width, and these are the widths that produces:
+**The editor no longer chooses a size.** Every entry is saved as `medium` —
+images beside the text at about half the page width — at the client's request on
+6 August 2026. The column, the three-way `ImageSize` type and the rendering for
+all three values stay, because rows saved before that date may hold `small` or
+`large` and still render correctly; only the choice has gone. Putting it back
+means restoring the select in `ImagesField` and reading it again in
+`saveFinding`/`saveNewsItem` instead of the `IMAGE_SIZE` constant.
+
+The content row is 1112px at desktop width, and these are the widths the three
+values produce:
 
 | Size | Width | Share of the row | Reads as |
 | --- | --- | --- | --- |
@@ -321,8 +505,83 @@ move it to the database or to the host's rate limiting.
 It collects **name, email address and message content** from members of the
 public. Maynooth University is the controller named in the privacy policy.
 
+### Where a submission goes
+
+**It is emailed to the project.** It is written to the Messages page in the
+admin **only when that email could not be sent** — so that page is a failure
+queue, not an archive: anything on it did not reach the mailbox and still needs
+answering.
+
+### Changing where contact messages go
+
+Two settings, both in `src/lib/site.ts`, and they are deliberately separate:
+
+| Setting | What it is |
+| --- | --- |
+| `PROJECT_EMAIL` | **Where messages are delivered.** The project address, published on the contact page. |
+| `MAIL_SENDER` | **The mailbox the site signs into to send them**, plus its server and port. Appears as the `From:` address. |
+
+They are not the same address, and that is not an oversight. Messages go to an
+`iresi.eu` address; the only mailbox the site can currently authenticate to is
+at Maynooth. Those are two different mail systems, so the site sends *from* the
+Maynooth account and *delivers to* IRESI — which is ordinary, and is what SPF
+and DMARC require. Sending as an address you cannot authenticate for is exactly
+what they exist to reject.
+
+The visitor goes in `Reply-To`, so replying from the project mailbox answers
+them directly.
+
+If IRESI ever supplies SMTP credentials for `info@iresi.eu`, point `MAIL_SENDER`
+at it and the two collapse into one.
+
+**The admin login is separate from both.** It is an account in the database, not
+a line in a file, because signing in needs a password and a password does not
+belong in source. Add or change one with:
+
+```
+npm run db:user -- <address> "<name>"
+```
+
+It asks for a password, creates the account if it is new, and **signs out every
+existing session for that account** if it is not.
+
+### What still lives in the environment
+
+**`SMTP_PASSWORD`, and nothing else.** The mail server host and port sit beside
+the address in `src/lib/site.ts`; only the password is in `.env.local`, because
+that file is gitignored and a credential in a source file is a credential in the
+git history for good.
+
+Gmail and Microsoft 365 both reject the ordinary account password over SMTP — it
+has to be an app password, or an account with SMTP AUTH switched on.
+
+**With the mail server or the password unset, every message falls back to the
+dashboard**, which is exactly how the site behaved before email existed. Nothing
+breaks and nothing is lost; it just needs someone to check the dashboard. The
+Messages page says which of the two states it is in.
+
+Three details worth knowing:
+
+- **The email comes from the project, not the sender.** The visitor's address
+  goes in `Reply-To`, so replying in any mail client answers them. Sending *as*
+  the visitor would fail SPF and DMARC and the message would be dropped.
+- **It is plain text**, like everything else editors touch on this site, so
+  there is no HTML to escape on the one endpoint an anonymous visitor can reach.
+- **Newlines are stripped** from the name and subject before they reach a mail
+  header. That is the header-injection defence; it is what stops a form like this
+  being used to send mail to addresses nobody at ADFLEX chose.
+
+**A message that is emailed successfully is not stored on the site at all.**
+That is deliberate — fewer copies of personal data, which is what GDPR asks for —
+but it does mean the mailbox is the only record, and deleting it there deletes
+it entirely.
+
+### Handling requests
+
 - Deleting a message really deletes the row. That is what an erasure request
   needs, so it must not become a soft "archived" flag.
+- An erasure request now has to cover **the mailbox too**, not just this page.
+  Most enquiries will only ever exist as email.
 - There is no bulk export, on purpose. A CSV of enquiries is the easiest way for
   personal data to end up somewhere nobody is tracking.
 - Message bodies are rendered as text, never as HTML.
@@ -360,7 +619,7 @@ npm run build          # with NO DATABASE_URL — this must pass
 ```
 
 The SQL and the browser flows were both exercised for real when this was built:
-16 checks over `schema.sql` and every query in `src/lib/repo.ts` against a real
+16 checks over the schema and every query in `src/lib/repo.ts` against a real
 Postgres engine, and 33 end-to-end browser checks covering sign-in, each content
 type, upload rejection, DOI normalisation, the public pages, the contact form
 and the message list. Neither harness is committed — they lived in a scratch

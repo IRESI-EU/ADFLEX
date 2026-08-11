@@ -18,7 +18,7 @@ state rather than sample content, and each becomes live by editing
 | Contact form | `ContactForm` | ✅ **Live 31 July 2026.** Submissions are stored in Postgres and read at `/admin/messages`. Reverts to disabled automatically on a deployment with no database |
 | LinkedIn link | `AdflexFooter` | **The page URL.** Set `footer.linkedin.href`. Until then the block renders as muted, dashed, non-interactive text rather than a dead link |
 | Funding row | `AdflexFooter` | ⚠️ **Partly filled 31 July 2026** — it now reads "Funded by SEAI." at the client's instruction. Still outstanding: the programme name as approved footer wording, the grant number, a disclaimer and an SEAI emblem file. See *Funding and legal* below |
-| Project outputs | `/outputs` | ✅ **Editor-managed since 31 July 2026.** Findings and publications are published from `/admin/outputs`. The empty state remains the default until something is published |
+| Project outcomes | `/outcomes` | ✅ **Editor-managed since 31 July 2026.** Findings and publications are published from `/admin/outcomes`. The empty state remains the default until something is published |
 | News & Events content | `/news` | ✅ **Editor-managed since 31 July 2026**, published from `/admin/news` |
 
 **The LinkedIn mark is drawn, not supplied.** The glyph in `AdflexFooter.tsx` is an inline SVG
@@ -99,7 +99,7 @@ removed without it), and the opaque logo files are the real constraint.
 | Partner roles, descriptions, URLs, countries | **Not supplied.** Partner cards show the logo and the organisation name only. |
 | Partner logo clearance | **Not confirmed.** The logo files were supplied by the client on 28 July 2026 and are live on the site. Written confirmation from each partner that their mark may be used on the ADFLEX website has not been recorded here — worth closing off before launch. |
 | Partner logos in vector | **Not supplied.** All three are raster (PNG). Vector versions would be better for print and very high-DPI screens. |
-| Project outputs | **Not final.** `/outputs` renders an intentional empty state. No publications, deliverables, dates, DOIs, download links or statistics have been invented. |
+| Project outcomes | **Not final.** `/outcomes` renders an intentional empty state. No publications, deliverables, dates, DOIs, download links or statistics have been invented. |
 
 ### Partner logo notes
 
@@ -261,7 +261,7 @@ something poor. Once a card exists, add `openGraph.images` in
 
 | Item | Status |
 | --- | --- |
-| Hosting and domain | ⚠️ **Changed 31 July 2026.** The site is **no longer a static export** — `/admin/*`, `/outputs`, `/news`, `/contact` and `/media/[id]` are server-rendered, so the host must run Node and carry `DATABASE_URL` and `SESSION_SECRET`. A Postgres database (Neon or Supabase) has **not been created**; until one is, the public site works exactly as before and the admin shows a setup notice. See [ADMIN.md](ADMIN.md). |
+| Hosting and domain | ⚠️ **Changed 31 July 2026.** The site is **no longer a static export** — `/admin/*`, `/outcomes`, `/news`, `/contact` and `/media/[id]` are server-rendered, so the host must run Node and carry `DATABASE_URL` and `SESSION_SECRET`. A Postgres database (Neon or Supabase) has **not been created**; until one is, the public site works exactly as before and the admin shows a setup notice. See [ADMIN.md](ADMIN.md). |
 | Public domain / `NEXT_PUBLIC_SITE_URL` | ⚠️ **Not supplied, and deliberately not guessed.** Canonical links, Open Graph URLs and the sitemap all need an absolute address. Until this variable is set the site omits all three — no `<link rel="canonical">`, no `og:url`, and `/sitemap.xml` is a valid but empty document. `/robots.txt` is served either way, without its `Sitemap:` line. A canonical link pointing at a domain that does not exist is worse than none, which is why nothing is defaulted. Set it at launch; see [`.env.example`](../.env.example). |
 | Analytics | **Not part of this first build.** No analytics, tag manager or cookie banner. |
 | Content-publishing process | ⚠️ **Now split.** Findings, publications, news and events are editor-managed at `/admin`. **Everything else** — hero, About, Technologies, Consortium, Pilot, contact details, footer and all three legal pages — is still edited in `src/content/adflex.ts` and released by committing. Whether the rest should move too is open. |

@@ -9,7 +9,7 @@ shaped this way, and how to extend it without breaking the parts that matter.
   `create-next-app`, `src/` directory, no Tailwind, no UI library.
 - **Rendering:** mixed since 31 July 2026, when the admin was added. `/`, `/about`,
   `/design-system` and the three `/legal/[slug]` pages are still prerendered with no server logic.
-  `/outputs`, `/news`, `/contact`, `/media/[id]` and everything under `/admin` are server-rendered
+  `/outcomes`, `/news`, `/contact`, `/media/[id]` and everything under `/admin` are server-rendered
   on demand, because their content now lives in Postgres rather than in the repository.
   **The site is therefore no longer a static export**, and its host has to run Node.
 
@@ -31,7 +31,7 @@ Two things from it are load-bearing enough to repeat here:
 
 ### Routes that exist but have no content
 
-`/news` and `/outputs` are **structure without content** until an editor publishes something. Both
+`/news` and `/outcomes` are **structure without content** until an editor publishes something. Both
 render a visible empty state saying so.
 
 Do not fill them with sample entries. A placeholder news post, an invented event date or a made-up
@@ -92,7 +92,7 @@ Three decisions worth knowing:
 | `TechnologyCard` | One technology: an optional illustrative image in a 16:9 frame, then a decorative number, name and description. |
 | `PartnerCard` | One partner: its official logo (or decorative initials as a fallback) and the organisation name. Nothing else, because nothing else has been supplied. |
 | `PilotSection` | The pilot: composes `SectionShell` with the place name, a 16:9 image paired beside the narrative, and the list of assets named in it as a full-width grid — each with an optional icon. |
-| `EmptyState` | An intentional "nothing here yet" block. Used by `/outputs`. |
+| `EmptyState` | An intentional "nothing here yet" block. Used by `/outcomes`. |
 | `FigureText` | Renders a paragraph with one phrase given typographic emphasis — the figure a sentence turns on. **Highlights numbers already in approved copy; never a way to introduce one.** |
 | `ContactBlock` | Contact details as a definition list with a `mailto:` link. No form. Used by `/contact` and shown as an example on `/design-system`. |
 | `AdflexFooter` | Footer on a white surface, deliberately small: logo and LinkedIn on one row, then a bottom row with the year and the three legal links. Between them sits a **reserved funding row** that renders nothing while `footer.funding` is `null`. Takes only a `logo` prop and reads the rest from content. |
@@ -104,8 +104,8 @@ Three decisions worth knowing:
 | `MotionScript` | Inline script adding `adflex-js` before first paint, so the reveal styles are safe. Not a visual component. |
 | `RevealObserver` | One IntersectionObserver for every `[data-reveal]` on the page. Mounted once in the root layout. |
 | `ContactForm` | Contact form. Live since 31 July 2026; submissions go to a Server Action and land in the `messages` table. Falls back to every control `disabled` when there is no database, because a form that silently discards messages is worse than no form. |
-| `PublishedList` | Renders editor-managed content on `/outputs` and `/news` — findings, publications, news and events. **Everything is text, never markup**: bodies are split into paragraphs on blank lines and rendered as text nodes, with no `dangerouslySetInnerHTML` anywhere. |
-| `PageHero` | Opening emphasis band for the simple routes — About, Contact, Project Outputs. Carries the page's single `h1`. Shared so the three cannot drift apart, and a band rather than the plain page colour so a visitor landing on a sub-page arrives in the same site rather than on a blank white page. |
+| `PublishedList` | Renders editor-managed content on `/outcomes` and `/news` — findings, publications, news and events. **Everything is text, never markup**: bodies are split into paragraphs on blank lines and rendered as text nodes, with no `dangerouslySetInnerHTML` anywhere. |
+| `PageHero` | Opening emphasis band for the simple routes — About, Contact, Project Outcomes. Carries the page's single `h1`. Shared so the three cannot drift apart, and a band rather than the plain page colour so a visitor landing on a sub-page arrives in the same site rather than on a blank white page. |
 | `NavLink` | Small internal helper, not a UI-library component. Renders a plain `<a>` for **any href containing a fragment** and `next/link` only for fragment-less routes. Shared by the header and footer. The fragment rule is load-bearing — see *Why anchors are never `next/link`*. |
 
 Shared interactive styles are CSS classes rather than components, because they are single
@@ -525,7 +525,7 @@ copy of the layout exists.
    the other sub-pages — do not hand-roll a page heading.
 2. Reuse `AdflexHeader` and `AdflexFooter`. On a route other than `/`, pass `homeHref="/"` to
    the header and give both the result of
-   `resolveNavigation(navigation, { onHome: false })`. `/contact` and `/outputs` are the
+   `resolveNavigation(navigation, { onHome: false })`. `/contact` and `/outcomes` are the
    smallest examples to copy from.
 3. If the new route has its own in-page sections, give the header a navigation array for those
    sections, or pass an empty array and a `trailingLink` (as `/design-system` does).
@@ -543,7 +543,7 @@ Navigation lives in one array, `adflexContent.navigation`, and each item declare
 - **`kind: "route"`** — its own page. `href` is absolute, e.g. `/contact`.
 
 Today `home`, `technologies`, `consortium` and `pilot` are sections on the home page, while
-`about`, `outputs`, `news` and `contact` are routes of their own — eight items in all.
+`about`, `outcomes`, `news` and `contact` are routes of their own — eight items in all.
 
 **The navigation collapses at 1080px.** That breakpoint was measured against nine items, which is
 what the header carried until News and Events were merged on 30 July 2026; at eight it now has
@@ -641,7 +641,7 @@ The home section takes its `id` from `about.home.itemId`, so the anchor matches 
 on the page. Nothing links to it today — "About" in the navigation is a `route` item pointing at
 `/about` — but keep them consistent if that changes.
 
-The hero call to action also goes through this model — `hero.cta.href` is `/outputs`, and
+The hero call to action also goes through this model — `hero.cta.href` is `/outcomes`, and
 `AdflexHero` renders it with `NavLink`, so it works whether a future CTA points at a section or
 a route.
 
@@ -688,7 +688,7 @@ npm ci
 npm run lint
 npm run typecheck
 npm run build
-npm run start        # then check /, /about, /outputs, /contact and /design-system
+npm run start        # then check /, /about, /outcomes, /contact and /design-system
 ```
 
 `npm run check` runs lint, typecheck and build in sequence.

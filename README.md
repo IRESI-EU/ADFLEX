@@ -19,7 +19,7 @@ contact form is hidden. Only `/admin` requires it.
 | -------------------- | ---------------------------------------------------------------- | ------ |
 | `/`                  | The ADFLEX public website — one scrolling page of sections        | Live |
 | `/about`             | The full About ADFLEX content                                     | Live |
-| `/outputs`           | Project Outputs — findings and publications from the database     | Live (awaiting content) |
+| `/outcomes`          | Project Outcomes — findings and publications from the database    | Live (awaiting content) |
 | `/contact`           | Contact details and a working contact form                        | Live |
 | `/news`              | News & Events — one route since 30 July 2026, merged from two     | Live (awaiting content) |
 | `/legal/privacy`     | Privacy Policy                                                    | Live (draft text) |
@@ -104,9 +104,9 @@ src/
     about/
       page.tsx                   About ADFLEX (/about)
       about.module.css
-    outputs/
-      page.tsx                   Project Outputs (/outputs)
-      outputs.module.css
+    outcomes/
+      page.tsx                   Project Outcomes (/outcomes)
+      outcomes.module.css
     contact/
       page.tsx                   the contact page (/contact)
       contact.module.css
@@ -123,7 +123,7 @@ src/
       forms.tsx                  the editor forms
       ConfirmSubmit.tsx          a submit button that opens a real <dialog> first
       admin.module.css
-      login/ outputs/ news/ messages/
+      login/ outcomes/ news/ messages/
   components/                    the production components (one CSS module each)
   content/
     adflex.ts                    all ADFLEX project copy — single source of truth
@@ -132,10 +132,11 @@ src/
     auth.ts                      password hashing, the signed session cookie, login throttling
     db.ts                        the Postgres pool and the read-with-fallback helper
     repo.ts                      every SQL query, and the types the pages read
-    schema.sql                   the tables
+    mail.ts                      sending the contact form by SMTP
     site.ts                      the configured site URL, and the canonical-link helper
     image-size.ts                reads pixel dimensions out of an upload's header bytes
     upload.ts, upload-limits.ts  upload validation and the size ceilings
+migrations/                      numbered SQL files, applied once each and recorded
   proxy.ts                       what Middleware was called before Next 16 — an optimistic
                                  /admin redirect, NOT the security boundary
   styles/
@@ -318,15 +319,15 @@ Icons sit in a fixed 56px dark tile with `object-fit: contain`, so each keeps it
 ratio. Trim transparent canvas and scale the longest side to about 160px before adding a new one
 — untrimmed icons render at visibly different sizes in the same list.
 
-### Update Project Outputs
+### Update Project Outcomes
 
 The content object is still keyed `results` in `src/content/adflex.ts`, but it is displayed as
-"Project Outputs" (page heading) and "Outputs" (navigation). Its `body` is supplied copy and
+"Project Outcomes" (page heading) and "Outcomes" (navigation). Its `body` is supplied copy and
 still reads "Results and publications from ADFLEX…" — left verbatim on purpose.
 
 
 The findings and publications themselves are **not** in the content file — they are
-published through `/admin` and read from the database. `/outputs` renders whatever is
+published through `/admin` and read from the database. `/outcomes` renders whatever is
 published and falls back to an `EmptyState` when nothing is, which is what it shows today.
 The surrounding page copy (`results.title`, `results.body`) does live in the content file.
 
@@ -342,7 +343,7 @@ entry declares what kind of destination it is:
 
 ```ts
 { id: "technologies",  label: "Technologies",           kind: "section", href: "#technologies" }
-{ id: "publications",  label: "Outputs",                kind: "route",   href: "/outputs" }
+{ id: "publications",  label: "Outcomes",                kind: "route",   href: "/outcomes" }
 ```
 
 - `kind: "section"` — an anchor on the home page. Its `id` must match the `id` given to that
