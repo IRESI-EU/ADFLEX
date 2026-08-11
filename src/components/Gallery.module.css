@@ -1,5 +1,5 @@
 /*
- * The image gallery on /outputs and /news.
+ * The image gallery on /outcomes and /news.
  *
  * ---------------------------------------------------------------------------
  * IT SIZES ITSELF FROM ITS CONTAINER, NOT THE VIEWPORT
@@ -29,67 +29,155 @@
 }
 
 /*
- * Flex, not grid, for one reason: a short last row.
+ * A one-across, swipeable track.
  *
- * `justify-content: center` on a wrapping flex container centres whatever is
- * left over on the final line, so five images read as 3 + 2 centred rather than
- * 3 + 2 pushed to the left. CSS grid has no equivalent for a partial last row.
+ * ---------------------------------------------------------------------------
+ * WHY THIS IS A SCROLLER AND NOT A GRID
+ * ---------------------------------------------------------------------------
+ * This used to tile the set: two across, three across, four across, sized by
+ * how many images there were. That gave every image less room the more of them
+ * there were — four images each got a quarter of the column, which is too small
+ * to read a chart in and nothing like the size a single image gets.
  *
- * `flex: 0 1 <basis>` — grow is off on purpose. With grow on, the last row's
- * items stretch to fill the width and end up larger than every row above them,
- * which is the thing that makes a gallery look accidental.
+ * Now every image is drawn at the full width of its column, whatever the count,
+ * and the set is swiped through. The paging is `scroll-snap-type` and nothing
+ * else, so a touch swipe, a trackpad, shift-scroll and the scrollbar all work
+ * without a line of JavaScript; the buttons underneath just call `scrollTo`.
+ *
+ * `data-cols` is left on the element for the layout tests that still read it,
+ * and is no longer used for sizing.
  */
 .gallery {
-  --gap: var(--adflex-space-3);
-  --cols: 1;
-
   display: flex;
-  flex-wrap: wrap;
+  /* Centred, because the track is as tall as its tallest image and a portrait
+     next to a landscape would otherwise hang from the top of the frame. */
+  align-items: center;
+  gap: var(--adflex-space-4);
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  /* Keeps a swipe that runs past the end from scrolling the page behind it. */
+  overscroll-behavior-x: contain;
+  list-style: none;
+  /* The scrollbar would sit under the images and flicker as the track moves;
+     the dots below already say where you are. */
+  scrollbar-width: none;
+}
+
+.gallery::-webkit-scrollbar {
+  display: none;
+}
+
+.gallery:focus-visible {
+  outline: 3px solid var(--adflex-color-primary);
+  outline-offset: 4px;
+  border-radius: var(--adflex-radius-lg);
+}
+
+/* One image per view. `flex: 0 0 100%` rather than `width: 100%` because a flex
+   item's width is a suggestion and its basis is not — with `width` the items
+   shrink to fit and the track never overflows, so there is nothing to scroll. */
+.item {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+/* --- The controls under the track --------------------------------------- */
+
+.controls {
+  display: flex;
+  gap: var(--adflex-space-3);
   align-items: center;
   justify-content: center;
-  gap: var(--gap);
+  margin-top: var(--adflex-space-3);
+}
+
+.step {
+  display: grid;
+  place-items: center;
+  width: var(--adflex-target-min);
+  height: var(--adflex-target-min);
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--adflex-color-ink);
+  background: var(--adflex-color-surface);
+  border: 1px solid var(--adflex-color-border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.step:hover:not(:disabled) {
+  color: var(--adflex-color-surface);
+  background: var(--adflex-color-primary);
+  border-color: var(--adflex-color-primary);
+}
+
+/* Dimmed rather than hidden at the ends: a control that disappears makes the
+   row jump and moves the other button under the pointer. */
+.step:disabled {
+  color: var(--adflex-color-muted);
+  border-color: var(--adflex-color-border);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.dots {
+  display: flex;
+  gap: var(--adflex-space-2);
+  align-items: center;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.item {
-  flex: 0 1 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
-  min-width: 0;
-}
-
 /*
- * How many actually fit.
- *
- * `data-cols` is the ideal count for the number of images; these steps cap it
- * to the width available. Written out per value rather than with `min()` so the
- * arithmetic in `flex-basis` stays a plain division.
- *
- * 380px sits above a phone's content width, so a gallery always stacks on a
- * phone no matter how many images it holds.
+ * The tappable area is the full 44px minimum; the visible dot is the 10px mark
+ * drawn inside it. Sizing the button itself to 10px would meet the design and
+ * fail every guideline about target size.
  */
-@container (min-width: 380px) {
-  .gallery[data-cols="2"],
-  .gallery[data-cols="3"],
-  .gallery[data-cols="4"] {
-    --cols: 2;
-  }
+.dot {
+  display: grid;
+  place-items: center;
+  width: var(--adflex-target-min);
+  height: var(--adflex-target-min);
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
 }
 
-@container (min-width: 700px) {
-  .gallery[data-cols="3"],
-  .gallery[data-cols="4"] {
-    --cols: 3;
-  }
-
-  .gallery {
-    --gap: var(--adflex-space-4);
-  }
+.dot::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--adflex-color-border-strong);
+  border-radius: 999px;
 }
 
-@container (min-width: 1000px) {
-  .gallery[data-cols="4"] {
-    --cols: 4;
+.dot:hover::before {
+  background: var(--adflex-color-muted);
+}
+
+.dotCurrent::before {
+  background: var(--adflex-color-primary);
+}
+
+.dot:focus-visible {
+  outline: 3px solid var(--adflex-color-primary);
+  outline-offset: -6px;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .step,
+  .dot::before {
+    transition:
+      background-color 140ms ease-out,
+      color 140ms ease-out,
+      border-color 140ms ease-out;
   }
 }
 

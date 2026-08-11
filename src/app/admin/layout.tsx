@@ -55,7 +55,7 @@ export default async function AdminLayout({
         <AdminTabs
           tabs={[
             { href: "/admin", label: "Overview" },
-            { href: "/admin/outputs", label: "Outputs" },
+            { href: "/admin/outcomes", label: "Outcomes" },
             { href: "/admin/news", label: "News & Events" },
             {
               href: "/admin/messages",

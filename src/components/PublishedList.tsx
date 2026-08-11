@@ -1,5 +1,12 @@
-import type { Finding, ImageSize, MediaRef, NewsItem, Publication } from "@/lib/repo";
-import { doiUrl } from "@/lib/repo";
+import type {
+  FileRef,
+  Finding,
+  ImageSize,
+  MediaRef,
+  NewsItem,
+  Publication,
+} from "@/lib/repo";
+import { doiUrl, fileKind, fileSize, isEvent } from "@/lib/repo";
 import { Gallery } from "./Gallery";
 import styles from "./PublishedList.module.css";
 
@@ -55,6 +62,44 @@ export function formatDate(iso: string): string {
   return `${Number(day)} ${months[index]} ${year}`;
 }
 
+/**
+ * A date with its time after it — "10 August 2026, 14:30" — or the date alone
+ * when no time has been set.
+ *
+ * Kept inside one `<time>` element rather than split into two, so the hour
+ * cannot wrap onto its own line away from the day, and so the machine-readable
+ * value is a single `2026-08-10T14:30` rather than two unrelated halves.
+ *
+ * The time is shown as stored, on a 24-hour clock. No timezone is printed
+ * because none is stored: the project runs its events in one place, and 14:30
+ * means 14:30 where the event is.
+ */
+function formatDateTime(
+  iso: string,
+  time: string | null,
+  endTime: string | null = null,
+): string {
+  const date = formatDate(iso);
+  if (time && endTime) return `${date}, ${time}–${endTime}`;
+  if (time) return `${date}, ${time}`;
+  // An end time with no start is possible only on a record typed in that way.
+  // Saying "until 16:00" is honest about knowing one end of it and not the other.
+  if (endTime) return `${date}, until ${endTime}`;
+  return date;
+}
+
+/**
+ * The `datetime` attribute for the pair above.
+ *
+ * Only the start is machine-readable. `datetime` holds one moment, and the
+ * range syntax a calendar would want is not part of it — the visible text
+ * carries the full span, and the attribute carries the moment the entry is
+ * sorted and found by.
+ */
+function machineDateTime(iso: string, time: string | null): string {
+  return time ? `${iso}T${time}` : iso;
+}
+
 /* --------------------------------------------------------------------------
  * Findings
  * ----------------------------------------------------------------------- */
@@ -79,6 +124,50 @@ function isStacked(images: MediaRef[], size: ImageSize): boolean {
   return images.length > 0 && size === "large";
 }
 
+/**
+ * The documents attached to an outcome, as download links.
+ *
+ * Each says what it is and how big it is before the reader commits to the
+ * click — `/files/[id]` sends everything as an attachment, so following one
+ * starts a download rather than opening a tab, and being told that first is the
+ * difference between a considered click and a surprise.
+ *
+ * `download` on the anchor asks the browser to use the stored filename. The
+ * route sets `Content-Disposition` regardless, so this is a hint, not the
+ * mechanism.
+ */
+function Downloads({ files }: { files: FileRef[] }) {
+  if (files.length === 0) return null;
+
+  return (
+    <ul className={styles.downloads}>
+      {files.map((file) => (
+        <li key={file.id}>
+          <a className={`adflex-link ${styles.download}`} href={`/files/${file.id}`} download>
+            {/*
+             * The format is shown once, as the tag, and said once, in the
+             * hidden text. Printing it in the tag *and* again beside the size
+             * gave every link a stuttering "PDF … PDF, 214 KB"; leaving it out
+             * of the accessible name altogether would have told a screen-reader
+             * user the size of something without saying what it was.
+             */}
+            <span className={styles.downloadKind} aria-hidden="true">
+              {fileKind(file.filename)}
+            </span>
+            <span>{file.label || file.filename}</span>
+            <span className={styles.downloadSize}>
+              <span className="adflex-visually-hidden">
+                {fileKind(file.filename)} file,{" "}
+              </span>
+              {fileSize(file.byte_size)}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function FindingList({ findings }: { findings: Finding[] }) {
   return (
     <ul className={styles.list}>
@@ -86,11 +175,23 @@ export function FindingList({ findings }: { findings: Finding[] }) {
         const gallery = <Gallery images={finding.images} size={finding.image_size} />;
         const heading = (
           <>
+            {/* A real <time>, so the date is machine-readable as well as
+                legible — the same treatment news entries get. */}
+            <p className={styles.meta}>
+              <time dateTime={finding.published_on}>
+                {formatDate(finding.published_on)}
+              </time>
+            </p>
             <h3 className={styles.title}>{finding.title}</h3>
             {finding.summary ? <p className={styles.summary}>{finding.summary}</p> : null}
           </>
         );
-        const detail = <Prose text={finding.body} className={styles.body} />;
+        const detail = (
+          <>
+            <Prose text={finding.body} className={styles.body} />
+            <Downloads files={finding.files} />
+          </>
+        );
 
         return (
           <li key={finding.id} className={entryClass(finding.images, finding.image_size)}>
@@ -137,6 +238,11 @@ export function PublicationList({ publications }: { publications: Publication[] 
     <ul className={styles.publications}>
       {publications.map((publication) => (
         <li key={publication.id} className={styles.publication}>
+          <p className={styles.meta}>
+            <time dateTime={publication.published_on}>
+              {formatDate(publication.published_on)}
+            </time>
+          </p>
           <h3 className={styles.publicationTitle}>{publication.title}</h3>
 
           {publication.authors || publication.venue || publication.year ? (
@@ -147,18 +253,17 @@ export function PublicationList({ publications }: { publications: Publication[] 
             </p>
           ) : null}
 
-          {publication.doi || publication.url ? (
+          {/*
+           * The link leads, the DOI follows.
+           *
+           * The DOI used to be rendered as its own full doi.org URL used as the
+           * link text, which set a 40-character machine string as the most
+           * prominent thing under the title. It is now a short labelled link,
+           * and the plain link — the ordinary way to reach a publication —
+           * comes first. Either, both or neither may be present.
+           */}
+          {publication.url || publication.doi ? (
             <p className={styles.links}>
-              {publication.doi ? (
-                <a
-                  className={`adflex-link ${styles.doi}`}
-                  href={doiUrl(publication.doi)}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  {doiUrl(publication.doi)}
-                </a>
-              ) : null}
               {publication.url ? (
                 <a
                   className="adflex-link"
@@ -169,8 +274,20 @@ export function PublicationList({ publications }: { publications: Publication[] 
                   Read the paper
                 </a>
               ) : null}
+              {publication.doi ? (
+                <a
+                  className={`adflex-link ${styles.doi}`}
+                  href={doiUrl(publication.doi)}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  DOI: {publication.doi}
+                </a>
+              ) : null}
             </p>
           ) : null}
+
+          <Downloads files={publication.files} />
         </li>
       ))}
     </ul>
@@ -180,6 +297,59 @@ export function PublicationList({ publications }: { publications: Publication[] 
 /* --------------------------------------------------------------------------
  * News and events
  * ----------------------------------------------------------------------- */
+
+/**
+ * Is this event still to come?
+ *
+ * Compared as `YYYY-MM-DD` strings, which sort correctly and, more importantly,
+ * never build a `Date` — a date-only value parsed as a Date lands at midnight
+ * UTC, so an event on the 1st reads as still upcoming for a reader in Dublin
+ * and already past for one in Tokyo. String comparison has no timezone in it at
+ * all. Today counts as upcoming: the day of is exactly when someone is looking.
+ */
+export function isUpcoming(eventDate: string | null): boolean {
+  if (!eventDate) return false;
+  const today = new Date();
+  const local = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  return eventDate >= local;
+}
+
+/**
+ * What a reader can do about an event: book a place, or be told it is full.
+ *
+ * Only shown while the event is still to come. A booking button on an event
+ * that happened last month is worse than no button — it sends someone to a
+ * page that will either take a booking for nothing or confuse them.
+ */
+function EventBooking({ item }: { item: NewsItem }) {
+  // Only an upcoming event, and only while its date is still ahead. The kind
+  // says what the editor intended; the date is the final word, so an upcoming
+  // event that passes stops offering a booking link on its own.
+  if (item.kind !== "upcoming" || !isUpcoming(item.event_date)) return null;
+
+  if (item.slots_filled) {
+    return (
+      <p className={styles.slotsFull}>
+        <strong>Fully booked.</strong> There are no places left for this event.
+      </p>
+    );
+  }
+
+  if (!item.booking_url) return null;
+
+  return (
+    <p className={styles.booking}>
+      <a
+        className="adflex-cta"
+        href={item.booking_url}
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        Book your place
+      </a>
+    </p>
+  );
+}
 
 /**
  * `showKind` adds a News/Event pill to each entry.
@@ -204,25 +374,37 @@ export function NewsList({
             <p className={styles.meta}>
               {showKind ? (
                 <span className={styles.kind}>
-                  {item.kind === "event" ? "Event" : "News"}
+                  {isEvent(item.kind) ? "Event" : "News"}
                 </span>
               ) : null}
               {/* A real <time> element, so the date is machine-readable as well
                   as legible. An event leads with when it happens; a news post
                   leads with when it was posted. */}
-              {item.kind === "event" && item.event_date ? (
-                <time dateTime={item.event_date}>{formatDate(item.event_date)}</time>
+              {isEvent(item.kind) && item.event_date ? (
+                <time dateTime={machineDateTime(item.event_date, item.event_time)}>
+                  {formatDateTime(item.event_date, item.event_time, item.event_end_time)}
+                </time>
               ) : (
                 <time dateTime={item.published_on}>{formatDate(item.published_on)}</time>
               )}
               {item.location ? <span>{item.location}</span> : null}
+              {/* Says which events have not happened yet, so a reader scanning
+                  the list does not have to work it out from the dates. */}
+              {item.kind === "upcoming" && isUpcoming(item.event_date) ? (
+                <span className={styles.upcoming}>Upcoming</span>
+              ) : null}
             </p>
 
             <h3 className={styles.title}>{item.title}</h3>
             {item.summary ? <p className={styles.summary}>{item.summary}</p> : null}
           </>
         );
-        const detail = <Prose text={item.body} className={styles.body} />;
+        const detail = (
+          <>
+            <Prose text={item.body} className={styles.body} />
+            <EventBooking item={item} />
+          </>
+        );
 
         return (
           <li key={item.id} className={entryClass(item.images, item.image_size)}>

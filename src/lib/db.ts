@@ -1,6 +1,7 @@
 import "server-only";
 
-import { Pool } from "pg";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { Pool, type PoolClient } from "pg";
 
 /**
  * The Postgres connection.
@@ -66,12 +67,79 @@ export function getPool(): Pool {
   return globalThis.__adflexPool;
 }
 
-/** Runs a parameterised query. Never interpolate user input into the text. */
+/* --------------------------------------------------------------------------
+ * Transactions
+ * ----------------------------------------------------------------------- */
+
+/**
+ * The client the current transaction is using, if there is one.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY AsyncLocalStorage AND NOT A CLIENT PARAMETER
+ * ---------------------------------------------------------------------------
+ * Saving an entry is several statements — insert the images, insert the row,
+ * link them — and until now each took its own connection from the pool, so a
+ * failure partway left the earlier ones committed. The editor saw an error and
+ * the database had already changed. Raised in the external review of 9 August
+ * 2026, correctly.
+ *
+ * The usual fix is to thread a client through every repo function, which means
+ * touching all forty of them and every caller, and leaves the trap open for the
+ * forty-first. Instead `withTransaction` puts one client in async-local storage
+ * for the duration of the callback, and `query` below prefers it. Existing code
+ * is unchanged and correct: anything called inside the callback joins the
+ * transaction automatically, anything outside behaves exactly as before.
+ *
+ * The store is per async context, so two requests running at once cannot see
+ * each other's client.
+ */
+const transactionStore = new AsyncLocalStorage<PoolClient>();
+
+/**
+ * Runs `work` inside a single transaction, on one connection.
+ *
+ * Commits when it returns and rolls back if it throws, then rethrows — the
+ * caller still has to report the failure, and now it is reporting a failure
+ * where nothing was written rather than one where some of it was.
+ *
+ * Not nestable. A `withTransaction` inside another joins the outer one rather
+ * than opening a second, because savepoints would be the only correct answer and
+ * nothing here needs partial rollback.
+ */
+export async function withTransaction<T>(work: () => Promise<T>): Promise<T> {
+  const existing = transactionStore.getStore();
+  if (existing) return work();
+
+  const client = await getPool().connect();
+  try {
+    await client.query("BEGIN");
+    const result = await transactionStore.run(client, work);
+    await client.query("COMMIT");
+    return result;
+  } catch (error) {
+    // A rollback that itself fails must not replace the real error, which is the
+    // one that says what actually went wrong.
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Runs a parameterised query. Never interpolate user input into the text.
+ *
+ * Uses the current transaction's client when there is one, so a repo function
+ * needs no knowledge of whether it is inside a transaction.
+ */
 export async function query<T extends Record<string, unknown>>(
   text: string,
   params: readonly unknown[] = [],
 ): Promise<T[]> {
-  const result = await getPool().query<T>(text, params as unknown[]);
+  const client = transactionStore.getStore();
+  const result = client
+    ? await client.query<T>(text, params as unknown[])
+    : await getPool().query<T>(text, params as unknown[]);
   return result.rows;
 }
 
@@ -90,19 +158,53 @@ export async function queryOne<T extends Record<string, unknown>>(
  *
  * Only ever use this for reads. A write wrapped in this would report success
  * while losing the editor's work.
+ *
+ * Callers that show something to a visitor should use `safeReadStatus` instead —
+ * see the note there. This plain version is for reads whose fallback needs no
+ * explanation, like "is this image public" (no) or "which address" (the default).
  */
 export async function safeRead<T>(
   read: () => Promise<T>,
   fallback: T,
   label: string,
 ): Promise<T> {
-  if (!isDatabaseConfigured()) return fallback;
+  return (await safeReadStatus(read, fallback, label)).data;
+}
+
+/**
+ * The same read, but saying whether the answer is real or a fallback.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY "NOTHING PUBLISHED" WAS THE WRONG THING TO SAY
+ * ---------------------------------------------------------------------------
+ * A failed read used to return an empty list, and an empty list is what a page
+ * shows when the project genuinely has not published anything. So a database
+ * that was down for a minute told every visitor that an SEAI-funded project had
+ * no news, no events and no outputs — a false statement about the project, made
+ * confidently, in its own voice. The external review of 9 August 2026 reproduced
+ * it by stopping the database after publishing a news item, and was right to
+ * call it out.
+ *
+ * `degraded` lets the page tell the two apart: nothing yet, or nothing *right
+ * now*. Everything else is unchanged — the read still never throws, and the
+ * failure is still logged for whoever has to fix it.
+ */
+export type ReadStatus<T> = { data: T; degraded: boolean };
+
+export async function safeReadStatus<T>(
+  read: () => Promise<T>,
+  fallback: T,
+  label: string,
+): Promise<ReadStatus<T>> {
+  // Not configured at all is not a degradation: it is a site built without a
+  // database, which is a supported way to run the public pages.
+  if (!isDatabaseConfigured()) return { data: fallback, degraded: false };
   try {
-    return await read();
+    return { data: await read(), degraded: false };
   } catch (error) {
     // Logged, not swallowed silently: the page degrades but the operator can
     // still see why in the server output.
     console.error(`[adflex] database read failed (${label}):`, error);
-    return fallback;
+    return { data: fallback, degraded: true };
   }
 }

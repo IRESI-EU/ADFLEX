@@ -107,15 +107,21 @@ export type Technology = {
 
 export type Partner = {
   id: string;
-  name: string;
   /**
-   * One line on what this partner does in ADFLEX, supplied by the project team.
-   * Optional, so a partner can be listed before its role has been confirmed —
-   * a role must never be inferred from the organisation's general reputation.
+   * The organisation's name.
+   *
+   * Not rendered as visible text since the consortium cards became logos only,
+   * but **not decorative either**: `PartnerCard` uses it as the logo's `alt`,
+   * so it is the only thing a screen reader has to identify the partner. Keep
+   * it accurate.
+   *
+   * There is deliberately no `role` field. The one-line roles were taken off
+   * the cards on 6 August 2026 at the client's request; the supplied wording is
+   * preserved in a comment beside `partners` below. Restoring them means adding
+   * the field *and* rendering it again — an orphan field that silently rendered
+   * nowhere would be worse than none.
    */
-  role?: string;
-  /** Decorative initials, shown only while no official logo is available. */
-  initials: string;
+  name: string;
   /**
    * The partner's official logo. Add this only when the partner (or the project
    * coordinator) has supplied the file and confirmed it may be used. Put the
@@ -128,12 +134,13 @@ export type Partner = {
 
 export type ConsortiumContent = {
   title: string;
-  intro: string;
   /**
-   * A phrase inside `intro` given typographic emphasis — see `FigureText`.
-   * Must appear verbatim in `intro`.
+   * There is no `introFigure` here on purpose. The emphasised phrase was the
+   * partner count ("three partners"), removed on 6 August 2026 at the client's
+   * request. A count in the intro has to be re-edited every time the consortium
+   * changes, which is exactly what went stale when IRESI was added.
    */
-  introFigure?: string;
+  intro: string;
   partners: readonly Partner[];
 };
 
@@ -170,9 +177,9 @@ export type PilotContent = {
   image?: ImageAsset;
 };
 
-export type ResultsContent = {
+export type OutcomesContent = {
   title: string;
-  /** Meta description for the /outputs route. */
+  /** Meta description for the /outcomes route. */
   pageDescription: string;
   heading: string;
   body: string;
@@ -276,7 +283,7 @@ export type AdflexContent = {
   };
   consortium: ConsortiumContent;
   pilot: PilotContent;
-  results: ResultsContent;
+  outcomes: OutcomesContent;
   contact: ContactDetails;
   /** News and events, on one route. Merged from two on 30 July 2026. */
   news: AwaitingContentPage;
@@ -331,6 +338,13 @@ export type AdflexContent = {
        */
       href: string | null;
     };
+    /** Follows "© <year> " on the legal line. */
+    copyright: string;
+    /**
+     * The organisation behind ADFLEX, linked from the legal line. Optional, so
+     * the line renders as the copyright alone if it is ever removed.
+     */
+    organisation?: { label: string; href: string };
   };
 };
 
@@ -377,10 +391,10 @@ export const adflexContent = {
     { id: "consortium", label: "Consortium", kind: "section", href: "#consortium" },
     { id: "pilot", label: "Pilot", kind: "section", href: "#pilot" },
     {
-      id: "outputs",
-      label: "Outputs",
+      id: "outcomes",
+      label: "Outcomes",
       kind: "route",
-      href: "/outputs",
+      href: "/outcomes",
     },
     // The label matches the page heading. It is the longest item in the bar, so
     // re-measure the 1080px collapse breakpoint in AdflexHeader.module.css if
@@ -407,9 +421,9 @@ export const adflexContent = {
       definition:
         "A flexumer is a household or building that both uses and shares its energy flexibility with the grid.",
     },
-    // Project Outputs lives at /outputs, so this is a route rather than an
+    // Project Outcomes lives at /outcomes, so this is a route rather than an
     // anchor. The label is the supplied wording and is unchanged.
-    // Was "See Pilot Results" → /outputs. That page is still the empty
+    // Was "See Pilot Results" → /outcomes. That page is still the empty
     // "awaiting content" state, so the hero's main action promised results and
     // delivered nothing. Both actions now point at sections that have real
     // content today.
@@ -528,35 +542,68 @@ export const adflexContent = {
 
   consortium: {
     title: "Consortium",
+    // The count and its `introFigure` emphasis were removed on 6 August 2026 at
+    // the client's request. Only the number is gone; the rest of the approved
+    // sentence is untouched. Dropping it also means the line no longer has to
+    // be edited every time a partner joins or leaves — which it would have, the
+    // moment IRESI was added.
     intro:
-      "ADFLEX brings together three partners spanning research, technical delivery and energy market expertise:",
-    introFigure: "three partners",
-    // `role` is the one-line description supplied by the project team on
-    // 30 July 2026. Partner descriptions, URLs and countries beyond these lines
-    // have not been supplied — do not add them without approved source material.
+      "ADFLEX brings together partners spanning research, technical delivery and energy market expertise:",
     //
-    // Capitalisation normalised on 31 July 2026; the wording is untouched.
-    // `Digital Spine` is Title Case throughout the site because it is the name
-    // of the middleware. Everything else is a common noun and stays lower case
-    // in running prose, which is how `digital twin` is already set in the About
-    // copy, the diagram alt text and the technology card names. UCD's line read
-    // "the Digital Twin and Communication gateway"; `Communication` in
-    // particular had nothing to anchor to — there is no component of that name
-    // anywhere else on the site.
+    // ---------------------------------------------------------------------
+    // LOGOS ONLY, FROM 6 AUGUST 2026
+    // ---------------------------------------------------------------------
+    // The client asked for the partner names and the one-line roles to come off
+    // the cards, leaving the logos to speak for themselves. The `name` field
+    // stays and is now **load-bearing for accessibility**: it is the `alt` text
+    // of the logo. Before this it was correct for `alt` to be empty, because the
+    // name was rendered as real text right beneath the picture; with that text
+    // gone, an empty `alt` would leave a screen reader with four unlabelled
+    // images and no way to know who is in the consortium. `PartnerCard` reads
+    // `name` for exactly that, so it must stay accurate.
+    //
+    // The supplied roles are kept below, commented out rather than deleted, so
+    // restoring them is a one-line change and the approved wording is not lost.
+    // They were supplied by the project team on 30 July 2026:
+    //   Maynooth University — Project coordinator, building the Digital Spine
+    //     middleware
+    //   University College Dublin (UCD) — Modelling the digital twin and
+    //     communication gateway in the lab
+    //   Arden Energy — Implementing flexibility on the ground in the Ringsend
+    //     pilot
+    // No role has been supplied for IRESI, and none is guessed at here.
+    //
+    // Partner descriptions, URLs and countries have never been supplied — do
+    // not add them without approved source material.
     //
     // Logos live in public/images/partners/ and were supplied for the project.
     // `width`/`height` are each file's intrinsic pixel size, so the aspect
-    // ratio is preserved. `alt` is empty on purpose — the partner name is
-    // rendered as real text right below the logo.
+    // ratio is preserved.
     //
-    // `initials` stays as the fallback: PartnerCard uses it whenever a partner
-    // has no `logo`, so a new partner can be added before its artwork arrives.
+    // Array order is display order, left to right. IRESI leads at the client's
+    // request (6 August 2026); the other three keep the order they were
+    // supplied in.
     partners: [
+      // Supplied 6 August 2026. The file as delivered was a 1672x941 export with
+      // the mark floating in a large white field, so it has been trimmed to the
+      // mark per the logo rules in README.md, and its near-white background
+      // snapped to pure white — the export came from a lossy source and its
+      // "white" was really 248-255 with compression speckle, which showed as a
+      // grey rectangle on the card. The mark's own colours are untouched.
+      // `width`/`height` are the trimmed file's intrinsic size.
+      {
+        id: "iresi",
+        name: "IRESI",
+        logo: {
+          src: "/images/partners/iresi.png",
+          alt: "",
+          width: 1094,
+          height: 291,
+        },
+      },
       {
         id: "maynooth-university",
         name: "Maynooth University",
-        role: "Project coordinator, building the Digital Spine middleware",
-        initials: "MU",
         logo: {
           src: "/images/partners/maynooth-university.png",
           alt: "",
@@ -567,8 +614,6 @@ export const adflexContent = {
       {
         id: "university-college-dublin",
         name: "University College Dublin (UCD)",
-        role: "Modelling the digital twin and communication gateway in the lab",
-        initials: "UCD",
         logo: {
           src: "/images/partners/university-college-dublin.png",
           alt: "",
@@ -579,8 +624,6 @@ export const adflexContent = {
       {
         id: "arden-energy",
         name: "Arden Energy",
-        role: "Implementing flexibility on the ground in the Ringsend pilot",
-        initials: "AE",
         logo: {
           src: "/images/partners/arden-energy.png",
           alt: "",
@@ -653,17 +696,21 @@ export const adflexContent = {
     },
   },
 
-  // Rendered as an intentional empty state at /outputs. Do not replace it
-  // with placeholder publications, deliverables, dates, DOIs or downloads.
+  // Falls back to an intentional empty state at /outcomes when nothing has been
+  // published through the admin. Do not replace it with placeholder
+  // publications, deliverables, dates, DOIs or downloads.
   //
-  // Named `results` for historical reasons; it is displayed as "Project
-  // Outputs" (heading) and "Outputs" (navigation). `body` is the supplied
-  // paragraph and still uses the phrase "Results and publications" — it is left
-  // verbatim because it is approved copy.
-  results: {
-    title: "Project Outputs",
+  // Renamed from "Outputs" to "Outcomes" on 6 August 2026 at the client's
+  // request — heading, navigation label and the route itself. The content key
+  // was `results` before that, a third name for the same thing; it is now
+  // `outcomes` so the code, the URL and the page all agree.
+  //
+  // `body` is the supplied paragraph and still opens "Results and publications"
+  // — left verbatim because it is approved copy, and not ours to reword.
+  outcomes: {
+    title: "Project Outcomes",
     pageDescription:
-      "Project outputs from ADFLEX, updated as findings, deliverables and papers become available.",
+      "Project outcomes from ADFLEX, updated as findings, deliverables and papers become available.",
     heading: "Project findings are still being finalised",
     body: "Results and publications from ADFLEX are still being finalised as the project progresses through its pilot phase. This section will be updated as findings, deliverables and papers become available.",
   },
@@ -1015,16 +1062,49 @@ export const adflexContent = {
     //
     // The programme name (National Energy RD&D Funding Programme) is named in
     // the supplied legal text but has not been approved as footer wording, and
-    // the grant number, the disclaimer and an SEAI emblem file have never been
-    // supplied at all — see docs/OPEN-ITEMS.md. None of them is guessed at
-    // here. Extending this statement later needs no layout change: add to
-    // `statement`, and add `emblem` when an approved file arrives.
-    funding: { statement: "Funded by SEAI." },
+    // the grant number and the disclaimer have never been supplied at all —
+    // see docs/OPEN-ITEMS.md. Neither is guessed at here. Extending this
+    // statement later needs no layout change: add to `statement`.
+    //
+    // The SEAI logo was supplied on 6 August 2026. The file as delivered was a
+    // 1672x941 export with the mark floating in a large white field; it has
+    // been trimmed to the mark, which is what README.md requires of logo
+    // artwork and what keeps it from rendering at a fraction of its box. No
+    // pixel of the mark itself was altered. `width`/`height` are the trimmed
+    // file's intrinsic size, so the aspect ratio is preserved.
+    //
+    // `alt` carries the funder's name because this logo is the only place the
+    // footer names SEAI in full — the statement beside it says just "SEAI".
+    funding: {
+      statement: "Funded by SEAI.",
+      emblem: {
+        src: "/images/funded-logo/seai-logo.png",
+        alt: "Sustainable Energy Authority of Ireland",
+        width: 1552,
+        height: 415,
+      },
+    },
     linkedin: {
       label: "Follow us on LinkedIn",
-      // URL awaited from the project team.
-      href: null,
+      /*
+       * Supplied 6 August 2026 as
+       *   https://www.linkedin.com/company/112635173/admin/dashboard/
+       *
+       * That is the **page admin dashboard**, not the public page. It is
+       * reachable only by someone signed in as an administrator of the company
+       * page; every public visitor following it lands on a LinkedIn sign-in or
+       * an error, which is exactly the dead link this field exists to avoid.
+       *
+       * The public address of the same page is the company URL without the
+       * `/admin/dashboard/` suffix, which is what is used here. Worth replacing
+       * with the page's vanity URL (e.g. /company/adflex-project/) once the
+       * page has one — a numeric id works but tells a reader nothing.
+       */
+      href: "https://www.linkedin.com/company/112635173/",
     },
+    copyright: "ADFLEX Project. All rights reserved.",
+    // ADFLEX is an IRESI project; the legal line links back to them.
+    organisation: { label: "Visit IRESI", href: "https://www.iresi.eu/" },
   },
 } as const satisfies AdflexContent;
 

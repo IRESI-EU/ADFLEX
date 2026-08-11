@@ -3,17 +3,15 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { ActionState } from "./actions";
-import {
-  saveFinding,
-  saveNewsItem,
-  savePublication,
-  signIn,
-} from "./actions";
-import type { Finding, ImageSize, MediaRef, NewsItem, Publication } from "@/lib/repo";
+import { saveNewsItem, saveOutcome, signIn } from "./actions";
+import type { FileRef, Finding, MediaRef, NewsItem, NewsKind, Publication } from "@/lib/repo";
 import {
   ACCEPT_ATTRIBUTE,
+  DOCUMENT_ACCEPT,
   MAX_UPLOAD_BYTES,
   MAX_UPLOAD_TOTAL_BYTES,
+  fileKind,
+  fileSize,
   mb,
 } from "@/lib/upload-limits";
 import styles from "./admin.module.css";
@@ -29,6 +27,10 @@ import styles from "./admin.module.css";
  */
 
 const EMPTY: ActionState = {};
+
+/** True for either kind of event. Mirrors `isEvent` in the repo, which this
+    client component cannot import — that module is `server-only`. */
+const isEventKind = (kind: NewsKind) => kind === "event" || kind === "upcoming";
 
 function Submit({ label = "Save" }: { label?: string }) {
   // `useFormStatus` must be read by a child of the form, not the form itself.
@@ -76,7 +78,106 @@ function PublishCheck({ defaultChecked }: { defaultChecked: boolean }) {
   );
 }
 
+/**
+ * What a field should show after a failed save.
+ *
+ * A Server Action re-renders the form from nothing, so every input falls back
+ * to its `defaultValue` unless the action hands the submitted text back. These
+ * two helpers read that: `keep` restores what was typed, and `fieldError` marks
+ * the single field the action blamed.
+ *
+ * The blamed field is deliberately absent from `state.values`, so it comes back
+ * empty and ready to retype while everything around it survives — a mistyped
+ * DOI no longer costs the editor a body they spent ten minutes on.
+ */
+function keep(state: ActionState, name: string, fallback: string | number = "") {
+  return state.values?.[name] ?? String(fallback ?? "");
+}
+
+/** Props that mark an input as the one that failed, and point at its message. */
+function fieldError(state: ActionState, name: string) {
+  const failed = state.field === name;
+  return {
+    isInvalid: failed,
+    message: failed ? state.error : undefined,
+    inputProps: failed
+      ? ({ "aria-invalid": true, "aria-describedby": `${name}-error` } as const)
+      : {},
+  };
+}
+
+/**
+ * "No places left" for an event.
+ *
+ * Reads its state in the present tense, like `PublishCheck`, so the label
+ * always describes what is true rather than what ticking it would do.
+ *
+ * Deliberately a flag and not a number of places. The project does not run the
+ * booking system, so a count here would be a stale copy of someone else's
+ * state — wrong the moment a place is taken, and wrong in the direction that
+ * disappoints people. A flag an editor sets when they know it is full is a
+ * smaller claim and a true one.
+ */
+function SlotsFilledCheck({ defaultChecked }: { defaultChecked: boolean }) {
+  const [checked, setChecked] = useState(defaultChecked);
+
+  return (
+    <label className={styles.check}>
+      <input
+        type="checkbox"
+        name="slotsFilled"
+        checked={checked}
+        onChange={(event) => setChecked(event.target.checked)}
+      />
+      {checked ? (
+        <span>
+          <strong>No places left</strong> — the News &amp; Events page says the
+          event is fully booked and stops offering the booking link, and it is
+          no longer announced on the home page
+        </span>
+      ) : (
+        <span>
+          <strong>Places available</strong> — tick when the event is full
+        </span>
+      )}
+    </label>
+  );
+}
+
+/**
+ * Marks a field the form will not save without.
+ *
+ * Beside the label, in words, rather than the bare asterisk that convention
+ * uses and that means nothing on its own — an asterisk needs a legend somewhere
+ * else on the page explaining it, which is one more thing to find and one more
+ * thing to keep in step.
+ *
+ * `aria-hidden` because the input itself carries `required`, which assistive
+ * technology already announces; without this the field would be read as
+ * "Title required required".
+ */
+function Required() {
+  return (
+    <span className={styles.required} aria-hidden="true">
+      Required
+    </span>
+  );
+}
+
+/** The message shown directly under the field that caused it. */
+function FieldError({ state, name }: { state: ActionState; name: string }) {
+  if (state.field !== name || !state.error) return null;
+  return (
+    <span id={`${name}-error`} className={styles.error} role="alert">
+      {state.error}
+    </span>
+  );
+}
+
 function Banner({ state }: { state: ActionState }) {
+  // A field-level failure is reported next to the field itself; repeating it in
+  // a banner at the top of the form says the same thing twice.
+  if (state.error && state.field) return null;
   if (state.error) {
     return (
       <p className={styles.error} role="alert">
@@ -106,13 +207,7 @@ function Banner({ state }: { state: ActionState }) {
  * here; the server reads `form.getAll("keepImage")`, which preserves document
  * order, so the two cannot disagree about what position 3 means.
  */
-function ImagesField({
-  existing,
-  size,
-}: {
-  existing: MediaRef[];
-  size: ImageSize;
-}) {
+function ImagesField({ existing }: { existing: MediaRef[] }) {
   const [kept, setKept] = useState(existing);
   const [picked, setPicked] = useState<string[]>([]);
   const [tooBig, setTooBig] = useState<string | null>(null);
@@ -252,48 +347,226 @@ function ImagesField({
           {tooBig}
         </span>
       ) : null}
-      {picked.length > 0 ? (
-        <span className={styles.hint}>
-          {picked.length} new image{picked.length === 1 ? "" : "s"}: {picked.join(", ")}
-        </span>
-      ) : null}
       <span className={styles.hint}>
         PNG, JPEG, WebP or GIF, up to {mb(MAX_UPLOAD_BYTES)} each and{" "}
         {mb(MAX_UPLOAD_TOTAL_BYTES)} in one save. SVG is not accepted. Choose
         several at once if you want a gallery.
       </span>
 
-      <label className={styles.label} htmlFor="newImageAlt">
-        Description for the new images
+      {/*
+       * One description per chosen image, matched to the server by position.
+       *
+       * There used to be a single box applied to everything added at once,
+       * which is only right when the images are variations of one thing. These
+       * are named `newImageAlt:<n>` in the same order the file input reported
+       * the files, and `resolveImages` reads them back by the same index.
+       *
+       * Each is optional. An empty one means the image is decorative, which is
+       * the correct answer surprisingly often — a photograph illustrating a
+       * paragraph that already describes it needs no alt text.
+       */}
+      {picked.length > 0 ? (
+        <ul className={styles.newImageList}>
+          {picked.map((name, index) => (
+            <li key={`${name}-${index}`} className={styles.newImageRow}>
+              <label className={styles.hint} htmlFor={`newImageAlt-${index}`}>
+                Description for <strong>{name}</strong> (optional — leave empty
+                if it is decorative)
+              </label>
+              <input
+                id={`newImageAlt-${index}`}
+                className={styles.input}
+                name={`newImageAlt:${index}`}
+                maxLength={300}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {/* The fallback for a browser with JavaScript off, where the per-image
+          inputs above are never rendered: one description for the whole batch,
+          which is what `resolveImages` falls back to. */}
+      <noscript>
+        <label className={styles.label} htmlFor="newImageAlt">
+          Description for the new images
+        </label>
+        <input
+          id="newImageAlt"
+          className={styles.input}
+          name="newImageAlt"
+          maxLength={300}
+        />
+      </noscript>
+
+      {/*
+       * There is no size chooser any more. Every entry's images are drawn at
+       * one size — see `IMAGE_SIZE` in actions.ts for why, and for how to put
+       * the choice back.
+       */}
+      <span className={styles.hint}>
+        Images appear beside the text, about half the page width. With more than
+        one they become a gallery a reader can swipe through, and any of them can
+        be opened full size. Each keeps its own shape, so nothing is cropped or
+        padded.
+      </span>
+    </fieldset>
+  );
+}
+
+/**
+ * The attached-documents field, shared by findings and publications.
+ *
+ * The same shape as `ImagesField` — keep, relabel, reorder, remove, add — but
+ * for things that are downloaded rather than rendered. Order is again carried
+ * by the order of the `keepFile` inputs.
+ */
+function FilesField({ existing }: { existing: FileRef[] }) {
+  const [kept, setKept] = useState(existing);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [tooBig, setTooBig] = useState<string | null>(null);
+
+  const move = (index: number, by: number) => {
+    const to = index + by;
+    if (to < 0 || to >= kept.length) return;
+    const next = [...kept];
+    [next[index], next[to]] = [next[to], next[index]];
+    setKept(next);
+  };
+
+  // Same reasoning as the image picker: refuse early rather than after an
+  // upload that was always going to be rejected. The server re-checks.
+  const onPick = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = [...(event.target.files ?? [])];
+    const reject = (message: string) => {
+      setTooBig(message);
+      event.target.value = "";
+      setPicked([]);
+    };
+
+    const over = files.find((file) => file.size > MAX_UPLOAD_BYTES);
+    if (over) {
+      return reject(
+        `“${over.name}” is ${(over.size / 1024 / 1024).toFixed(1)} MB. The limit is ${mb(MAX_UPLOAD_BYTES)} per file.`,
+      );
+    }
+    const total = files.reduce((sum, file) => sum + file.size, 0);
+    if (total > MAX_UPLOAD_TOTAL_BYTES) {
+      return reject(
+        `Those ${files.length} files come to ${(total / 1024 / 1024).toFixed(1)} MB together. The limit is ${mb(MAX_UPLOAD_TOTAL_BYTES)} per save.`,
+      );
+    }
+
+    setTooBig(null);
+    setPicked(files.map((file) => file.name));
+  };
+
+  return (
+    <fieldset className={styles.imagesField}>
+      <legend className={styles.label}>Files to download</legend>
+
+      {kept.length > 0 ? (
+        <ul className={styles.imageList}>
+          {kept.map((file, index) => (
+            <li key={file.id} className={styles.imageRow}>
+              <span className={styles.fileKind} aria-hidden="true">
+                {fileKind(file.filename)}
+              </span>
+
+              {/* Position in the document is position on the page. */}
+              <input type="hidden" name="keepFile" value={file.id} />
+
+              <div className={styles.imageMeta}>
+                <label className={styles.hint} htmlFor={`fileLabel-${file.id}`}>
+                  Link text (optional — the filename is used if you leave it
+                  empty)
+                </label>
+                <input
+                  id={`fileLabel-${file.id}`}
+                  className={styles.input}
+                  name={`fileLabel:${file.id}`}
+                  defaultValue={file.label}
+                  maxLength={200}
+                />
+                <span className={styles.hint}>
+                  {file.filename} · {fileSize(file.byte_size)}
+                </span>
+              </div>
+
+              <div className={styles.imageButtons}>
+                <button
+                  type="button"
+                  className={styles.tab}
+                  onClick={() => move(index, -1)}
+                  disabled={index === 0}
+                  aria-label={`Move file ${index + 1} earlier`}
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  className={styles.tab}
+                  onClick={() => move(index, 1)}
+                  disabled={index === kept.length - 1}
+                  aria-label={`Move file ${index + 1} later`}
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  className={styles.danger}
+                  onClick={() => setKept(kept.filter((k) => k.id !== file.id))}
+                >
+                  Remove
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className={styles.hint}>No files attached yet.</p>
+      )}
+
+      <label className={styles.label} htmlFor="files">
+        Add files
       </label>
       <input
-        id="newImageAlt"
+        id="files"
         className={styles.input}
-        name="newImageAlt"
-        maxLength={300}
+        type="file"
+        name="files"
+        accept={DOCUMENT_ACCEPT}
+        multiple
+        onChange={onPick}
       />
+      {tooBig ? (
+        <span className={styles.error} role="alert">
+          {tooBig}
+        </span>
+      ) : null}
       <span className={styles.hint}>
-        Applied to everything added in this save. Each one can be described
-        separately after saving.
+        PDF, Word, PowerPoint or Excel, up to {mb(MAX_UPLOAD_BYTES)} each and{" "}
+        {mb(MAX_UPLOAD_TOTAL_BYTES)} in one save. Readers get a download link;
+        files are never opened in the browser.
       </span>
 
-      <label className={styles.label} htmlFor="imageSize">
-        How large should they appear?
-      </label>
-      <select
-        id="imageSize"
-        className={styles.select}
-        name="imageSize"
-        defaultValue={size}
-      >
-        <option value="small">Small — a thumbnail beside the text (about a quarter of the width)</option>
-        <option value="medium">Medium — beside the text, about half the width</option>
-        <option value="large">Large — a wide image with the text underneath (about two thirds)</option>
-      </select>
-      <span className={styles.hint}>
-        With more than one image they are laid out as a gallery at the chosen
-        size. Each image keeps its own shape, so nothing is cropped or padded.
-      </span>
+      {picked.length > 0 ? (
+        <ul className={styles.newImageList}>
+          {picked.map((name, index) => (
+            <li key={`${name}-${index}`} className={styles.newImageRow}>
+              <label className={styles.hint} htmlFor={`newFileLabel-${index}`}>
+                Link text for <strong>{name}</strong> (optional)
+              </label>
+              <input
+                id={`newFileLabel-${index}`}
+                className={styles.input}
+                name={`newFileLabel:${index}`}
+                maxLength={200}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </fieldset>
   );
 }
@@ -311,7 +584,7 @@ export function LoginForm() {
 
       <p className={styles.field}>
         <label className={styles.label} htmlFor="email">
-          Email
+          Email <Required />
         </label>
         <input
           id="email"
@@ -325,7 +598,7 @@ export function LoginForm() {
 
       <p className={styles.field}>
         <label className={styles.label} htmlFor="password">
-          Password
+          Password <Required />
         </label>
         <input
           id="password"
@@ -345,212 +618,272 @@ export function LoginForm() {
 }
 
 /* --------------------------------------------------------------------------
- * Finding
+ * Outcomes: findings and publications, one form
  * ----------------------------------------------------------------------- */
 
-export function FindingForm({ finding }: { finding?: Finding }) {
-  const [state, action] = useActionState(saveFinding, EMPTY);
+/**
+ * The Outcomes editor.
+ *
+ * `/outcomes` publishes two different things, and this is one form with a type
+ * selector that swaps the fields between them — the same shape as News &
+ * Events, which does the same for news posts and events.
+ *
+ * ---------------------------------------------------------------------------
+ * THE TYPE IS FIXED ONCE AN ENTRY EXISTS
+ * ---------------------------------------------------------------------------
+ * A finding and a publication are separate rows in separate tables, because
+ * they genuinely are different records: one has a body and images, the other
+ * has authors, a venue and a DOI. Changing the type of a saved entry would mean
+ * deleting it from one table and inserting into the other, losing its id, its
+ * posting date and anything linking to it.
+ *
+ * So when editing, the selector is replaced by a plain statement of what this
+ * entry is, with a hidden input carrying the value. A disabled `<select>` would
+ * look like the same thing and would submit nothing at all, which would quietly
+ * save every edited publication as a finding.
+ */
+export function OutcomeForm({
+  finding,
+  publication,
+}: {
+  finding?: Finding;
+  publication?: Publication;
+}) {
+  const [state, action] = useActionState(saveOutcome, EMPTY);
+  const editing = Boolean(finding ?? publication);
+  const [kind, setKind] = useState<"finding" | "publication">(
+    publication ? "publication" : "finding",
+  );
+
+  const entry = finding ?? publication;
 
   return (
     <form className={styles.form} action={action}>
       <Banner state={state} />
-      {finding ? <input type="hidden" name="id" value={finding.id} /> : null}
+      {entry ? <input type="hidden" name="id" value={entry.id} /> : null}
 
       <p className={styles.field}>
-        <label className={styles.label} htmlFor="f-title">
-          Title
+        <label className={styles.label} htmlFor="o-kind">
+          Type
+        </label>
+        {editing ? (
+          <>
+            <input type="hidden" name="kind" value={kind} />
+            <span className={styles.staticValue}>
+              {kind === "publication" ? "Publication" : "Project finding"}
+            </span>
+            <span className={styles.hint}>
+              The type cannot be changed after saving — a finding and a
+              publication are stored differently. Delete this and add it again if
+              it is the wrong one.
+            </span>
+          </>
+        ) : (
+          <>
+            <select
+              id="o-kind"
+              className={styles.select}
+              name="kind"
+              value={kind}
+              onChange={(event) =>
+                setKind(event.target.value as "finding" | "publication")
+              }
+            >
+              <option value="finding">Project finding</option>
+              <option value="publication">Publication</option>
+            </select>
+            <span className={styles.hint}>
+              {kind === "publication"
+                ? "A paper, report or deliverable, with authors and an optional DOI."
+                : "A result the project can stand behind, with text and images."}
+            </span>
+          </>
+        )}
+      </p>
+
+      <p className={styles.field}>
+        <label className={styles.label} htmlFor="o-title">
+          Title <Required />
         </label>
         <input
-          id="f-title"
+          id="o-title"
           className={styles.input}
           name="title"
-          defaultValue={finding?.title ?? ""}
-          maxLength={300}
+          defaultValue={keep(state, "title", entry?.title ?? "")}
+          maxLength={400}
           required
+          {...fieldError(state, "title").inputProps}
         />
+        <FieldError state={state} name="title" />
       </p>
 
-      <p className={styles.field}>
-        <label className={styles.label} htmlFor="f-summary">
-          Summary
-        </label>
-        <textarea
-          id="f-summary"
-          className={styles.textarea}
-          name="summary"
-          defaultValue={finding?.summary ?? ""}
-          rows={3}
-        />
-        <span className={styles.hint}>One or two sentences, shown in the list on /outputs.</span>
-      </p>
+      {kind === "finding" ? (
+        <>
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="o-summary">
+              Summary
+            </label>
+            <textarea
+              id="o-summary"
+              className={styles.textarea}
+              name="summary"
+              defaultValue={keep(state, "summary", finding?.summary ?? "")}
+              rows={3}
+            />
+            <span className={styles.hint}>
+              One or two sentences, shown in the list on /outcomes.
+            </span>
+          </p>
 
-      <p className={styles.field}>
-        <label className={styles.label} htmlFor="f-body">
-          Detail
-        </label>
-        <textarea
-          id="f-body"
-          className={styles.textarea}
-          name="body"
-          defaultValue={finding?.body ?? ""}
-          rows={7}
-        />
-        <span className={styles.hint}>
-          Plain text. Blank lines start a new paragraph; no HTML or Markdown is
-          interpreted, so pasted formatting will show as characters.
-        </span>
-      </p>
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="o-body">
+              Detail
+            </label>
+            <textarea
+              id="o-body"
+              className={styles.textarea}
+              name="body"
+              defaultValue={keep(state, "body", finding?.body ?? "")}
+              rows={7}
+            />
+            <span className={styles.hint}>
+              Plain text. Blank lines start a new paragraph; no HTML or Markdown
+              is interpreted, so pasted formatting will show as characters.
+            </span>
+          </p>
 
-      <ImagesField
-        existing={finding?.images ?? []}
-        size={finding?.image_size ?? "medium"}
-      />
+          <ImagesField existing={finding?.images ?? []} />
+        </>
+      ) : (
+        <>
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="o-authors">
+              Authors
+            </label>
+            <input
+              id="o-authors"
+              className={styles.input}
+              name="authors"
+              defaultValue={keep(state, "authors", publication?.authors ?? "")}
+              maxLength={500}
+            />
+            <span className={styles.hint}>
+              As they should appear, e.g. “Ó Broin, E., Smith, J.”
+            </span>
+          </p>
+
+          <div className={styles.row}>
+            <p className={styles.field}>
+              <label className={styles.label} htmlFor="o-venue">
+                Journal or conference
+              </label>
+              <input
+                id="o-venue"
+                className={styles.input}
+                name="venue"
+                defaultValue={keep(state, "venue", publication?.venue ?? "")}
+                maxLength={300}
+              />
+            </p>
+
+            <p className={styles.field}>
+              <label className={styles.label} htmlFor="o-year">
+                Year
+              </label>
+              <input
+                id="o-year"
+                className={styles.input}
+                type="number"
+                name="year"
+                defaultValue={keep(state, "year", publication?.year ?? "")}
+                min={1900}
+                max={2200}
+                {...fieldError(state, "year").inputProps}
+              />
+              <FieldError state={state} name="year" />
+            </p>
+          </div>
+
+          {/*
+           * The link comes first and the DOI second, and neither is required.
+           *
+           * It used to be the other way round, with the DOI presented as the
+           * main way to reach a publication and the URL as the fallback "when
+           * there is no DOI". That suits journal articles and nothing else: a
+           * report, a deliverable, a dataset or a conference talk has a web
+           * address and usually no DOI at all, and a publication that is not
+           * online yet has neither.
+           */}
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="o-url">
+              Link
+            </label>
+            <input
+              id="o-url"
+              className={styles.input}
+              type="url"
+              name="url"
+              defaultValue={keep(state, "url", publication?.url ?? "")}
+              placeholder="https://…"
+              {...fieldError(state, "url").inputProps}
+            />
+            <span className={styles.hint}>
+              Optional. Where a reader can get the publication — a publisher
+              page, a repository copy or a PDF. Shown as “Read the paper”.
+            </span>
+            <FieldError state={state} name="url" />
+          </p>
+
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="o-doi">
+              DOI
+            </label>
+            <input
+              id="o-doi"
+              className={styles.input}
+              name="doi"
+              defaultValue={keep(state, "doi", publication?.doi ?? "")}
+              placeholder="10.1234/abcd"
+              {...fieldError(state, "doi").inputProps}
+            />
+            <span className={styles.hint}>
+              Optional. Leave empty if the publication has no DOI. A bare DOI or
+              a full doi.org link are both accepted and stored the same way.
+            </span>
+            <FieldError state={state} name="doi" />
+          </p>
+        </>
+      )}
+
+      {/* Documents hang off either type: a finding may have its data behind it,
+          a publication may be the PDF itself. */}
+      <FilesField existing={entry?.files ?? []} />
 
       <div className={styles.row}>
         <p className={styles.field}>
-          <label className={styles.label} htmlFor="f-order">
+          <label className={styles.label} htmlFor="o-order">
             Order
           </label>
           <input
-            id="f-order"
+            id="o-order"
             className={styles.input}
             type="number"
             name="sortOrder"
-            defaultValue={finding?.sort_order ?? 0}
+            defaultValue={entry?.sort_order ?? 0}
           />
           <span className={styles.hint}>Lower numbers first.</span>
         </p>
 
-        <PublishCheck defaultChecked={finding?.published ?? false} />
-      </div>
-
-      <p className={styles.actions}>
-        <Submit />
-      </p>
-    </form>
-  );
-}
-
-/* --------------------------------------------------------------------------
- * Publication
- * ----------------------------------------------------------------------- */
-
-export function PublicationForm({ publication }: { publication?: Publication }) {
-  const [state, action] = useActionState(savePublication, EMPTY);
-
-  return (
-    <form className={styles.form} action={action}>
-      <Banner state={state} />
-      {publication ? <input type="hidden" name="id" value={publication.id} /> : null}
-
-      <p className={styles.field}>
-        <label className={styles.label} htmlFor="p-title">
-          Title
-        </label>
-        <input
-          id="p-title"
-          className={styles.input}
-          name="title"
-          defaultValue={publication?.title ?? ""}
-          maxLength={400}
-          required
-        />
-      </p>
-
-      <p className={styles.field}>
-        <label className={styles.label} htmlFor="p-authors">
-          Authors
-        </label>
-        <input
-          id="p-authors"
-          className={styles.input}
-          name="authors"
-          defaultValue={publication?.authors ?? ""}
-          maxLength={500}
-        />
-        <span className={styles.hint}>As they should appear, e.g. “Ó Broin, E., Smith, J.”</span>
-      </p>
-
-      <div className={styles.row}>
-        <p className={styles.field}>
-          <label className={styles.label} htmlFor="p-venue">
-            Journal or conference
-          </label>
-          <input
-            id="p-venue"
-            className={styles.input}
-            name="venue"
-            defaultValue={publication?.venue ?? ""}
-            maxLength={300}
-          />
-        </p>
-
-        <p className={styles.field}>
-          <label className={styles.label} htmlFor="p-year">
-            Year
-          </label>
-          <input
-            id="p-year"
-            className={styles.input}
-            type="number"
-            name="year"
-            defaultValue={publication?.year ?? ""}
-            min={1900}
-            max={2200}
-          />
-        </p>
+        <PublishCheck defaultChecked={entry?.published ?? false} />
       </div>
 
       <p className={styles.field}>
-        <label className={styles.label} htmlFor="p-doi">
-          DOI
-        </label>
-        <input
-          id="p-doi"
-          className={styles.input}
-          name="doi"
-          defaultValue={publication?.doi ?? ""}
-          placeholder="10.1234/abcd"
-        />
         <span className={styles.hint}>
-          Paste the bare DOI or a full doi.org link — both are accepted and
-          stored the same way, then shown as a link to doi.org.
+          {entry
+            ? `Posted ${entry.published_on}. Set when it was first saved and unchanged by editing.`
+            : "The date posted is recorded automatically when you save."}
         </span>
       </p>
-
-      <p className={styles.field}>
-        <label className={styles.label} htmlFor="p-url">
-          Other link
-        </label>
-        <input
-          id="p-url"
-          className={styles.input}
-          type="url"
-          name="url"
-          defaultValue={publication?.url ?? ""}
-          placeholder="https://…"
-        />
-        <span className={styles.hint}>
-          Optional. For a repository copy or a PDF when there is no DOI.
-        </span>
-      </p>
-
-      <div className={styles.row}>
-        <p className={styles.field}>
-          <label className={styles.label} htmlFor="p-order">
-            Order
-          </label>
-          <input
-            id="p-order"
-            className={styles.input}
-            type="number"
-            name="sortOrder"
-            defaultValue={publication?.sort_order ?? 0}
-          />
-        </p>
-
-        <PublishCheck defaultChecked={publication?.published ?? false} />
-      </div>
 
       <p className={styles.actions}>
         <Submit />
@@ -566,72 +899,138 @@ export function PublicationForm({ publication }: { publication?: Publication }) 
 export function NewsForm({ item }: { item?: NewsItem }) {
   const [state, action] = useActionState(saveNewsItem, EMPTY);
   // Controlled so the date and location fields can appear only for an event.
-  const [kind, setKind] = useState<"news" | "event">(item?.kind ?? "news");
+  // Three kinds now, not two — see `NewsKind`. `upcoming` is the only one that
+  // offers a booking link, so the fields below follow this.
+  const [kind, setKind] = useState<NewsKind>(item?.kind ?? "news");
 
   return (
     <form className={styles.form} action={action}>
       <Banner state={state} />
       {item ? <input type="hidden" name="id" value={item.id} /> : null}
 
-      <div className={styles.row}>
-        <p className={styles.field}>
-          <label className={styles.label} htmlFor="n-kind">
-            Type
-          </label>
-          <select
-            id="n-kind"
-            className={styles.select}
-            name="kind"
-            value={kind}
-            onChange={(event) => setKind(event.target.value as "news" | "event")}
-          >
-            <option value="news">News</option>
-            <option value="event">Event</option>
-          </select>
-        </p>
-
-        <p className={styles.field}>
-          <label className={styles.label} htmlFor="n-published-on">
-            Date posted
-          </label>
-          <input
-            id="n-published-on"
-            className={styles.input}
-            type="date"
-            name="publishedOn"
-            defaultValue={item?.published_on ?? new Date().toISOString().slice(0, 10)}
-          />
-        </p>
-      </div>
+      {/*
+       * "Date posted" used to sit here as a field. It is now stamped
+       * automatically when the entry is first saved — see `NewsInput` — so
+       * there is nothing to fill in and nothing to get wrong. Editing an entry
+       * later does not move its posting date.
+       */}
+      <p className={styles.field}>
+        <label className={styles.label} htmlFor="n-kind">
+          Type
+        </label>
+        <select
+          id="n-kind"
+          className={styles.select}
+          name="kind"
+          value={kind}
+          onChange={(event) => setKind(event.target.value as NewsKind)}
+        >
+          <option value="news">News</option>
+          <option value="upcoming">Upcoming event</option>
+          <option value="event">Event (already held)</option>
+        </select>
+        <span className={styles.hint}>
+          {kind === "upcoming"
+            ? "Shown under Events, announced on the home page with a countdown, and able to carry a booking link."
+            : kind === "event"
+              ? "Shown under Events as a record of something that has happened. No booking link."
+              : "An announcement, shown under News."}
+        </span>
+        <span className={styles.hint}>
+          {item
+            ? `Posted ${item.published_on}. Set when it was first saved and unchanged by editing.`
+            : "The date posted is recorded automatically when you save."}
+        </span>
+      </p>
 
       <p className={styles.field}>
         <label className={styles.label} htmlFor="n-title">
-          Title
+          Title <Required />
         </label>
         <input
           id="n-title"
           className={styles.input}
           name="title"
-          defaultValue={item?.title ?? ""}
+          defaultValue={keep(state, "title", item?.title ?? "")}
           maxLength={300}
           required
+          {...fieldError(state, "title").inputProps}
         />
+        <FieldError state={state} name="title" />
       </p>
 
-      {kind === "event" ? (
+      {isEventKind(kind) ? (
         <div className={styles.row}>
           <p className={styles.field}>
             <label className={styles.label} htmlFor="n-event-date">
-              Event date
+              Event date <Required />
             </label>
             <input
               id="n-event-date"
               className={styles.input}
               type="date"
               name="eventDate"
-              defaultValue={item?.event_date ?? ""}
+              defaultValue={keep(state, "eventDate", item?.event_date ?? "")}
               required
+              {...fieldError(state, "eventDate").inputProps}
             />
+            <FieldError state={state} name="eventDate" />
+          </p>
+
+          {/*
+           * Start and end, next to the date because that is the question they
+           * answer.
+           *
+           * Both are required for an **upcoming** event and optional for one
+           * already held. An upcoming event is asking people to turn up, so it
+           * has to say when; and its end time is the moment the entry comes off
+           * the public page, so without one it would have to be taken down by
+           * hand. A record of something that already happened is still a record
+           * with no hour written down.
+           *
+           * `type="time"` gives a picker and the reader's own clock format,
+           * 12- or 24-hour, while still submitting `HH:MM`.
+           */}
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="n-event-time">
+              Start time {kind === "upcoming" ? <Required /> : null}
+            </label>
+            <input
+              id="n-event-time"
+              className={styles.input}
+              type="time"
+              name="eventTime"
+              defaultValue={keep(state, "eventTime", item?.event_time ?? "")}
+              required={kind === "upcoming"}
+              {...fieldError(state, "eventTime").inputProps}
+            />
+            <FieldError state={state} name="eventTime" />
+            <span className={styles.hint}>
+              {kind === "upcoming"
+                ? "The countdown on the home page runs to this."
+                : "Optional. Leave empty if it was not recorded."}
+            </span>
+          </p>
+
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="n-event-end-time">
+              End time {kind === "upcoming" ? <Required /> : null}
+            </label>
+            <input
+              id="n-event-end-time"
+              className={styles.input}
+              type="time"
+              name="eventEndTime"
+              defaultValue={keep(state, "eventEndTime", item?.event_end_time ?? "")}
+              required={kind === "upcoming"}
+              {...fieldError(state, "eventEndTime").inputProps}
+            />
+            <FieldError state={state} name="eventEndTime" />
+            <span className={styles.hint}>
+              {kind === "upcoming"
+                ? "The entry comes off the public page at this time."
+                : "Optional. Leave empty if it was not recorded."}
+            </span>
           </p>
 
           <p className={styles.field}>
@@ -642,11 +1041,56 @@ export function NewsForm({ item }: { item?: NewsItem }) {
               id="n-location"
               className={styles.input}
               name="location"
-              defaultValue={item?.location ?? ""}
+              defaultValue={keep(state, "location", item?.location ?? "")}
               maxLength={200}
             />
           </p>
         </div>
+      ) : null}
+
+      {/*
+       * Booking, and whether there is any room left.
+       *
+       * Only for an **upcoming** event. An event that has already been held
+       * has nothing to book, and offering the field there invited a link that
+       * would be dead by the time anyone followed it.
+       *
+       * The booking link is whatever the project actually uses — an Eventbrite
+       * page, a university form, a Teams registration — so it is a plain URL
+       * rather than an integration with anything.
+       */}
+      {kind === "upcoming" ? (
+        <>
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="n-booking-url">
+              Booking link
+            </label>
+            <input
+              id="n-booking-url"
+              className={styles.input}
+              type="url"
+              name="bookingUrl"
+              defaultValue={keep(state, "bookingUrl", item?.booking_url ?? "")}
+              placeholder="https://…"
+              {...fieldError(state, "bookingUrl").inputProps}
+            />
+            <span className={styles.hint}>
+              Optional. Where people book a place — a ticket page, a
+              registration form, anything with a web address. While the event is
+              still to come, this becomes a “Book your place” button on the News
+              &amp; Events page and in the announcement on the home page.
+            </span>
+            <FieldError state={state} name="bookingUrl" />
+          </p>
+
+          <SlotsFilledCheck
+            defaultChecked={
+              state.values
+                ? state.values.slotsFilled === "on"
+                : (item?.slots_filled ?? false)
+            }
+          />
+        </>
       ) : null}
 
       <p className={styles.field}>
@@ -657,7 +1101,7 @@ export function NewsForm({ item }: { item?: NewsItem }) {
           id="n-summary"
           className={styles.textarea}
           name="summary"
-          defaultValue={item?.summary ?? ""}
+          defaultValue={keep(state, "summary", item?.summary ?? "")}
           rows={3}
         />
       </p>
@@ -670,7 +1114,7 @@ export function NewsForm({ item }: { item?: NewsItem }) {
           id="n-body"
           className={styles.textarea}
           name="body"
-          defaultValue={item?.body ?? ""}
+          defaultValue={keep(state, "body", item?.body ?? "")}
           rows={7}
         />
         <span className={styles.hint}>
@@ -678,9 +1122,38 @@ export function NewsForm({ item }: { item?: NewsItem }) {
         </span>
       </p>
 
-      <ImagesField existing={item?.images ?? []} size={item?.image_size ?? "medium"} />
+      <ImagesField existing={item?.images ?? []} />
 
-      <PublishCheck defaultChecked={item?.published ?? false} />
+      {/*
+       * Position within this entry's own list — the same control findings and
+       * publications already have, so there is one way to arrange things in
+       * this admin rather than two.
+       *
+       * The hint is explicit that it does not reach across the lists, because
+       * "Order" on a page holding both news and events invites the reasonable
+       * guess that setting a news post to 1 puts it at the top of the page.
+       */}
+      <div className={styles.row}>
+        <p className={styles.field}>
+          <label className={styles.label} htmlFor="n-order">
+            Order
+          </label>
+          <input
+            id="n-order"
+            className={styles.input}
+            type="number"
+            name="sortOrder"
+            defaultValue={keep(state, "sortOrder", String(item?.sort_order ?? 0))}
+          />
+          <span className={styles.hint}>
+            Lower numbers first. Arranges entries within their own list — news
+            among news, events among events — and never moves one list above the
+            other. Leave everything at 0 for date order.
+          </span>
+        </p>
+
+        <PublishCheck defaultChecked={item?.published ?? false} />
+      </div>
 
       <p className={styles.actions}>
         <Submit />

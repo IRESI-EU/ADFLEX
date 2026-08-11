@@ -24,10 +24,22 @@
 
 /* Three partners, so the grid goes straight from three columns to one. A
    two-column stage would leave the third card stranded on its own row. */
+/* Four partners since IRESI joined on 6 August 2026. The count is in the CSS
+   rather than derived, so it has to be revisited when a partner joins or
+   leaves — an `auto-fit` track would silently leave a lone card stranded on its
+   own row instead. */
 .partnerGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--adflex-space-5);
+}
+
+/* Two-by-two rather than four-in-a-row: below this the cards are too narrow for
+   a wordmark to stay legible. */
+@media (max-width: 1000px) {
+  .partnerGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
@@ -36,7 +48,11 @@
   }
 }
 
-@media (max-width: 620px) {
+/* One per row only on the narrowest phones. Now that a card holds a logo and
+   nothing else, two-up stays legible far further down than it did when each
+   card also carried a name and a paragraph — and it keeps four partners from
+   becoming four full screens of scrolling. */
+@media (max-width: 420px) {
   .partnerGrid {
     grid-template-columns: minmax(0, 1fr);
   }

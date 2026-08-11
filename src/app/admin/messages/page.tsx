@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
+import { contactRecipient, isMailConfigured } from "@/lib/mail";
 import { listMessages } from "@/lib/repo";
 import { markRead, removeMessage } from "../actions";
 import styles from "../admin.module.css";
@@ -40,63 +41,110 @@ export default async function AdminMessagesPage() {
   }
 
   const messages = await listMessages();
+  const recipient = contactRecipient();
+  const canSend = isMailConfigured();
 
   return (
     <>
       <h1 className={styles.pageTitle}>Messages</h1>
       <p className={styles.pageLead}>
-        Sent through the contact form. Replying happens in your email client —
-        this is a record, not an inbox. Deleting a message removes it
+        <strong>Anything here failed to reach the project mailbox.</strong>{" "}
+        Contact form messages are emailed to the project, and only land on this
+        page when that email could not be sent — so these still need answering,
+        and a message arriving here means the email settings are worth checking.
+        Replying happens in your email client. Deleting a message removes it
         permanently, which is what an erasure request needs.
       </p>
 
-      {messages.length === 0 ? (
-        <p className={styles.empty}>No messages yet.</p>
-      ) : (
-        <ul className={styles.list}>
-          {messages.map((message) => (
-            <li key={message.id} className={`${styles.item} ${styles.itemNoImage}`}>
-              <div className={styles.itemBody}>
-                <p className={styles.itemTitle}>
-                  {message.subject || "(no subject)"}
-                </p>
-                <p className={styles.itemMeta}>
-                  {message.name} ·{" "}
-                  <a href={`mailto:${encodeURIComponent(message.email)}`}>
-                    {message.email}
-                  </a>{" "}
-                  · {message.created_at.slice(0, 16).replace("T", " ")}
-                </p>
-                {/* `white-space: pre-wrap` via the class keeps the sender's line
-                    breaks without interpreting anything they typed. */}
-                <p className={styles.messageBody}>{message.message}</p>
-              </div>
+      {/*
+       * Where the messages go is stated here, not editable here.
+       *
+       * It is one line in `src/lib/site.ts`, and saying so is more useful than a
+       * box on this page would be: an editor who needs to know can read it, and
+       * an editor who needs to change it is told exactly where to go rather than
+       * discovering later that the same address also exists somewhere else.
+       */}
+      <p className={styles.panelNote}>
+        {canSend ? (
+          <>
+            Messages are emailed to <strong>{recipient}</strong>.
+          </>
+        ) : (
+          <>
+            <strong>Not sending yet.</strong> Messages are meant to go to{" "}
+            <strong>{recipient}</strong>, but the mail server is not set up, so
+            they are all landing here instead.
+          </>
+        )}{" "}
+        To change where they go, edit <code>PROJECT_EMAIL</code> in{" "}
+        <code>src/lib/site.ts</code> and restart the site. The mailbox they are
+        sent <em>from</em> is a separate setting beside it,{" "}
+        <code>MAIL_SENDER</code> — the site has to sign in to something, and that
+        need not be the address receiving them. See <code>docs/ADMIN.md</code>.
+      </p>
 
-              <div className={styles.itemActions}>
-                <span
-                  className={`${styles.pill} ${message.read_at ? styles.pillLive : styles.pillDraft}`}
-                >
-                  {message.read_at ? "Read" : "New"}
-                </span>
-                {!message.read_at ? (
-                  <form action={markRead}>
+      <section
+        className={styles.panel}
+        aria-labelledby="failed-messages-heading"
+      >
+        <h2 id="failed-messages-heading" className={styles.panelTitle}>
+          Messages that could not be sent ({messages.length})
+        </h2>
+
+        {messages.length === 0 ? (
+          <p className={styles.empty}>
+            Nothing here — which is the good state. It means every message sent
+            through the contact form reached the project mailbox.
+          </p>
+        ) : (
+          <ul className={styles.list}>
+            {messages.map((message) => (
+              <li
+                key={message.id}
+                className={`${styles.item} ${styles.itemNoImage}`}
+              >
+                <div className={styles.itemBody}>
+                  <p className={styles.itemTitle}>
+                    {message.subject || "(no subject)"}
+                  </p>
+                  <p className={styles.itemMeta}>
+                    {message.name} ·{" "}
+                    <a href={`mailto:${encodeURIComponent(message.email)}`}>
+                      {message.email}
+                    </a>{" "}
+                    · {message.created_at.slice(0, 16).replace("T", " ")}
+                  </p>
+                  {/* `white-space: pre-wrap` via the class keeps the sender's line
+                    breaks without interpreting anything they typed. */}
+                  <p className={styles.messageBody}>{message.message}</p>
+                </div>
+
+                <div className={styles.itemActions}>
+                  <span
+                    className={`${styles.pill} ${message.read_at ? styles.pillLive : styles.pillDraft}`}
+                  >
+                    {message.read_at ? "Read" : "New"}
+                  </span>
+                  {!message.read_at ? (
+                    <form action={markRead}>
+                      <input type="hidden" name="id" value={message.id} />
+                      <button type="submit" className={styles.tab}>
+                        Mark read
+                      </button>
+                    </form>
+                  ) : null}
+                  <form action={removeMessage}>
                     <input type="hidden" name="id" value={message.id} />
-                    <button type="submit" className={styles.tab}>
-                      Mark read
+                    <button type="submit" className={styles.danger}>
+                      Delete
                     </button>
                   </form>
-                ) : null}
-                <form action={removeMessage}>
-                  <input type="hidden" name="id" value={message.id} />
-                  <button type="submit" className={styles.danger}>
-                    Delete
-                  </button>
-                </form>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </>
   );
 }

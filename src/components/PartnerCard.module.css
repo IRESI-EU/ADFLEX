@@ -1,9 +1,13 @@
+/* A logo and nothing else since 6 August 2026, so the card centres its one
+   child rather than stacking a heading and a paragraph under a plate. The
+   padding is even on all four sides for the same reason — the old top-heavy
+   padding existed to sit the logo above the text that is no longer there. */
 .card {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  place-items: center;
   height: 100%;
-  padding: var(--adflex-space-6) var(--adflex-space-5) var(--adflex-space-5);
+  padding: var(--adflex-space-5);
   overflow: hidden;
   text-align: center;
   /* Always the light surface: partner logos are supplied for light grounds and
@@ -73,58 +77,18 @@
   object-fit: contain;
 }
 
-/* Decorative initials, shown only while a partner has no logo. Deliberately
-   not styled to look like one. */
-.initials {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  font-family: var(--adflex-font-display);
-  font-size: var(--adflex-text-sm);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--adflex-color-ink);
-  background: var(--adflex-color-surface-soft);
-  border: 1px solid var(--adflex-color-border-strong);
-  border-radius: var(--adflex-radius-md);
-}
-
-.name {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Two lines' worth of space whether the name needs it or not, so a name that
-     wraps does not push its card taller than the others. */
-  min-height: 2.7em;
-  margin-top: var(--adflex-space-5);
-  padding-top: var(--adflex-space-5);
+/* Shown only while a partner has no logo yet: their name, set plainly. It is
+   deliberately not styled to imitate a lockup — a stand-in should look like
+   one. */
+.fallbackName {
   font-size: var(--adflex-text-base);
   line-height: var(--adflex-leading-snug);
-  border-top: 1px solid var(--adflex-color-border);
-}
-
-/* The partner's role in ADFLEX. `margin-top: auto` is deliberate: it pushes the
-   role to the bottom of the card, so across a row the three roles sit on the
-   same baseline even when one name wraps to two lines and the others do not. */
-.role {
-  margin-top: auto;
-  padding-top: var(--adflex-space-3);
-  font-size: var(--adflex-text-sm);
-  line-height: var(--adflex-leading-snug);
-  color: var(--adflex-color-muted);
-  text-wrap: pretty;
+  color: var(--adflex-color-ink);
+  text-wrap: balance;
 }
 
 @media (max-width: 620px) {
   .card {
-    padding: var(--adflex-space-5) var(--adflex-space-4);
-  }
-
-  .name {
-    /* Single column below this width, so nothing needs to line up and the
-       reserved second line would just be a gap. */
-    min-height: 0;
+    padding: var(--adflex-space-4);
   }
 }

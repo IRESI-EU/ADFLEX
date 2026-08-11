@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { adflexContent, resolveNavigation } from "@/content/adflex";
 import { canonical } from "@/lib/site";
+import { getNextUpcomingEvent } from "@/lib/repo";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexHero } from "@/components/AdflexHero";
 import { SectionShell } from "@/components/SectionShell";
@@ -9,6 +10,7 @@ import { TechnologyCard } from "@/components/TechnologyCard";
 import { PartnerCard } from "@/components/PartnerCard";
 import { PilotSection } from "@/components/PilotSection";
 import { AdflexFooter } from "@/components/AdflexFooter";
+import { EventAnnouncement } from "@/components/EventAnnouncement";
 import styles from "./home.module.css";
 
 /**
@@ -19,14 +21,14 @@ import styles from "./home.module.css";
 export const metadata: Metadata = canonical("/");
 
 /**
- * The ADFLEX public website: one scrolling page of sections. Project Outputs
- * and Contact each live on their own route — see `src/app/outputs` and
+ * The ADFLEX public website: one scrolling page of sections. Project Outcomes
+ * and Contact each live on their own route — see `src/app/outcomes` and
  * `src/app/contact`.
  *
  * Section order matches the navigation order defined in
  * `src/content/adflex.ts`. All copy comes from that file.
  */
-export default function HomePage() {
+export default async function HomePage() {
   const {
     brand,
     navigation,
@@ -38,6 +40,13 @@ export default function HomePage() {
   } = adflexContent;
 
   const nav = resolveNavigation(navigation, { onHome: true });
+
+  /*
+   * The next published event that has not happened yet, announced at the bottom
+   * of the page. `safeRead` inside means this is `null` with no database, so
+   * the home page is unchanged on a deployment that has none.
+   */
+  const upcomingEvent = await getNextUpcomingEvent();
   const aboutGlimpse = about.items.find((item) => item.id === about.home.itemId);
 
   return (
@@ -95,7 +104,6 @@ export default function HomePage() {
           eyebrow="Who is involved"
           title={consortium.title}
           intro={consortium.intro}
-          introFigure={consortium.introFigure}
           tone="soft"
         >
           <div className={styles.partnerGrid}>
@@ -108,6 +116,8 @@ export default function HomePage() {
         <PilotSection id="pilot" content={pilot} />
       </main>
       <AdflexFooter logo={brand.logo} />
+
+      {upcomingEvent ? <EventAnnouncement event={upcomingEvent} /> : null}
     </>
   );
 }

@@ -44,14 +44,14 @@ export default async function AdminHomePage() {
 
   const cards = [
     {
-      href: "/admin/outputs",
+      href: "/admin/outcomes",
       title: "Project findings",
       live: live(findings),
       total: findings.length,
       unit: "finding",
     },
     {
-      href: "/admin/outputs",
+      href: "/admin/outcomes",
       title: "Publications",
       live: live(publications),
       total: publications.length,
@@ -103,9 +103,11 @@ export default async function AdminHomePage() {
               Contact messages
             </Link>
             <p className={styles.itemMeta}>
+              {/* Everything on that page is a message the site could not email,
+                  so the count is a fault count, not an inbox count. */}
               {unread === 0
-                ? "Nothing unread"
-                : `${unread} unread message${unread === 1 ? "" : "s"}`}
+                ? "Nothing unread — contact messages are emailed to the project"
+                : `${unread} unread message${unread === 1 ? "" : "s"} that could not be emailed`}
             </p>
           </div>
           <div className={styles.itemActions}>

@@ -7,22 +7,22 @@ import { EmptyState } from "@/components/EmptyState";
 import { PageHero } from "@/components/PageHero";
 import { FindingList, PublicationList } from "@/components/PublishedList";
 import listStyles from "@/components/PublishedList.module.css";
-import { listPublishedFindings, listPublishedPublications } from "@/lib/repo";
-import styles from "./outputs.module.css";
+import { listPublishedFindingsStatus, listPublishedPublicationsStatus } from "@/lib/repo";
+import styles from "./outcomes.module.css";
 
-const { brand, navigation, results } = adflexContent;
+const { brand, navigation, outcomes } = adflexContent;
 
 export const metadata: Metadata = {
-  title: results.title,
-  description: results.pageDescription,
-  ...canonical("/outputs"),
+  title: outcomes.title,
+  description: outcomes.pageDescription,
+  ...canonical("/outcomes"),
 };
 
 /**
- * Project Outputs.
+ * Project Outcomes.
  *
  * Editor-managed since 31 July 2026 — findings and publications are written in
- * `/admin/outputs` and stored in Postgres, so publishing one has to show here
+ * `/admin/outcomes` and stored in Postgres, so publishing one has to show here
  * without a redeploy. That is why the route renders per request rather than
  * being prerendered.
  *
@@ -35,22 +35,27 @@ export const metadata: Metadata = {
  */
 export const dynamic = "force-dynamic";
 
-export default async function OutputsPage() {
+export default async function OutcomesPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
 
-  const [findings, publications] = await Promise.all([
-    listPublishedFindings(),
-    listPublishedPublications(),
+  const [findingsRead, publicationsRead] = await Promise.all([
+    listPublishedFindingsStatus(),
+    listPublishedPublicationsStatus(),
   ]);
 
+  const findings = findingsRead.data;
+  const publications = publicationsRead.data;
   const hasContent = findings.length > 0 || publications.length > 0;
+  // Either read failing means the page cannot claim the project has published
+  // nothing — see TemporarilyUnavailable.
+  const degraded = findingsRead.degraded || publicationsRead.degraded;
 
   return (
     <>
       <AdflexHeader logo={brand.logo} navigation={nav} homeHref="/" />
 
       <main id="main-content">
-        <PageHero eyebrow="Findings and papers" title={results.title} />
+        <PageHero eyebrow="Findings and papers" title={outcomes.title} />
 
         <div className={styles.body}>
           <div className="adflex-container">
@@ -81,12 +86,18 @@ export default async function OutputsPage() {
                   </section>
                 ) : null}
               </>
+            ) : degraded ? (
+              <EmptyState
+                heading="Temporarily unavailable"
+                body="Project outcomes cannot be loaded at the moment. This is a temporary problem at our end, not a change to the project — please try again shortly."
+                headingLevel="h2"
+              />
             ) : (
               /* h2 because it sits directly under the page h1 — using the
                  default h3 here would skip a heading level. */
               <EmptyState
-                heading={results.heading}
-                body={results.body}
+                heading={outcomes.heading}
+                body={outcomes.body}
                 headingLevel="h2"
               />
             )}

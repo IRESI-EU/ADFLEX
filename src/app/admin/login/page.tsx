@@ -35,7 +35,7 @@ export default async function AdminLoginPage() {
 
         {configured ? (
           <>
-            <p className={styles.pageLead}>Sign in to edit outputs, news and events.</p>
+            <p className={styles.pageLead}>Sign in to edit outcomes, news and events.</p>
             <LoginForm />
           </>
         ) : (

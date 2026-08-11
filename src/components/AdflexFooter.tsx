@@ -54,7 +54,8 @@ export function AdflexFooter({ logo }: AdflexFooterProps) {
      a const to its initialiser — so without this the two branches below type as
      unreachable and the file stops compiling the moment either value is filled
      in. The slots are meant to be filled in; that must not be a code change. */
-  const { funding, linkedin } = adflexContent.footer as AdflexContent["footer"];
+  const { funding, linkedin, copyright, organisation } =
+    adflexContent.footer as AdflexContent["footer"];
 
   return (
     <footer className={styles.footer}>
@@ -67,6 +68,36 @@ export function AdflexFooter({ logo }: AdflexFooterProps) {
           height={logo.height}
           sizes="200px"
         />
+
+        {/*
+         * The funder credit sits between the two, so the top row reads
+         * left to right as: whose site this is, who paid for it, where to
+         * follow it.
+         *
+         * The statement comes before the mark in the markup as well as on
+         * screen. A screen reader then reads "Funded by SEAI." followed by the
+         * logo's alt, "Sustainable Energy Authority of Ireland" — a label and
+         * then the name it stands for. The other order announces the full name
+         * first and the sentence explaining it second.
+         *
+         * Still conditional: nothing renders until a statement is approved, and
+         * the emblem is separately optional. See docs/OPEN-ITEMS.md.
+         */}
+        {funding ? (
+          <div className={styles.funding}>
+            <p className={styles.fundingLabel}>{funding.statement}</p>
+            {funding.emblem ? (
+              <Image
+                className={styles.emblem}
+                src={funding.emblem.src}
+                alt={funding.emblem.alt}
+                width={funding.emblem.width}
+                height={funding.emblem.height}
+                sizes="164px"
+              />
+            ) : null}
+          </div>
+        ) : null}
 
         {/* A link only once a URL exists. Until then the same block renders as
             plain text — not a link to nowhere, and not a control that looks
@@ -89,27 +120,28 @@ export function AdflexFooter({ logo }: AdflexFooterProps) {
         )}
       </div>
 
-      {/* Reserved for the funding programme, grant number, approved disclaimer
-          and EU emblem. Nothing has been supplied, so nothing is shown — see
-          docs/OPEN-ITEMS.md. */}
-      {funding ? (
-        <div className={`adflex-container ${styles.funding}`}>
-          {funding.emblem ? (
-            <Image
-              className={styles.emblem}
-              src={funding.emblem.src}
-              alt={funding.emblem.alt}
-              width={funding.emblem.width}
-              height={funding.emblem.height}
-              sizes="120px"
-            />
-          ) : null}
-          <p>{funding.statement}</p>
-        </div>
-      ) : null}
-
       <div className={`adflex-container ${styles.legal}`}>
-        <p>© {year} ADFLEX</p>
+        <p className={styles.copyright}>
+          © {year} {copyright}
+          {organisation ? (
+            <>
+              {/* A separator, not content: hidden from assistive technology so
+                  a screen reader reads "…All rights reserved. Visit IRESI"
+                  rather than announcing a vertical bar between them. */}
+              <span className={styles.separator} aria-hidden="true">
+                |
+              </span>
+              <a
+                className={styles.legalLink}
+                href={organisation.href}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {organisation.label}
+              </a>
+            </>
+          ) : null}
+        </p>
         <ul className={styles.legalLinks}>
           {legal.pages.map((page) => (
             <li key={page.slug}>

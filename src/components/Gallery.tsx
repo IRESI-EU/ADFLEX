@@ -87,6 +87,30 @@ export function Gallery({
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggersRef = useRef<(HTMLAnchorElement | null)[]>([]);
+  const trackRef = useRef<HTMLUListElement>(null);
+  /** Which slide is showing, for the counter and the dots. */
+  const [slide, setSlide] = useState(0);
+
+  /**
+   * Reads the current slide back out of the scroller.
+   *
+   * Deliberately derived from `scrollLeft` rather than tracked as the source of
+   * truth: the scroller can be moved by a swipe, a trackpad, the scrollbar or
+   * the buttons, and only one of those goes through this component. Measuring
+   * what actually happened keeps the counter honest whichever it was.
+   */
+  const onTrackScroll = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const width = track.clientWidth || 1;
+    setSlide(Math.max(0, Math.min(images.length - 1, Math.round(track.scrollLeft / width))));
+  }, [images.length]);
+
+  const scrollToSlide = useCallback((index: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollTo({ left: index * track.clientWidth, behavior: "smooth" });
+  }, []);
 
   /**
    * Only ever asks the dialog to close.
@@ -134,10 +158,34 @@ export function Gallery({
     /* The wrapper is the container-query context. An element cannot respond to
        its own container query, so the list inside asks this one how wide it is. */
     <div className={[styles.wrap, styles[size], className].filter(Boolean).join(" ")}>
+      {/*
+       * One image across, swipeable, once there is more than one.
+       *
+       * The gallery used to tile every image into a grid, which meant four
+       * images each rendered at a quarter of the column — too small to read a
+       * chart in, and nothing like the size a single image gets. Now every
+       * image is shown at the same full width of its column and the set is
+       * swiped through instead.
+       *
+       * The scroller is the whole mechanism: `scroll-snap-type` in the
+       * stylesheet does the paging, so touch swipe, trackpad, shift-scroll and
+       * the scrollbar all work with no JavaScript at all. The buttons below
+       * scroll it for anyone using a mouse, and `tabindex=0` makes it a focus
+       * stop so arrow keys page through it too.
+       */}
       <ul
+        ref={trackRef}
         className={styles.gallery}
         data-cols={columnsFor(images.length)}
         data-count={images.length}
+        {...(images.length > 1
+          ? {
+              tabIndex: 0,
+              role: "group" as const,
+              "aria-label": `${images.length} images — scroll or use the arrows`,
+            }
+          : {})}
+        onScroll={images.length > 1 ? onTrackScroll : undefined}
       >
         {images.map((image, index) => (
           <li key={image.id} className={styles.item}>
@@ -188,6 +236,53 @@ export function Gallery({
           </li>
         ))}
       </ul>
+
+      {/*
+       * Controls for anyone not swiping. They scroll the track rather than
+       * holding their own state, so the track stays the single source of truth
+       * for which image is showing.
+       *
+       * The dots are buttons, not decoration — jumping straight to the fourth
+       * of six is a real thing to want, and a row of undifferentiated dots that
+       * cannot be clicked is a common and pointless piece of theatre.
+       */}
+      {images.length > 1 ? (
+        <div className={styles.controls}>
+          <button
+            type="button"
+            className={styles.step}
+            onClick={() => scrollToSlide(Math.max(0, slide - 1))}
+            disabled={slide === 0}
+            aria-label="Previous image"
+          >
+            <span aria-hidden="true">‹</span>
+          </button>
+
+          <ol className={styles.dots}>
+            {images.map((image, index) => (
+              <li key={image.id}>
+                <button
+                  type="button"
+                  className={`${styles.dot} ${index === slide ? styles.dotCurrent : ""}`}
+                  aria-label={`Go to image ${index + 1} of ${images.length}`}
+                  aria-current={index === slide ? "true" : undefined}
+                  onClick={() => scrollToSlide(index)}
+                />
+              </li>
+            ))}
+          </ol>
+
+          <button
+            type="button"
+            className={styles.step}
+            onClick={() => scrollToSlide(Math.min(images.length - 1, slide + 1))}
+            disabled={slide === images.length - 1}
+            aria-label="Next image"
+          >
+            <span aria-hidden="true">›</span>
+          </button>
+        </div>
+      ) : null}
 
       <dialog
         ref={dialogRef}

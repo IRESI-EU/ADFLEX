@@ -102,18 +102,29 @@ function sign(payload: string): string {
   return createHmac("sha256", sessionSecret()).update(payload).digest("base64url");
 }
 
-export function createSessionToken(userId: number): string {
+/**
+ * `sv` is the account's `session_version` at the moment of signing in.
+ *
+ * It is what makes a password change end existing sessions. Without it the
+ * cookie says only "user 1, valid until 5pm", which stays true after the
+ * password it was obtained with has been replaced — and the reason anyone
+ * changes a password in a hurry is to end sessions they do not control.
+ */
+export function createSessionToken(userId: number, sessionVersion: number): string {
   const payload = b64url(
     JSON.stringify({
       uid: userId,
+      sv: sessionVersion,
       exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS,
     }),
   );
   return `${payload}.${sign(payload)}`;
 }
 
-/** Returns the user id in a valid, unexpired token, or `null`. */
-export function readSessionToken(token: string | undefined): number | null {
+type SessionClaims = { uid: number; sv: number };
+
+/** Returns the claims in a valid, unexpired token, or `null`. */
+export function readSessionToken(token: string | undefined): SessionClaims | null {
   if (!token) return null;
 
   const dot = token.lastIndexOf(".");
@@ -132,8 +143,11 @@ export function readSessionToken(token: string | undefined): number | null {
   try {
     const claims = JSON.parse(Buffer.from(payload, "base64url").toString());
     if (typeof claims.uid !== "number" || typeof claims.exp !== "number") return null;
+    // A token minted before `sv` existed has none. Rejected rather than waved
+    // through, so the change takes effect on deploy instead of eight hours later.
+    if (typeof claims.sv !== "number") return null;
     if (claims.exp * 1000 < Date.now()) return null;
-    return claims.uid;
+    return { uid: claims.uid, sv: claims.sv };
   } catch {
     return null;
   }
@@ -152,22 +166,34 @@ export function readSessionToken(token: string | undefined): number | null {
  * rather than whenever their eight hours happen to run out.
  */
 export async function getCurrentUser(): Promise<AdminUser | null> {
-  let userId: number | null;
+  let claims: { uid: number; sv: number } | null;
   try {
     const store = await cookies();
-    userId = readSessionToken(store.get(SESSION_COOKIE)?.value);
+    claims = readSessionToken(store.get(SESSION_COOKIE)?.value);
   } catch {
     // Missing or malformed SESSION_SECRET. Treated as signed out rather than a
     // crash, so a misconfigured deploy shows a login page instead of a 500.
     return null;
   }
-  if (userId === null) return null;
+  if (claims === null) return null;
 
   try {
-    return await queryOne<AdminUser>(
-      "SELECT id, email, name FROM admin_users WHERE id = $1",
-      [userId],
+    const row = await queryOne<AdminUser & { session_version: number }>(
+      "SELECT id, email, name, session_version FROM admin_users WHERE id = $1",
+      [claims.uid],
     );
+    if (!row) return null;
+
+    /*
+     * The version in the cookie has to match the one on the account.
+     *
+     * `npm run db:user` bumps the column whenever it sets a password, so every
+     * cookie issued before that stops working here — on the next request, not
+     * whenever its eight hours happen to run out.
+     */
+    if (row.session_version !== claims.sv) return null;
+
+    return { id: row.id, email: row.email, name: row.name };
   } catch (error) {
     console.error("[adflex] session lookup failed:", error);
     return null;
@@ -199,33 +225,72 @@ export async function requireUser(): Promise<AdminUser> {
 
 const attempts = new Map<string, { count: number; first: number }>();
 const WINDOW_MS = 15 * 60 * 1000;
-const MAX_ATTEMPTS = 8;
 
 /**
- * Slows down password guessing.
+ * Three independent counters, not one combined key.
  *
- * **In-memory, therefore per-instance.** It stops someone hammering a single
- * server; it does not stop a distributed attempt, and it resets on redeploy. It
- * is a speed bump, not a lockout. If this admin ever faces the open internet
- * rather than a handful of editors, move it to the database or put the route
- * behind the host's rate limiting.
+ * ---------------------------------------------------------------------------
+ * WHY THE OLD ONE DID NOT WORK
+ * ---------------------------------------------------------------------------
+ * It counted against a single key of `<ip>:<email>`, which reads like a limit on
+ * both and is a limit on neither. A new email address is a new key with a fresh
+ * count, so one machine could keep guessing for ever by varying the address; and
+ * one address could be attacked from many machines for the same reason. Raised
+ * in the external review of 9 August 2026, correctly.
+ *
+ * Each dimension now has its own counter and its own ceiling, and a request is
+ * refused if **any** of them is over:
+ *
+ *  - **email** — the tightest. Guessing one account's password is the attack
+ *    that matters, and a real person does not fail eight times on their own
+ *    address.
+ *  - **ip** — looser, because a university NAT puts a whole building behind one
+ *    address and a shared limit that is too tight locks out bystanders.
+ *  - **ip+email** — the original pair, kept because it is the cheapest signal
+ *    that one machine is working on one account.
+ *
+ * ---------------------------------------------------------------------------
+ * STILL IN MEMORY, AND STILL A SPEED BUMP
+ * ---------------------------------------------------------------------------
+ * Per-instance, so it does not stop a distributed attempt and it resets on
+ * redeploy. Moving it to a shared store is the right answer and needs a decision
+ * about hosting first — the review says Redis or the edge, and either is fine.
+ * The shape here does not change when that happens: the same three keys, read
+ * and written somewhere shared.
  */
-export function tooManyAttempts(key: string): boolean {
-  const now = Date.now();
+const LIMITS: ReadonlyArray<{ prefix: string; max: number }> = [
+  { prefix: "email", max: 8 },
+  { prefix: "ip", max: 30 },
+  { prefix: "pair", max: 8 },
+];
+
+/** The three keys a sign-in attempt counts against. */
+function keysFor(ip: string, email: string): string[] {
+  const address = email.toLowerCase();
+  return [`email:${address}`, `ip:${ip}`, `pair:${ip}:${address}`];
+}
+
+function overLimit(key: string, now: number): boolean {
   const record = attempts.get(key);
   if (!record || now - record.first > WINDOW_MS) return false;
-  return record.count >= MAX_ATTEMPTS;
+  const limit = LIMITS.find((entry) => key.startsWith(`${entry.prefix}:`));
+  return record.count >= (limit?.max ?? 8);
+}
+
+export function tooManyAttempts(ip: string, email: string): boolean {
+  const now = Date.now();
+  return keysFor(ip, email).some((key) => overLimit(key, now));
 }
 
 /**
  * Drops records whose window has closed.
  *
- * Without this the map only ever grows: keys are `<ip>:<email>` and both halves
- * come from the request, so anyone posting the login form with a fresh address
- * each time adds an entry that is never read again and never removed —
- * `tooManyAttempts` ignores an expired record but does not delete it, and
- * `clearAttempts` only fires on a *successful* sign-in, which an attacker never
- * reaches. A few million failed attempts is not a hard thing to send.
+ * Without this the map only ever grows: the keys come from the request, so
+ * anyone posting the login form with a fresh address each time adds an entry
+ * that is never read again and never removed — `tooManyAttempts` ignores an
+ * expired record but does not delete it, and `clearAttempts` only fires on a
+ * *successful* sign-in, which an attacker never reaches. A few million failed
+ * attempts is not a hard thing to send.
  *
  * Sweeping on write keeps it to the number of genuinely active windows, with no
  * timer to own and nothing to clean up on shutdown.
@@ -236,18 +301,78 @@ function pruneExpired(now: number): void {
   }
 }
 
-export function recordFailedAttempt(key: string): void {
+export function recordFailedAttempt(ip: string, email: string): void {
   const now = Date.now();
   pruneExpired(now);
 
-  const record = attempts.get(key);
-  if (!record || now - record.first > WINDOW_MS) {
-    attempts.set(key, { count: 1, first: now });
+  for (const key of keysFor(ip, email)) {
+    const record = attempts.get(key);
+    if (!record || now - record.first > WINDOW_MS) {
+      attempts.set(key, { count: 1, first: now });
+      continue;
+    }
+    record.count += 1;
+  }
+}
+
+/**
+ * Clears the counters after a correct password.
+ *
+ * The **ip** counter is deliberately left alone. One person signing in
+ * successfully says nothing about the other attempts coming from the same
+ * address, and on a shared network clearing it would hand an attacker a reset
+ * button: fail twenty times, sign in once with an account they do own, start
+ * again.
+ */
+export function clearAttempts(ip: string, email: string): void {
+  const address = email.toLowerCase();
+  attempts.delete(`email:${address}`);
+  attempts.delete(`pair:${ip}:${address}`);
+}
+
+/* --------------------------------------------------------------------------
+ * Contact form throttling
+ * ----------------------------------------------------------------------- */
+
+const submissions = new Map<string, { count: number; first: number }>();
+const CONTACT_WINDOW_MS = 60 * 60 * 1000;
+const CONTACT_MAX = 5;
+
+/**
+ * Caps how often one address can post the contact form.
+ *
+ * The honeypot catches the simplest bots and nothing else: a script that fills
+ * only the visible fields walks straight past it, and the form is the one
+ * unauthenticated write on the site. Five an hour is far above what a person
+ * doing an ordinary thing will hit — the same visitor sending a second message
+ * to add something they forgot is two, not six — and far below what makes the
+ * form useful to send from.
+ *
+ * Counted per IP only. There is no account to key on, and keying on the
+ * submitted email address would be worse than useless: it is typed by the sender
+ * and changing it costs a keystroke.
+ *
+ * The same in-memory caveat as the login limiter applies, and the same answer:
+ * per-instance, resets on redeploy, and the shape does not change when it moves
+ * to a shared store.
+ */
+export function tooManySubmissions(ip: string): boolean {
+  const now = Date.now();
+  const record = submissions.get(ip);
+  if (!record || now - record.first > CONTACT_WINDOW_MS) return false;
+  return record.count >= CONTACT_MAX;
+}
+
+export function recordSubmission(ip: string): void {
+  const now = Date.now();
+  for (const [key, record] of submissions) {
+    if (now - record.first > CONTACT_WINDOW_MS) submissions.delete(key);
+  }
+
+  const record = submissions.get(ip);
+  if (!record || now - record.first > CONTACT_WINDOW_MS) {
+    submissions.set(ip, { count: 1, first: now });
     return;
   }
   record.count += 1;
-}
-
-export function clearAttempts(key: string): void {
-  attempts.delete(key);
 }

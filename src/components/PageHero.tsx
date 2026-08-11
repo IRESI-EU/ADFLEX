@@ -9,7 +9,7 @@ type PageHeroProps = {
 };
 
 /**
- * Opening band for the simple routes — About, Contact, Project Outputs.
+ * Opening band for the simple routes — About, Contact, Project Outcomes.
  *
  * Deep, like the home page hero, so a visitor arriving on a sub-page lands in
  * the same site rather than on a plain white page. Shared rather than repeated

@@ -7,7 +7,7 @@ import styles from "./RouteLoading.module.css";
 /**
  * The shell shown while a database-backed route is being rendered.
  *
- * `/outputs` and `/news` stopped being prerendered when their content moved
+ * `/outcomes` and `/news` stopped being prerendered when their content moved
  * into Postgres, so a click on either now waits for a server round trip. With
  * no `loading.tsx` the browser sits on the old page for that whole time and the
  * site reads as unresponsive — the click appears to have done nothing.

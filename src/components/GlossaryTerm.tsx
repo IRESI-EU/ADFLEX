@@ -6,6 +6,20 @@ import styles from "./GlossaryTerm.module.css";
 type GlossaryTermProps = {
   term: string;
   definition: string;
+  /**
+   * Render the term only, and describe it with a node the caller owns.
+   *
+   * The built-in popup floats over whatever is beneath it. In a hero tagline
+   * that is the rest of the sentence, so hovering the word hides the copy you
+   * were reading. Callers that would rather give the definition its own
+   * reserved space pass the id of that element here; this component then
+   * renders just the button and points `aria-describedby` at it, so there is
+   * still exactly one copy of the definition in the DOM.
+   *
+   * The button carries `data-glossary-term` and a live `aria-expanded`, which
+   * is what the caller's stylesheet keys the reveal off.
+   */
+  descriptionId?: string;
 };
 
 /** Keeps the popup this far from the viewport edge. */
@@ -31,10 +45,16 @@ const EDGE_MARGIN = 16;
  * screen reader moving through the sentence does not read the definition a
  * second time.
  */
-export function GlossaryTerm({ term, definition }: GlossaryTermProps) {
+export function GlossaryTerm({
+  term,
+  definition,
+  descriptionId: externalDescriptionId,
+}: GlossaryTermProps) {
   const [isOpen, setIsOpen] = useState(false);
   const popupRef = useRef<HTMLSpanElement>(null);
-  const descriptionId = useId();
+  const ownDescriptionId = useId();
+  const ownsPopup = externalDescriptionId === undefined;
+  const descriptionId = externalDescriptionId ?? ownDescriptionId;
 
   /**
    * The popup is anchored to a word, so where it lands depends on where that
@@ -82,6 +102,7 @@ export function GlossaryTerm({ term, definition }: GlossaryTermProps) {
       <button
         type="button"
         className={styles.term}
+        data-glossary-term=""
         aria-describedby={descriptionId}
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
@@ -94,14 +115,16 @@ export function GlossaryTerm({ term, definition }: GlossaryTermProps) {
         {term}
       </button>
 
-      <span
-        ref={popupRef}
-        id={descriptionId}
-        role="tooltip"
-        className={`${styles.popup} ${isOpen ? styles.popupOpen : ""}`}
-      >
-        {definition}
-      </span>
+      {ownsPopup ? (
+        <span
+          ref={popupRef}
+          id={descriptionId}
+          role="tooltip"
+          className={`${styles.popup} ${isOpen ? styles.popupOpen : ""}`}
+        >
+          {definition}
+        </span>
+      ) : null}
     </span>
   );
 }

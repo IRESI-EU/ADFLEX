@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
-import { getNewsItem, listAllNews } from "@/lib/repo";
-import { removeNewsItem, setNewsPublished } from "../actions";
+import { getNewsItem, isEvent, listAllNews } from "@/lib/repo";
+import { removeNewsItem, setNewsPublished, setNewsSlotsFilled } from "../actions";
 import { ConfirmSubmit } from "../ConfirmSubmit";
 import { NewsForm } from "../forms";
 import styles from "../admin.module.css";
@@ -17,6 +17,14 @@ function formatDate(iso: string): string {
     "July", "August", "September", "October", "November", "December",
   ];
   return `${Number(day)} ${months[Number(month) - 1]} ${year}`;
+}
+
+/** " at 14:30–16:00", " at 14:30", " until 16:00", or nothing. */
+function formatTimes(start: string | null, end: string | null): string {
+  if (start && end) return ` at ${start}–${end}`;
+  if (start) return ` at ${start}`;
+  if (end) return ` until ${end}`;
+  return "";
 }
 
 /**
@@ -51,7 +59,9 @@ export default async function AdminNewsPage({
       <h1 className={styles.pageTitle}>News &amp; Events</h1>
       <p className={styles.pageLead}>
         Published entries appear on <Link href="/news">the public News and Events page</Link>.
-        An event also carries a date and a location; news does not.
+        An <strong>upcoming event</strong> leads that page, carries a booking
+        link, can be marked full, and comes off the page by itself at its end
+        time; an event that has already been held is kept there as a record.
       </p>
 
       {params.saved ? (
@@ -105,12 +115,16 @@ export default async function AdminNewsPage({
                 <div className={styles.itemBody}>
                   <p className={styles.itemTitle}>{item.title}</p>
                   <p className={styles.itemMeta}>
-                    {item.kind === "event"
-                      ? `Event · ${item.event_date ? formatDate(item.event_date) : "no date"}${item.location ? ` · ${item.location}` : ""}`
+                    {isEvent(item.kind)
+                      ? `${item.kind === "upcoming" ? "Upcoming event" : "Event"} · ${item.event_date ? formatDate(item.event_date) : "no date"}${formatTimes(item.event_time, item.event_end_time)}${item.location ? ` · ${item.location}` : ""}`
                       : `News · posted ${formatDate(item.published_on)}`}
                     {item.images.length > 0
-                      ? ` · ${item.images.length} image${item.images.length === 1 ? "" : "s"} (${item.image_size})`
+                      ? ` · ${item.images.length} image${item.images.length === 1 ? "" : "s"}`
                       : ""}
+                    {item.kind === "upcoming" && item.booking_url ? " · booking link" : ""}
+                    {/* Only when it has been set. Printing "order 0" on every
+                        row would be noise on a site that never uses it. */}
+                    {item.sort_order !== 0 ? ` · order ${item.sort_order}` : ""}
                   </p>
                 </div>
 
@@ -120,9 +134,49 @@ export default async function AdminNewsPage({
                   >
                     {item.published ? "Live" : "Draft"}
                   </span>
+                  {/* Says at a glance which upcoming events are full, without
+                      opening each one. */}
+                  {item.kind === "upcoming" && item.slots_filled ? (
+                    <span className={`${styles.pill} ${styles.pillDraft}`}>Full</span>
+                  ) : null}
+                  {/*
+                   * An expired event has come off the public page on its own,
+                   * at its end time. Saying so here is the whole point of not
+                   * deleting it: the entry is still yours to keep as a record
+                   * or remove, and without this pill it would look published
+                   * and simply not be there.
+                   */}
+                  {item.expired ? (
+                    <span className={`${styles.pill} ${styles.pillDraft}`}>Expired</span>
+                  ) : null}
+
                   <Link className={styles.tab} href={`/admin/news?edit=${item.id}`}>
                     Edit
                   </Link>
+
+                  {/*
+                   * Marking an event full is a thing that happens between
+                   * meetings, not while editing copy, so it gets a button on
+                   * the row like Publish does. Only for an upcoming event —
+                   * nothing else can be booked.
+                   *
+                   * No confirmation dialogue: unlike deleting, and unlike
+                   * publishing, this is reversible in one click and changes a
+                   * line of text rather than what is public.
+                   */}
+                  {item.kind === "upcoming" ? (
+                    <form action={setNewsSlotsFilled}>
+                      <input type="hidden" name="id" value={item.id} />
+                      <input
+                        type="hidden"
+                        name="filled"
+                        value={item.slots_filled ? "0" : "1"}
+                      />
+                      <button type="submit" className={styles.tab}>
+                        {item.slots_filled ? "Places available" : "Mark full"}
+                      </button>
+                    </form>
+                  ) : null}
                   <form action={setNewsPublished}>
                     <input type="hidden" name="id" value={item.id} />
                     <input type="hidden" name="publish" value={item.published ? "0" : "1"} />

@@ -5,10 +5,11 @@ import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { PageHero } from "@/components/PageHero";
 import { AwaitingContent } from "@/components/AwaitingContent";
+import { TemporarilyUnavailable } from "@/components/TemporarilyUnavailable";
 import { NewsList } from "@/components/PublishedList";
 import listStyles from "@/components/PublishedList.module.css";
 import newsStyles from "./news.module.css";
-import { listPublishedNews } from "@/lib/repo";
+import { isEvent, listPublishedNewsStatus } from "@/lib/repo";
 
 const { brand, navigation, news } = adflexContent;
 
@@ -37,7 +38,7 @@ export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
-  const items = await listPublishedNews();
+  const { data: items, degraded } = await listPublishedNewsStatus();
 
   /*
    * News and events are stored in one table and shown in two sections.
@@ -49,7 +50,9 @@ export default async function NewsPage() {
    * A section only appears when it has entries, so the page never shows an
    * "Events" heading above nothing.
    */
-  const events = items.filter((item) => item.kind === "event");
+  // Both event kinds sit under one Events heading; an upcoming one is still an
+  // event to a reader, and splitting them would give the page three sections.
+  const events = items.filter((item) => isEvent(item.kind));
   const posts = items.filter((item) => item.kind === "news");
 
   return (
@@ -61,6 +64,17 @@ export default async function NewsPage() {
 
         {items.length > 0 ? (
           <div className={newsStyles.body}>
+            {/*
+              * Events lead, then News. Fixed, not a setting — a switch for this
+              * was built on 8 August 2026 and removed the next day: the useful
+              * thing to arrange turned out to be entries within a list, not the
+              * lists themselves, which is what the Order field does.
+              *
+              * Within Events, upcoming ones come first and events already held
+              * follow. Both stay under one heading: an upcoming event is still
+              * an event to a reader, and a third heading would split the page
+              * into three lists that are often one or two entries each.
+              */}
             <div className="adflex-container">
               {events.length > 0 ? (
                 <section className={listStyles.section} aria-labelledby="events-heading">
@@ -85,6 +99,8 @@ export default async function NewsPage() {
               ) : null}
             </div>
           </div>
+        ) : degraded ? (
+          <TemporarilyUnavailable what="News and events" />
         ) : (
           <AwaitingContent page={news} />
         )}

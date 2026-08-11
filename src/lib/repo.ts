@@ -1,6 +1,6 @@
 import "server-only";
 
-import { query, queryOne, safeRead } from "./db";
+import { query, queryOne, safeRead, safeReadStatus, type ReadStatus } from "./db";
 
 /**
  * Every database read and write, in one place.
@@ -40,13 +40,25 @@ export type MediaRef = {
   height: number | null;
 };
 
+/** One downloadable document attached to an outcome. */
+export type FileRef = {
+  id: number;
+  filename: string;
+  mime: string;
+  byte_size: number;
+  /** What the download link says. Falls back to `filename` when empty. */
+  label: string;
+};
+
 export type Finding = {
   id: number;
   title: string;
   summary: string;
   body: string;
   images: MediaRef[];
+  files: FileRef[];
   image_size: ImageSize;
+  published_on: string;
   published: boolean;
   sort_order: number;
 };
@@ -59,13 +71,29 @@ export type Publication = {
   year: number | null;
   doi: string | null;
   url: string | null;
+  files: FileRef[];
+  published_on: string;
   published: boolean;
   sort_order: number;
 };
 
+/**
+ * What an entry on /news is.
+ *
+ * `event` is one that has happened and is kept as a record; `upcoming` is one
+ * still to come, and is the only kind that can carry a booking link. Both show
+ * under "Events" on the public page — see `isEvent`.
+ */
+export type NewsKind = "news" | "event" | "upcoming";
+
+/** True for either kind of event, as opposed to a news post. */
+export function isEvent(kind: NewsKind): boolean {
+  return kind === "event" || kind === "upcoming";
+}
+
 export type NewsItem = {
   id: number;
-  kind: "news" | "event";
+  kind: NewsKind;
   title: string;
   summary: string;
   body: string;
@@ -73,8 +101,24 @@ export type NewsItem = {
   image_size: ImageSize;
   published_on: string;
   event_date: string | null;
+  /** `HH:MM`, 24-hour. Null when the time has not been fixed yet. */
+  event_time: string | null;
+  /** `HH:MM`, 24-hour. Required for an upcoming event; null on older rows. */
+  event_end_time: string | null;
   location: string | null;
+  /** Where attendance is arranged. Null when there is nothing to book. */
+  booking_url: string | null;
+  /** Set by an editor when the event has no room left. */
+  slots_filled: boolean;
   published: boolean;
+  /** Arranges entries within their own list. Lower first; 0 means "leave it to the date". */
+  sort_order: number;
+  /**
+   * True once an upcoming event's end time has passed. Computed per query, in
+   * the project's timezone — never stored, so it is right the moment it changes
+   * rather than whenever something last wrote the row.
+   */
+  expired: boolean;
 };
 
 export type Message = {
@@ -143,13 +187,28 @@ const imagesJson = (table: string, fk: string, alias: string) => `
   ), '[]'::json) AS images
 `;
 
-const FINDING_COLUMNS = `
-  f.id, f.title, f.summary, f.body, f.published, f.sort_order, f.image_size,
-  ${imagesJson("finding_images", "finding_id", "f")}
+/** The attached documents, aggregated the same way and for the same reasons. */
+const filesJson = (table: string, fk: string, alias: string) => `
+  COALESCE((
+    SELECT json_agg(
+             json_build_object('id', d.id, 'filename', d.filename, 'mime', d.mime,
+                               'byte_size', d.byte_size, 'label', d.label)
+             ORDER BY x.position, x.id
+           )
+    FROM ${table} x JOIN files d ON d.id = x.file_id
+    WHERE x.${fk} = ${alias}.id
+  ), '[]'::json) AS files
 `;
 
-export function listPublishedFindings(): Promise<Finding[]> {
-  return safeRead(
+const FINDING_COLUMNS = `
+  f.id, f.title, f.summary, f.body, f.published, f.sort_order, f.image_size,
+  to_char(f.published_on, 'YYYY-MM-DD') AS published_on,
+  ${imagesJson("finding_images", "finding_id", "f")},
+  ${filesJson("finding_files", "finding_id", "f")}
+`;
+
+export function listPublishedFindingsStatus(): Promise<ReadStatus<Finding[]>> {
+  return safeReadStatus(
     () =>
       query<Finding>(`
         SELECT ${FINDING_COLUMNS}
@@ -177,11 +236,17 @@ export function getFinding(id: number): Promise<Finding | null> {
   );
 }
 
+/**
+ * No `publishedOn`, for the same reason `NewsInput` has none: the posting date
+ * is stamped by the column default on insert and never written again, so an
+ * edit cannot move it.
+ */
 export type FindingInput = {
   title: string;
   summary: string;
   body: string;
   imageIds: number[];
+  fileIds: number[];
   imageSize: ImageSize;
   published: boolean;
   sortOrder: number;
@@ -194,6 +259,7 @@ export async function createFinding(input: FindingInput): Promise<number> {
     [input.title, input.summary, input.body, input.published, input.sortOrder, input.imageSize],
   );
   await setFindingImages(row!.id, input.imageIds);
+  await setFindingFiles(row!.id, input.fileIds);
   return row!.id;
 }
 
@@ -206,6 +272,7 @@ export async function updateFinding(id: number, input: FindingInput): Promise<vo
     [id, input.title, input.summary, input.body, input.published, input.sortOrder, input.imageSize],
   );
   await setFindingImages(id, input.imageIds);
+  await setFindingFiles(id, input.fileIds);
 }
 
 /**
@@ -225,9 +292,21 @@ async function setFindingImages(findingId: number, mediaIds: number[]): Promise<
   }
 }
 
+/** Same delete-then-insert reasoning as `setFindingImages`. */
+async function setFindingFiles(findingId: number, fileIds: number[]): Promise<void> {
+  await query("DELETE FROM finding_files WHERE finding_id = $1", [findingId]);
+  for (const [position, fileId] of fileIds.entries()) {
+    await query(
+      "INSERT INTO finding_files (finding_id, file_id, position) VALUES ($1, $2, $3)",
+      [findingId, fileId, position],
+    );
+  }
+}
+
 export async function deleteFinding(id: number): Promise<void> {
-  // `finding_images` cascades; the `media` rows themselves are left alone so an
-  // image used by two entries does not vanish from the other.
+  // `finding_images` and `finding_files` cascade; the `media` and `files` rows
+  // themselves are left alone so anything shared with another entry does not
+  // vanish from it.
   await query("DELETE FROM findings WHERE id = $1", [id]);
 }
 
@@ -235,16 +314,20 @@ export async function deleteFinding(id: number): Promise<void> {
  * Publications
  * ----------------------------------------------------------------------- */
 
-const PUBLICATION_COLUMNS =
-  "id, title, authors, venue, year, doi, url, published, sort_order";
+const PUBLICATION_COLUMNS = `
+  p.id, p.title, p.authors, p.venue, p.year, p.doi, p.url, p.published, p.sort_order,
+  to_char(p.published_on, 'YYYY-MM-DD') AS published_on,
+  ${filesJson("publication_files", "publication_id", "p")}
+`;
 
-export function listPublishedPublications(): Promise<Publication[]> {
-  return safeRead(
+export function listPublishedPublicationsStatus(): Promise<ReadStatus<Publication[]>> {
+  return safeReadStatus(
     () =>
       query<Publication>(`
-        SELECT ${PUBLICATION_COLUMNS} FROM publications
-        WHERE published
-        ORDER BY sort_order, year DESC NULLS LAST, title
+        SELECT ${PUBLICATION_COLUMNS}
+        FROM publications p
+        WHERE p.published
+        ORDER BY p.sort_order, p.year DESC NULLS LAST, p.title
       `),
     [],
     "publications",
@@ -253,18 +336,19 @@ export function listPublishedPublications(): Promise<Publication[]> {
 
 export function listAllPublications(): Promise<Publication[]> {
   return query<Publication>(`
-    SELECT ${PUBLICATION_COLUMNS} FROM publications
-    ORDER BY sort_order, year DESC NULLS LAST, title
+    SELECT ${PUBLICATION_COLUMNS} FROM publications p
+    ORDER BY p.sort_order, p.year DESC NULLS LAST, p.title
   `);
 }
 
 export function getPublication(id: number): Promise<Publication | null> {
   return queryOne<Publication>(
-    `SELECT ${PUBLICATION_COLUMNS} FROM publications WHERE id = $1`,
+    `SELECT ${PUBLICATION_COLUMNS} FROM publications p WHERE p.id = $1`,
     [id],
   );
 }
 
+/** No `publishedOn`, for the same reason as `FindingInput`. */
 export type PublicationInput = {
   title: string;
   authors: string;
@@ -272,6 +356,7 @@ export type PublicationInput = {
   year: number | null;
   doi: string | null;
   url: string | null;
+  fileIds: number[];
   published: boolean;
   sortOrder: number;
 };
@@ -282,6 +367,7 @@ export async function createPublication(input: PublicationInput): Promise<number
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
     [input.title, input.authors, input.venue, input.year, input.doi, input.url, input.published, input.sortOrder],
   );
+  await setPublicationFiles(row!.id, input.fileIds);
   return row!.id;
 }
 
@@ -293,6 +379,18 @@ export async function updatePublication(id: number, input: PublicationInput): Pr
      WHERE id = $1`,
     [id, input.title, input.authors, input.venue, input.year, input.doi, input.url, input.published, input.sortOrder],
   );
+  await setPublicationFiles(id, input.fileIds);
+}
+
+/** Same delete-then-insert reasoning as `setFindingImages`. */
+async function setPublicationFiles(publicationId: number, fileIds: number[]): Promise<void> {
+  await query("DELETE FROM publication_files WHERE publication_id = $1", [publicationId]);
+  for (const [position, fileId] of fileIds.entries()) {
+    await query(
+      "INSERT INTO publication_files (publication_id, file_id, position) VALUES ($1, $2, $3)",
+      [publicationId, fileId, position],
+    );
+  }
 }
 
 export async function deletePublication(id: number): Promise<void> {
@@ -300,15 +398,134 @@ export async function deletePublication(id: number): Promise<void> {
 }
 
 /* --------------------------------------------------------------------------
+ * Files
+ * ----------------------------------------------------------------------- */
+
+/**
+ * Stores one uploaded document and returns its id.
+ *
+ * Mirrors `createMedia`. The bytes have already been checked against the file's
+ * real leading bytes by `readDocuments` — nothing here trusts the browser.
+ */
+export async function createFile(input: {
+  filename: string;
+  mime: string;
+  data: Buffer;
+  label: string;
+  uploadedBy: number;
+}): Promise<number> {
+  const row = await queryOne<{ id: number }>(
+    `INSERT INTO files (filename, mime, byte_size, data, label, uploaded_by)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+    [input.filename, input.mime, input.data.byteLength, input.data, input.label, input.uploadedBy],
+  );
+  return row!.id;
+}
+
+export async function setFileLabel(id: number, label: string): Promise<void> {
+  await query("UPDATE files SET label = $2 WHERE id = $1", [id, label]);
+}
+
+/** The bytes for `/files/[id]`. */
+export function getFileBytes(
+  id: number,
+): Promise<{ data: Buffer; mime: string; filename: string } | null> {
+  return queryOne<{ data: Buffer; mime: string; filename: string }>(
+    "SELECT data, mime, filename FROM files WHERE id = $1",
+    [id],
+  );
+}
+
+/*
+ * `fileSize` and `fileKind` live in `upload-limits.ts`, not here: the admin form
+ * renders them and cannot import a `server-only` module. Re-exported so server
+ * code can reach them through the repo it already imports.
+ */
+export { fileKind, fileSize } from "./upload-limits";
+
+/* --------------------------------------------------------------------------
  * News and events
  * ----------------------------------------------------------------------- */
+
+/*
+ * Now, in the project's own timezone.
+ *
+ * The database container runs in UTC and the project runs in Ireland — an hour
+ * apart from late March to late October. `event_date` and `event_time` are
+ * deliberately naive: 14:30 means 14:30 where the event is. So the present is
+ * what gets converted, never the event. Comparing against a bare `now()` would
+ * have held an Irish event open for an extra hour every summer, and `CURRENT_DATE`
+ * would have rolled the day over an hour late.
+ *
+ * One place, one zone. If ADFLEX ever runs events in another country this has to
+ * become a stored zone per event, not a second constant.
+ */
+const PROJECT_NOW = `(now() AT TIME ZONE 'Europe/Dublin')`;
+
+/** When an event begins. A missing start time means the start of its day. */
+const EVENT_START = `(n.event_date + COALESCE(n.event_time, TIME '00:00'))`;
+
+/**
+ * When an event is over.
+ *
+ * A missing end time means the end of its day, which is how every row behaved
+ * before the column existed — rows created then have no end time, and there is
+ * no honest way to invent one for them.
+ */
+const EVENT_END = `(n.event_date + COALESCE(n.event_end_time, TIME '23:59:59'))`;
+
+/**
+ * An upcoming event that is over.
+ *
+ * `COALESCE(..., false)` because a row with no `event_date` makes the comparison
+ * NULL, and a NULL here would reach the page as neither true nor false. Only
+ * `upcoming` can expire: an event already held is a record and is meant to stay.
+ */
+const EXPIRED = `COALESCE(n.kind = 'upcoming' AND ${EVENT_END} <= ${PROJECT_NOW}, false)`;
 
 const NEWS_COLUMNS = `
   n.id, n.kind, n.title, n.summary, n.body, n.image_size,
   to_char(n.published_on, 'YYYY-MM-DD') AS published_on,
   to_char(n.event_date, 'YYYY-MM-DD') AS event_date,
-  n.location, n.published,
+  to_char(n.event_time, 'HH24:MI') AS event_time,
+  to_char(n.event_end_time, 'HH24:MI') AS event_end_time,
+  n.location, n.booking_url, n.slots_filled, n.published, n.sort_order,
+  ${EXPIRED} AS expired,
   ${imagesJson("news_images", "news_id", "n")}
+`;
+
+/**
+ * Upcoming events, then events already held, then news.
+ *
+ * Fixed, not a setting. There was briefly a switch in the admin for which list
+ * led the page; it was removed on 9 August 2026 in favour of arranging entries
+ * *within* a list, which is what `sort_order` does.
+ *
+ * Three keys, in this order:
+ *
+ * 1. **The group.** Upcoming events lead whatever anything else says. An entry's
+ *    `sort_order` cannot lift it out of its group, which is the point — a news
+ *    post numbered 1 does not jump above the next event.
+ * 2. **`sort_order`.** The editor's own arrangement, lower first. Everything is
+ *    0 until someone changes it, so an untouched site is entirely date-ordered
+ *    and stays that way.
+ * 3. **The date.** Upcoming events ascend — the nearest thing first — and
+ *    everything else descends. The two halves sort on opposite principles
+ *    because they answer opposite questions, and one order for both makes one
+ *    half read backwards.
+ *
+ * In the admin this also floats expired events to the top of the upcoming group,
+ * since their dates are the earliest — which is where something needing
+ * attention belongs.
+ */
+const NEWS_ORDER = `
+  ORDER BY
+    (n.kind = 'upcoming') DESC,
+    (n.kind = 'event') DESC,
+    n.sort_order,
+    CASE WHEN n.kind = 'upcoming' THEN ${EVENT_START} END ASC,
+    COALESCE(n.event_date, n.published_on) DESC,
+    n.id DESC
 `;
 
 /**
@@ -318,25 +535,79 @@ const NEWS_COLUMNS = `
  * zone, so an event on the 1st can render as the 31st for anyone west of it.
  * Formatting in SQL keeps a calendar date a calendar date.
  */
-export function listPublishedNews(): Promise<NewsItem[]> {
-  return safeRead(
+/**
+ * The same lists the public pages already used, but saying whether the answer
+ * is real.
+ *
+ * A page that cannot tell an empty database from an unreachable one has to guess
+ * which message to show, and the guess it made was the damaging one — see
+ * `safeReadStatus`. These exist so `/news` and `/outcomes` can say "nothing
+ * published yet" only when that is true.
+ */
+export function listPublishedNewsStatus(): Promise<ReadStatus<NewsItem[]>> {
+  return safeReadStatus(
     () =>
       query<NewsItem>(`
         SELECT ${NEWS_COLUMNS}
         FROM news_items n
         WHERE n.published
-        ORDER BY COALESCE(n.event_date, n.published_on) DESC, n.id DESC
+          AND NOT ${EXPIRED}
+        ${NEWS_ORDER}
       `),
     [],
     "news",
   );
 }
 
+/**
+ * The next published event that has not started yet and still has places, or
+ * null.
+ *
+ * What the home page announces, and it counts down to the start — so the test
+ * is whether the event has begun, not whether it has finished. That also means
+ * an event running right now does not sit on the panel with a dead countdown
+ * while the one after it goes unannounced.
+ *
+ * `NOT n.slots_filled` because the announcement exists to get someone to book.
+ * A panel that interrupts the home page to say a thing is full is an
+ * advertisement for a disappointment; the event is still listed in full on
+ * `/news`, marked "Fully booked", for anyone who wants to know it is happening.
+ * Excluding it here rather than hiding it in the component also means the next
+ * event with places left gets announced instead of nothing at all.
+ *
+ * `safeRead` because this feeds a public page: with no database, or an
+ * unreachable one, the home page simply shows no announcement rather than
+ * failing to render.
+ */
+export function getNextUpcomingEvent(): Promise<NewsItem | null> {
+  return safeRead(
+    () =>
+      queryOne<NewsItem>(`
+        SELECT ${NEWS_COLUMNS}
+        FROM news_items n
+        WHERE n.published
+          AND n.kind = 'upcoming'
+          AND NOT n.slots_filled
+          AND n.event_date IS NOT NULL
+          AND ${EVENT_START} > ${PROJECT_NOW}
+        ORDER BY ${EVENT_START}, n.id
+        LIMIT 1
+      `),
+    null,
+    "next event",
+  );
+}
+
+/**
+ * Everything, for the admin — including expired events, which the public list
+ * drops. An editor has to be able to see what has fallen off the page in order
+ * to do anything about it.
+ */
 export function listAllNews(): Promise<NewsItem[]> {
   return query<NewsItem>(`
     SELECT ${NEWS_COLUMNS}
     FROM news_items n
-    ORDER BY COALESCE(n.event_date, n.published_on) DESC, n.id DESC
+    ${NEWS_ORDER}
   `);
 }
 
@@ -347,40 +618,70 @@ export function getNewsItem(id: number): Promise<NewsItem | null> {
   );
 }
 
+/**
+ * There is deliberately no `publishedOn`.
+ *
+ * The posting date used to be a field the editor filled in, which meant it
+ * could be wrong, could be forgotten, and had to be retyped on every edit. It
+ * is now stamped by the database: `published_on` takes its `CURRENT_DATE`
+ * default when the row is created and is never written again, so it records
+ * when the entry was actually posted — and editing a typo three weeks later
+ * does not silently move it to the top of the list.
+ *
+ * `eventDate` is a different thing and stays: it is when the event happens,
+ * which only the editor knows.
+ */
 export type NewsInput = {
-  kind: "news" | "event";
+  kind: NewsKind;
   title: string;
   summary: string;
   body: string;
   imageIds: number[];
   imageSize: ImageSize;
-  publishedOn: string;
   eventDate: string | null;
+  /** `HH:MM`, 24-hour, or null when no time has been fixed. */
+  eventTime: string | null;
+  /** `HH:MM`, 24-hour. Required for an upcoming event; may be null otherwise. */
+  eventEndTime: string | null;
   location: string | null;
+  bookingUrl: string | null;
+  slotsFilled: boolean;
   published: boolean;
+  /** Position within this entry's own list. Lower first. */
+  sortOrder: number;
 };
 
 export async function createNewsItem(input: NewsInput): Promise<number> {
+  // `published_on` is omitted so the column's CURRENT_DATE default applies.
   const row = await queryOne<{ id: number }>(
     `INSERT INTO news_items
-       (kind, title, summary, body, published_on, event_date, location, published, image_size)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+       (kind, title, summary, body, event_date, location, published, image_size,
+        booking_url, slots_filled, event_time, event_end_time, sort_order)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
     [input.kind, input.title, input.summary, input.body,
-     input.publishedOn, input.eventDate, input.location, input.published, input.imageSize],
+     input.eventDate, input.location, input.published, input.imageSize,
+     input.bookingUrl, input.slotsFilled, input.eventTime, input.eventEndTime,
+     input.sortOrder],
   );
   await setNewsImages(row!.id, input.imageIds);
   return row!.id;
 }
 
 export async function updateNewsItem(id: number, input: NewsInput): Promise<void> {
+  // `published_on` is not in the SET list, so an edit leaves the original
+  // posting date alone.
   await query(
     `UPDATE news_items
      SET kind = $2, title = $3, summary = $4, body = $5,
-         published_on = $6, event_date = $7, location = $8, published = $9,
-         image_size = $10, updated_at = now()
+         event_date = $6, location = $7, published = $8,
+         image_size = $9, booking_url = $10, slots_filled = $11,
+         event_time = $12, event_end_time = $13, sort_order = $14,
+         updated_at = now()
      WHERE id = $1`,
     [id, input.kind, input.title, input.summary, input.body,
-     input.publishedOn, input.eventDate, input.location, input.published, input.imageSize],
+     input.eventDate, input.location, input.published, input.imageSize,
+     input.bookingUrl, input.slotsFilled, input.eventTime, input.eventEndTime,
+     input.sortOrder],
   );
   await setNewsImages(id, input.imageIds);
 }
@@ -394,6 +695,22 @@ async function setNewsImages(newsId: number, mediaIds: number[]): Promise<void> 
       [newsId, mediaId, position],
     );
   }
+}
+
+/**
+ * Marks an upcoming event as full, or not.
+ *
+ * `AND kind = 'upcoming'` is in the query rather than left to the caller: this
+ * runs behind a Server Action, which is a POST endpoint someone can reach
+ * directly, so the rule that only an upcoming event can be full belongs
+ * somewhere it cannot be bypassed. A request naming a news post simply updates
+ * no rows.
+ */
+export async function setSlotsFilled(id: number, filled: boolean): Promise<void> {
+  await query(
+    "UPDATE news_items SET slots_filled = $2, updated_at = now() WHERE id = $1 AND kind = 'upcoming'",
+    [id, filled],
+  );
 }
 
 export async function deleteNewsItem(id: number): Promise<void> {
@@ -526,3 +843,68 @@ export async function deleteMedia(id: number): Promise<void> {
   // picture is removed keeps its text rather than disappearing with it.
   await query("DELETE FROM media WHERE id = $1", [id]);
 }
+
+/* --------------------------------------------------------------------------
+ * Whether an asset may be served to the public
+ * ----------------------------------------------------------------------- */
+
+/**
+ * Is this image attached to anything that is published?
+ *
+ * `/media/[id]` is a public URL with sequential ids, so without this an
+ * unpublished draft's picture could be read by anyone who counted upwards —
+ * raised in the external review of 9 August 2026, and reproduced before fixing.
+ *
+ * "Attached to something published" rather than "not a draft": an image reused
+ * across two entries is public as soon as either is published, and stops being
+ * public when the last of them is unpublished or deleted. That also closes the
+ * orphan case in the same test — an image whose entry was deleted is attached to
+ * nothing, so it matches nothing here and is no longer served.
+ */
+export function isMediaPublic(id: number): Promise<boolean> {
+  return safeRead(
+    async () => {
+      const row = await queryOne<{ ok: boolean }>(
+        `SELECT EXISTS (
+           SELECT 1 FROM finding_images fi
+             JOIN findings f ON f.id = fi.finding_id AND f.published
+           WHERE fi.media_id = $1
+           UNION ALL
+           SELECT 1 FROM news_images ni
+             JOIN news_items n ON n.id = ni.news_id AND n.published
+           WHERE ni.media_id = $1
+         ) AS ok`,
+        [id],
+      );
+      return row?.ok ?? false;
+    },
+    // A database that cannot be reached must not turn into "serve everything".
+    false,
+    "media visibility",
+  );
+}
+
+/** The same test for a downloadable document behind `/files/[id]`. */
+export function isFilePublic(id: number): Promise<boolean> {
+  return safeRead(
+    async () => {
+      const row = await queryOne<{ ok: boolean }>(
+        `SELECT EXISTS (
+           SELECT 1 FROM finding_files ff
+             JOIN findings f ON f.id = ff.finding_id AND f.published
+           WHERE ff.file_id = $1
+           UNION ALL
+           SELECT 1 FROM publication_files pf
+             JOIN publications p ON p.id = pf.publication_id AND p.published
+           WHERE pf.file_id = $1
+         ) AS ok`,
+        [id],
+      );
+      return row?.ok ?? false;
+    },
+    false,
+    "file visibility",
+  );
+}
+
+

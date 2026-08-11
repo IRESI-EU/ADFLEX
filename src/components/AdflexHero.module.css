@@ -84,6 +84,60 @@
   white-space: normal;
 }
 
+/*
+ * The glossary definition, revealed on hover, focus or tap.
+ *
+ * ---------------------------------------------------------------------------
+ * IT IS ALWAYS LAID OUT — ONLY ITS VISIBILITY CHANGES
+ * ---------------------------------------------------------------------------
+ * `visibility`, not `display`, and no absolute positioning. The element holds
+ * its space whether or not it is showing, which is the whole point: the popup
+ * this replaced floated over the next two lines of the tagline, so hovering
+ * "flexumers" hid the sentence containing it. Reserving the space means nothing
+ * is ever covered and nothing jumps — the actions below stay exactly where they
+ * are as it comes and goes.
+ *
+ * A node referenced by `aria-describedby` still describes the button while it
+ * is `visibility: hidden`, so this costs screen-reader users nothing.
+ */
+.glossaryDefinition {
+  max-width: 46ch;
+  margin-top: var(--adflex-space-3);
+  font-size: var(--adflex-text-sm);
+  line-height: var(--adflex-leading-normal);
+  color: var(--adflex-color-muted);
+  visibility: hidden;
+  opacity: 0;
+}
+
+/*
+ * `:has()` because the term sits inside the tagline paragraph and the
+ * definition is that paragraph's sibling — no combinator reaches from a
+ * descendant to an uncle, so the shared ancestor has to do the asking.
+ *
+ * Three triggers: pointer hover, keyboard focus, and `aria-expanded` — which
+ * `GlossaryTerm` sets on click, so a tap works on a touch screen where there is
+ * no hover at all. The last rule keeps it up while the pointer is over the
+ * definition itself, so moving down to read it does not dismiss it.
+ *
+ * If `:has()` is unsupported the definition simply never appears visually; the
+ * term keeps its affordance and its accessible description, so the failure is
+ * quiet rather than broken.
+ */
+.copy:has([data-glossary-term]:hover) .glossaryDefinition,
+.copy:has([data-glossary-term]:focus-visible) .glossaryDefinition,
+.copy:has([data-glossary-term][aria-expanded="true"]) .glossaryDefinition,
+.copy:has(.glossaryDefinition:hover) .glossaryDefinition {
+  visibility: visible;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glossaryDefinition {
+    transition: opacity 160ms ease-out;
+  }
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

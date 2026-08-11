@@ -22,6 +22,16 @@ type AdflexHeroProps = {
  * measure. Pulling that punctuation out lets it be tied to the term with
  * `white-space: nowrap` instead of being left to strand.
  */
+/**
+ * The id tying the glossary term to its definition below the tagline.
+ *
+ * A constant rather than `useId()` because the hero is a Server Component and
+ * there is exactly one on a page — the home page's `#home` section. If a second
+ * hero with a glossary term ever appears on the same document, this has to
+ * become a generated id or the two will collide.
+ */
+const GLOSSARY_DESCRIPTION_ID = "hero-glossary-definition";
+
 function splitTagline(tagline: string, term: string) {
   const start = tagline.indexOf(term);
   if (start === -1) return null;
@@ -96,6 +106,7 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
                   <GlossaryTerm
                     term={content.glossary.term}
                     definition={content.glossary.definition}
+                    descriptionId={GLOSSARY_DESCRIPTION_ID}
                   />
                   {tagline.trailing}
                 </span>
@@ -104,6 +115,28 @@ export function AdflexHero({ id, content }: AdflexHeroProps) {
             ) : (
               content.tagline
             )}
+          </p>
+
+          {/*
+           * The glossary definition, in its own reserved slot.
+           *
+           * It used to be a popup floating out of the word itself, which landed
+           * on top of the next two lines of the tagline — hovering the term hid
+           * the sentence you were reading it in.
+           *
+           * This element is always laid out; only its visibility changes. So
+           * nothing is ever covered, and nothing moves when it appears or goes:
+           * the actions below sit at the same place whether it is showing or
+           * not. `visibility: hidden` rather than `display: none` is what
+           * reserves that space, and a node referenced by `aria-describedby`
+           * still describes the term either way.
+           */}
+          <p
+            id={GLOSSARY_DESCRIPTION_ID}
+            role="tooltip"
+            className={styles.glossaryDefinition}
+          >
+            {content.glossary.definition}
           </p>
 
           <div

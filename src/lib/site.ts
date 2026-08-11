@@ -67,3 +67,62 @@ export function canonical(path: string): { alternates?: { canonical: string } } 
   const url = absoluteUrl(path);
   return url ? { alternates: { canonical: url } } : {};
 }
+/* --------------------------------------------------------------------------
+ * CONTACT FORM EMAIL  —  CHANGE IT HERE, AND ONLY HERE
+ * ----------------------------------------------------------------------- */
+
+/**
+ * The project's address. Contact form messages are delivered to it, and sent
+ * from it.
+ *
+ * One value doing both jobs, which is only possible because the site will sign
+ * in to this same mailbox to send. If it ever has to relay through a *different*
+ * account, set `MAIL_SENDER.address` below and the two separate cleanly.
+ *
+ * ---------------------------------------------------------------------------
+ * THE ADMIN LOGIN IS THE SAME ADDRESS, BUT NOT SET FROM HERE
+ * ---------------------------------------------------------------------------
+ * Signing in needs a password, so that account lives in the database where its
+ * hash can live with it — a source file is the wrong place for a credential.
+ * Changing this line does not move the login. To bring it into step, run this
+ * with the address from the line below:
+ *
+ *     npm run db:user -- <the address below> "ADFLEX Editor"
+ *
+ * The address is deliberately not repeated in this comment. A worked example
+ * with the current value baked in is a second copy that nobody updates, which is
+ * the exact problem this constant exists to solve.
+ */
+export const PROJECT_EMAIL = "info@iresi.eu";
+
+/**
+ * The mail server, and optionally a different mailbox to send through.
+ *
+ * ---------------------------------------------------------------------------
+ * NOT FILLED IN YET — WAITING ON IRESI
+ * ---------------------------------------------------------------------------
+ * The site needs SMTP submission details for the address above: host, port,
+ * username and password. That mailbox is hosted by Seeweb — `mail.iresi.eu`
+ * resolves to `m-rb.th.seeweb.it` — so the host is very likely `mail.iresi.eu`
+ * on port 587, but **confirm it with whoever administers IRESI's mail rather
+ * than assuming it.** The request is written out in `handover/EMAIL-SETUP.md`.
+ *
+ * The address is not repeated here on purpose: a second copy in a comment is a
+ * copy nobody updates.
+ *
+ * While `host` is empty the contact form works exactly as it always has: every
+ * message goes to the admin dashboard instead of the mailbox. Nothing breaks.
+ *
+ * `address` is the mailbox the site signs into. **Leave it blank** and it uses
+ * `PROJECT_EMAIL`, which is the intended arrangement — one address, sending to
+ * itself. Only fill it in if IRESI provides a *separate* sending account, such
+ * as a dedicated `website@iresi.eu`; the `From:` header follows it, because a
+ * message must be sent as an address its mailbox is authorised to send as. That
+ * is what SPF and DMARC check, and getting it wrong is how mail is silently
+ * dropped or filed as spam.
+ */
+export const MAIL_SENDER = {
+  address: "",
+  host: "",
+  port: 587,
+};

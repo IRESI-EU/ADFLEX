@@ -28,7 +28,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     { path: "/", priority: 1 },
     { path: "/about", priority: 0.8 },
-    { path: "/outputs", priority: 0.8 },
+    { path: "/outcomes", priority: 0.8 },
     { path: "/news", priority: 0.8 },
     { path: "/contact", priority: 0.6 },
     ...adflexContent.legal.pages.map((page) => ({

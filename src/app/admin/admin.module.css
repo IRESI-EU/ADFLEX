@@ -150,6 +150,24 @@
   gap: var(--adflex-space-4);
 }
 
+/*
+ * Keeps the inputs in a row on one baseline.
+ *
+ * Each `.field` is itself a grid, and side by side they are stretched to the
+ * tallest one. With `align-content` left at its default the slack is shared out
+ * between that field's own rows, so a field carrying a hint under its input —
+ * three rows — pushes its input higher than a field with only two. That was a
+ * 14–24px step between "Event date" and "Start time" once the time field gained
+ * its "Optional" note.
+ *
+ * Packing each field to the top instead means every label starts at the same
+ * height, so every input does too, and the hint hangs off the bottom where it
+ * belongs.
+ */
+.row > .field {
+  align-content: start;
+}
+
 .field {
   display: grid;
   gap: 6px;
@@ -470,10 +488,28 @@
   border-radius: var(--adflex-radius-md);
 }
 
+/*
+ * Scrolls once there are more images than fit comfortably.
+ *
+ * Each row is a thumbnail, an alt-text field and three buttons — about 100px.
+ * Eight images made the form so tall that Save disappeared below the fold and
+ * the editor had to scroll past every picture to reach it. Capping the list and
+ * letting it scroll keeps the rest of the form reachable however many images an
+ * entry carries.
+ *
+ * `min(60vh, 520px)` rather than a flat pixel height so it stays sensible on a
+ * laptop and on a tall monitor. The padding and negative margin are so a focus
+ * ring on a row inside the scroller is not clipped by its own edge.
+ */
 .imageList {
   display: grid;
   gap: var(--adflex-space-3);
+  max-height: min(60vh, 520px);
+  padding: var(--adflex-space-1);
+  margin-inline: calc(-1 * var(--adflex-space-1));
   margin-bottom: var(--adflex-space-3);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   list-style: none;
 }
 
@@ -575,4 +611,61 @@
   .itemActions {
     grid-column: 1 / -1;
   }
+}
+
+/* --- Added 7 August 2026 ------------------------------------------------ */
+
+/* A value the form shows but does not let you change — the outcome type when
+   editing. Styled as text, not as a disabled input, because it is not a control
+   that happens to be off; there is nothing to change here. */
+.staticValue {
+  font-weight: 600;
+  color: var(--adflex-color-ink);
+}
+
+/* One description box per newly chosen image or file. Indented and hairlined so
+   the group reads as belonging to the picker above it rather than as more
+   top-level fields. */
+.newImageList {
+  display: grid;
+  gap: var(--adflex-space-3);
+  margin-top: var(--adflex-space-3);
+  padding-left: var(--adflex-space-4);
+  border-left: 2px solid var(--adflex-color-border);
+  list-style: none;
+}
+
+.newImageRow {
+  display: grid;
+  gap: var(--adflex-space-1);
+}
+
+/* Stands in for the thumbnail an image row has, so file rows keep the same
+   three-column shape. */
+.fileKind {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 56px;
+  font-size: var(--adflex-text-xs);
+  font-weight: 700;
+  letter-spacing: var(--adflex-tracking-wide);
+  color: var(--adflex-color-primary);
+  background: var(--adflex-color-surface-soft);
+  border: 1px solid var(--adflex-color-border);
+  border-radius: var(--adflex-radius-sm);
+}
+
+/* The word beside a label of a field the form will not save without. */
+.required {
+  margin-left: var(--adflex-space-2);
+  padding: 1px 7px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: var(--adflex-tracking-wide);
+  text-transform: uppercase;
+  color: var(--adflex-color-primary);
+  background: var(--adflex-color-surface-soft);
+  border-radius: 999px;
+  vertical-align: 1px;
 }

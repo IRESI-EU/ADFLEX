@@ -15,20 +15,20 @@ import {
   setPublicationPublished,
 } from "../actions";
 import { ConfirmSubmit } from "../ConfirmSubmit";
-import { FindingForm, PublicationForm } from "../forms";
+import { OutcomeForm } from "../forms";
 import styles from "../admin.module.css";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Project findings and publications, on one page because they are one public
- * page — `/outputs` shows both.
+ * page — `/outcomes` shows both.
  *
  * Editing happens in place: `?editFinding=3` swaps the "add" form for that
  * row's values. That keeps the whole surface at two URLs instead of six, and it
  * means a bookmarked edit link still works.
  */
-export default async function AdminOutputsPage({
+export default async function AdminOutcomesPage({
   searchParams,
 }: {
   searchParams: Promise<{ editFinding?: string; editPublication?: string; saved?: string }>;
@@ -39,7 +39,7 @@ export default async function AdminOutputsPage({
   if (!isDatabaseConfigured()) {
     return (
       <>
-        <h1 className={styles.pageTitle}>Outputs</h1>
+        <h1 className={styles.pageTitle}>Outcomes</h1>
         <p className={styles.error} role="alert">
           <strong>No database.</strong> <code>DATABASE_URL</code> is not set. See{" "}
           <code>docs/ADMIN.md</code>.
@@ -62,9 +62,9 @@ export default async function AdminOutputsPage({
 
   return (
     <>
-      <h1 className={styles.pageTitle}>Outputs</h1>
+      <h1 className={styles.pageTitle}>Outcomes</h1>
       <p className={styles.pageLead}>
-        Everything here appears on <Link href="/outputs">the public Outputs page</Link>{" "}
+        Everything here appears on <Link href="/outcomes">the public Outcomes page</Link>{" "}
         once it is published.
       </p>
 
@@ -74,22 +74,41 @@ export default async function AdminOutputsPage({
         </p>
       ) : null}
 
-      {/* ---- Findings -------------------------------------------------- */}
-      <section className={styles.panel} aria-labelledby="findings-heading">
-        <h2 id="findings-heading" className={styles.panelTitle}>
-          {editingFinding ? `Editing: ${editingFinding.title}` : "Add a project finding"}
+      {/*
+       * One form for both kinds, with a type selector — the same shape as
+       * News & Events. It used to be two forms stacked on the page, which meant
+       * scrolling past the whole finding editor to reach the publication one.
+       */}
+      <section className={styles.panel} aria-labelledby="outcome-heading">
+        <h2 id="outcome-heading" className={styles.panelTitle}>
+          {editingFinding
+            ? `Editing: ${editingFinding.title}`
+            : editingPublication
+              ? `Editing: ${editingPublication.title}`
+              : "Add an outcome"}
         </h2>
         <p className={styles.panelNote}>
-          A result the project can stand behind, with an optional image.
-          {editingFinding ? (
+          Choose whether this is a project finding or a publication; the fields
+          follow.
+          {editingFinding || editingPublication ? (
             <>
               {" "}
-              <Link href="/admin/outputs">Cancel and add a new one instead.</Link>
+              <Link href="/admin/outcomes">Cancel and add a new one instead.</Link>
             </>
           ) : null}
         </p>
 
-        <FindingForm key={editingFinding?.id ?? "new"} finding={editingFinding ?? undefined} />
+        <OutcomeForm
+          key={
+            editingFinding
+              ? `finding-${editingFinding.id}`
+              : editingPublication
+                ? `publication-${editingPublication.id}`
+                : "new"
+          }
+          finding={editingFinding ?? undefined}
+          publication={editingPublication ?? undefined}
+        />
       </section>
 
       <section className={styles.panel} aria-labelledby="findings-list-heading">
@@ -125,7 +144,7 @@ export default async function AdminOutputsPage({
                   <p className={styles.itemMeta}>
                     {finding.summary || "No summary"} · order {finding.sort_order}
                     {finding.images.length > 0
-                      ? ` · ${finding.images.length} image${finding.images.length === 1 ? "" : "s"} (${finding.image_size})`
+                      ? ` · ${finding.images.length} image${finding.images.length === 1 ? "" : "s"}`
                       : ""}
                   </p>
                 </div>
@@ -136,7 +155,7 @@ export default async function AdminOutputsPage({
                   >
                     {finding.published ? "Live" : "Draft"}
                   </span>
-                  <Link className={styles.tab} href={`/admin/outputs?editFinding=${finding.id}`}>
+                  <Link className={styles.tab} href={`/admin/outcomes?editFinding=${finding.id}`}>
                     Edit
                   </Link>
                   {/* Publish without opening the editor. The target state goes
@@ -155,8 +174,8 @@ export default async function AdminOutputsPage({
                       }
                       detail={
                         finding.published
-                          ? "It will be removed from the public Outputs page immediately. Nothing is deleted — it goes back to being a draft and you can publish it again."
-                          : "It will appear on the public Outputs page immediately."
+                          ? "It will be removed from the public Outcomes page immediately. Nothing is deleted — it goes back to being a draft and you can publish it again."
+                          : "It will appear on the public Outcomes page immediately."
                       }
                       confirmLabel={finding.published ? "Unpublish" : "Publish"}
                     >
@@ -181,30 +200,6 @@ export default async function AdminOutputsPage({
             ))}
           </ul>
         )}
-      </section>
-
-      {/* ---- Publications ---------------------------------------------- */}
-      <section className={styles.panel} aria-labelledby="publications-heading">
-        <h2 id="publications-heading" className={styles.panelTitle}>
-          {editingPublication
-            ? `Editing: ${editingPublication.title}`
-            : "Add a publication"}
-        </h2>
-        <p className={styles.panelNote}>
-          A paper, report or deliverable. A DOI becomes a doi.org link on the
-          public page.
-          {editingPublication ? (
-            <>
-              {" "}
-              <Link href="/admin/outputs">Cancel and add a new one instead.</Link>
-            </>
-          ) : null}
-        </p>
-
-        <PublicationForm
-          key={editingPublication?.id ?? "new"}
-          publication={editingPublication ?? undefined}
-        />
       </section>
 
       <section className={styles.panel} aria-labelledby="publications-list-heading">
@@ -246,7 +241,7 @@ export default async function AdminOutputsPage({
                   </span>
                   <Link
                     className={styles.tab}
-                    href={`/admin/outputs?editPublication=${publication.id}`}
+                    href={`/admin/outcomes?editPublication=${publication.id}`}
                   >
                     Edit
                   </Link>
@@ -267,8 +262,8 @@ export default async function AdminOutputsPage({
                       }
                       detail={
                         publication.published
-                          ? "It will be removed from the public Outputs page immediately. Nothing is deleted — it goes back to being a draft and you can publish it again."
-                          : "It will appear on the public Outputs page immediately."
+                          ? "It will be removed from the public Outcomes page immediately. Nothing is deleted — it goes back to being a draft and you can publish it again."
+                          : "It will appear on the public Outcomes page immediately."
                       }
                       confirmLabel={publication.published ? "Unpublish" : "Publish"}
                     >

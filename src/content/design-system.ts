@@ -62,7 +62,7 @@ export const designSystemContent = {
   ],
 
   introduction: {
-    lead: "This design system describes how the ADFLEX website is built today. It exists so that a second developer, or a second agency, can extend the site without guessing at colours, spacing or component behaviour. It covers all five routes: the home page, About, Project Outputs, Contact and this page.",
+    lead: "This design system describes how the ADFLEX website is built today. It exists so that a second developer, or a second agency, can extend the site without guessing at colours, spacing or component behaviour. It covers all five routes: the home page, About, Project Outcomes, Contact and this page.",
     points: [
       "It documents the current first-release implementation, not a future roadmap.",
       "The production components in src/components are the source of truth. Everything on this page is rendered with those same components and the same scoped CSS tokens as the public site.",
@@ -321,7 +321,7 @@ export const designSystemContent = {
       "Red arrows represent power flow. Blue arrows represent data and control signals — this is stated in the visible caption as well as in the alt text.",
       "The diagram's labels are legible at desktop width but not at phone width, and they are not repeated as visible text. Its alt text therefore carries the full description on its own — treat that alt as required content, not decoration.",
       "Diagram red and blue keep their diagram meaning and are never reused as UI colours.",
-      "Partner logos are third-party trademarks. Only use a file supplied by the partner or the project coordinator — never one taken from a web search, a logo aggregator, or traced by hand. Each is fitted into a shared box with object-fit: contain, so every lockup keeps its own aspect ratio.",
+      "Partner logos are third-party trademarks. Only use a file supplied by the partner or the project coordinator — never one taken from a web search, a logo aggregator, or traced by hand. Each is fitted into a shared box with object-fit: contain, so every lockup keeps its own aspect ratio. Trim the blank canvas around a supplied mark before adding it: logos arrive with wildly different built-in margins, and an untrimmed one renders at a fraction of the size of the others beside it.",
       "The technology card images and the pilot banner are illustrations, not project evidence. They are not photographs of the pilot and not diagrams of the ADFLEX architecture. Their alt text is empty because the surrounding heading and description already carry the meaning.",
       "Give image frames a fixed aspect-ratio so space is reserved before the image loads and the layout never shifts.",
       "The pilot assets are cards with a 3:2 illustration above the label, not glyphs beside it. The supplied files are 1536 by 1024 artworks on their own opaque grounds, and a square glyph tile letterboxed them into an unreadable sliver. Two of them depict ESB Networks and Arden Energy but are illustrations, not those organisations' logos.",
@@ -351,7 +351,7 @@ export const designSystemContent = {
       items: [
         "Fixed order: tags, h1, tagline, primary call to action, then the full-width diagram and its caption.",
         "The tagline carries an inline glossary term — “flexumers” — that reveals its definition on hover, focus or tap.",
-        "The call to action is a NavLink, so it works whether it points at a section anchor or at a route. It currently points at /outputs.",
+        "The call to action is a NavLink, so it works whether it points at a section anchor or at a route. It currently points at /outcomes.",
         "The standalone logo is not repeated in the hero — it is already in the header and inside the diagram.",
         "The diagram's labels are not repeated as visible text, so its alt text is the only place its parts are named — keep that alt complete if the image changes.",
       ],
@@ -359,7 +359,7 @@ export const designSystemContent = {
     {
       title: "Sub-page opening",
       items: [
-        "About, Contact and Project Outputs all open with PageHero — an emphasis band carrying the eyebrow, the page's h1 and an optional lead.",
+        "About, Contact and Project Outcomes all open with PageHero — an emphasis band carrying the eyebrow, the page's h1 and an optional lead.",
         "A band rather than the plain page colour, so someone landing on a sub-page from search or a shared link arrives in the same site as the home page rather than on a blank white page.",
         "Shared rather than repeated per route, so the three cannot drift apart. Do not hand-roll a page heading.",
         "The design-system page is the exception: it has a sidebar, and a full-bleed band would fight it.",
@@ -389,12 +389,12 @@ export const designSystemContent = {
       ],
     },
     {
-      title: "Three-card partner layout",
+      title: "Partner layout",
       items: [
-        "The consortium uses three equal columns, dropping to two below 900px and one below 720px.",
-        "Each card has a fixed logo plate holding either the partner's official logo or decorative initials, so names stay on the same baseline whichever is in use. Initials are hidden from assistive technology.",
-        "The plate is taller than the wordmarks need. The supplied logos range from 4.25:1 to 0.69:1, and constraining by width alone leaves the portrait crest at about a third of the others' visual area — the extra height is headroom only the crest uses.",
-        "Names reserve two lines of height, so a partner whose name wraps does not push its card taller than the others. The grid goes three columns straight to one, because a two-column stage would strand the third partner on its own row.",
+        "The consortium is four equal columns, dropping to two below 1000px and one below 420px. The count is written into the CSS rather than derived, so it is revisited deliberately when a partner joins or leaves.",
+        "A card holds the partner's logo and nothing else. The names and the one-line roles were removed on 6 August 2026 at the client's request.",
+        "Because no name is rendered as text any more, each logo carries the partner's name as its alt text. That is the only thing identifying a partner to a screen reader, so it is not optional. A partner with no logo yet falls back to their name set plainly, rather than to initials, which on their own tell a first-time reader nothing.",
+        "The plate is a fixed box, taller than the wordmarks need. The supplied logos range from 4.25:1 to 0.69:1, and constraining by width alone leaves the portrait crest at about a third of the others' visual area — the extra height is headroom only the crest uses.",
       ],
     },
     {
@@ -440,7 +440,7 @@ export const designSystemContent = {
         "Exactly one h1 per route, followed by h2 section titles and h3 card titles in order.",
         "Semantic landmarks throughout: header, nav, main, section and footer.",
         "Every section is labelled by its own heading through aria-labelledby.",
-        "Home page sections carry stable ids that match the navigation ids in src/content/adflex.ts. Routes of their own, such as /about, /outputs and /contact, are declared in the same array.",
+        "Home page sections carry stable ids that match the navigation ids in src/content/adflex.ts. Routes of their own, such as /about, /outcomes and /contact, are declared in the same array.",
       ],
     },
     {

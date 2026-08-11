@@ -37,7 +37,7 @@ const ds = designSystemContent;
  * scoped tokens as the public site. No component is duplicated for docs.
  */
 export default function DesignSystemPage() {
-  const { brand, hero, technologies, consortium, results, contact } =
+  const { brand, hero, technologies, consortium, outcomes, contact } =
     adflexContent;
 
   return (
@@ -301,7 +301,7 @@ export default function DesignSystemPage() {
                 label="Primary call to action"
                 note=".adflex-cta — one primary action per view."
               >
-                <Link className="adflex-cta" href="/outputs">
+                <Link className="adflex-cta" href="/outcomes">
                   {hero.cta.label}
                 </Link>
               </Example>
@@ -351,7 +351,7 @@ export default function DesignSystemPage() {
 
               <Example
                 label="PartnerCard"
-                note="Renders the partner's official logo when one has been supplied, and decorative initials until then. Roles, descriptions and URLs have not been supplied."
+                note="The partner's official logo, and nothing else. The logo carries the partner name as its alt text, since no name is rendered as visible text. A partner with no logo yet falls back to their name set plainly."
               >
                 <PartnerCard partner={consortium.partners[0]} />
               </Example>
@@ -360,10 +360,15 @@ export default function DesignSystemPage() {
                 label="Figure in running text"
                 note="Picks out the number a sentence turns on. A plain span, not <strong> — the emphasis is visual, and the supplied copy does not mark the figure as important."
               >
+                {/* Was the consortium intro, whose figure was the partner
+                    count; that count was removed on 6 August 2026, so this
+                    example moved to the technologies intro — which still has
+                    one, and keeps the documentation showing live content
+                    rather than a specimen written for the page. */}
                 <p>
                   <FigureText
-                    text={consortium.intro}
-                    figure={consortium.introFigure}
+                    text={technologies.intro}
+                    figure={technologies.introFigure}
                   />
                 </p>
               </Example>
@@ -372,7 +377,7 @@ export default function DesignSystemPage() {
                 label="EmptyState"
                 note="Used where content genuinely does not exist yet. Never replaced with placeholder items."
               >
-                <EmptyState heading={results.heading} body={results.body} />
+                <EmptyState heading={outcomes.heading} body={outcomes.body} />
               </Example>
 
               <Example

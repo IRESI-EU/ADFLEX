@@ -52,3 +52,31 @@ export const ACCEPTED_MIME = [
 ] as const;
 
 export const ACCEPT_ATTRIBUTE = ACCEPTED_MIME.join(",");
+
+/**
+ * The document extensions an editor may attach to an outcome.
+ *
+ * Here rather than in `upload.ts` for the same reason as everything else in
+ * this file: the admin form needs it for the `accept` attribute and cannot
+ * import a `server-only` module. `upload.ts` holds the real check, which reads
+ * the file's leading bytes; this is only what the file picker offers.
+ */
+export const DOCUMENT_ACCEPT = ".pdf,.docx,.pptx,.xlsx,.doc,.ppt,.xls";
+
+/**
+ * A human-readable size for a download link.
+ *
+ * Rounded generously — the point is "is this a quick click or a big download",
+ * not an exact byte count.
+ */
+export function fileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+/** The extension, upper-cased, for a download link: "PDF", "DOCX". */
+export function fileKind(filename: string): string {
+  const extension = filename.split(".").pop() ?? "";
+  return extension ? extension.toUpperCase() : "FILE";
+}
