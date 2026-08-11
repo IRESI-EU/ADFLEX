@@ -162,14 +162,24 @@ const client = new pg.Client({
 try {
   await client.connect();
   const { rows } = await client.query(
+    /*
+     * `session_version + 1` on an update is what makes this a real password
+     * reset. Every session cookie carries the version it was issued under, so
+     * bumping it signs out every device immediately — which is the whole point
+     * of changing a password you think someone else has.
+     */
     `INSERT INTO admin_users (email, name, password_hash)
      VALUES ($1, $2, $3)
-     ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, password_hash = EXCLUDED.password_hash
+     ON CONFLICT (email) DO UPDATE
+       SET name = EXCLUDED.name,
+           password_hash = EXCLUDED.password_hash,
+           session_version = admin_users.session_version + 1
      RETURNING id, (xmax = 0) AS created`,
     [email.toLowerCase(), name, hash],
   );
   const { id, created } = rows[0];
   console.log(created ? `Created account #${id} for ${email}.` : `Updated the password for ${email}.`);
+  if (!created) console.log("Every existing session for that account has been signed out.");
   console.log("Sign in at /admin/login");
 } catch (error) {
   if (error.code === "42P01") {

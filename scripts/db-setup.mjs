@@ -1,10 +1,39 @@
 /**
- * Creates the admin tables. Safe to re-run — every statement in schema.sql is
- * `IF NOT EXISTS`, so this never drops or overwrites anything.
+ * Applies any migrations the database has not seen yet.
  *
  *   npm run db:setup
+ *
+ * ---------------------------------------------------------------------------
+ * HOW THIS WORKS, AND WHY IT REPLACED THE OLD ONE
+ * ---------------------------------------------------------------------------
+ * Every `.sql` file in `migrations/` is applied once, in filename order, and
+ * recorded in a `schema_migrations` table. Re-running is a no-op.
+ *
+ * The version before this read one large `schema.sql` and split it into
+ * statements with a hand-written parser, then ran them one at a time. Three
+ * things were wrong with that, all raised in the external review of 9 August
+ * 2026:
+ *
+ *  - **The parser was not a SQL parser.** It tracked quotes and `--` comments
+ *    and said so in its own comments; a dollar-quoted function body would have
+ *    been split down the middle. Whole files are now handed to Postgres, which
+ *    has a real parser.
+ *  - **Nothing was atomic.** A file that failed halfway left the database in a
+ *    state no version described. Each file now runs inside a transaction, so it
+ *    either lands completely or not at all.
+ *  - **There was no record of what had run.** Idempotent `IF NOT EXISTS` blocks
+ *    hid that, but only for changes that can be written idempotently, and a
+ *    one-way data change cannot. Applied files are now recorded by name.
+ *
+ * ---------------------------------------------------------------------------
+ * ADDING A MIGRATION
+ * ---------------------------------------------------------------------------
+ * Create `migrations/00N_short_name.sql`. Numbers are string-sorted, so keep
+ * them zero-padded to three digits. Never edit a file that has already been
+ * applied anywhere — write the next one instead, because the record is by
+ * filename and an edited file will not re-run.
  */
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import pg from "pg";
@@ -13,6 +42,7 @@ import { loadEnv } from "./load-env.mjs";
 loadEnv();
 
 const here = dirname(fileURLToPath(import.meta.url));
+const migrationsDir = join(here, "..", "migrations");
 
 if (!process.env.DATABASE_URL) {
   console.error(
@@ -23,61 +53,13 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const sql = await readFile(join(here, "..", "src", "lib", "schema.sql"), "utf8");
+const files = (await readdir(migrationsDir))
+  .filter((name) => name.endsWith(".sql"))
+  .sort();
 
-/**
- * Splits the schema into individual statements.
- *
- * Two reasons not to send the whole file as one string. It reports which
- * statement failed rather than just "syntax error somewhere in 100 lines", and
- * not every Postgres endpoint accepts a multi-statement simple query — a
- * connection pooler or a wire-protocol shim can reset the connection on one.
- *
- * The parser tracks single-quoted literals and `--` comments, which is enough
- * for this file. It does **not** understand dollar-quoted bodies (`$$ … $$`),
- * so if a trigger or function is ever added to schema.sql, this has to grow
- * with it or the body will be split at its internal semicolons.
- */
-function splitStatements(text) {
-  const statements = [];
-  let current = "";
-  let inString = false;
-  let inComment = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-
-    if (inComment) {
-      if (char === "\n") inComment = false;
-      current += char;
-      continue;
-    }
-    if (!inString && char === "-" && text[i + 1] === "-") {
-      inComment = true;
-      current += char;
-      continue;
-    }
-    if (char === "'") {
-      // '' inside a literal is an escaped quote, not the end of one.
-      if (inString && text[i + 1] === "'") {
-        current += "''";
-        i++;
-        continue;
-      }
-      inString = !inString;
-      current += char;
-      continue;
-    }
-    if (char === ";" && !inString) {
-      if (current.trim()) statements.push(current.trim());
-      current = "";
-      continue;
-    }
-    current += char;
-  }
-
-  if (current.trim()) statements.push(current.trim());
-  return statements;
+if (files.length === 0) {
+  console.error(`No .sql files in ${migrationsDir}.`);
+  process.exit(1);
 }
 
 const client = new pg.Client({
@@ -90,29 +72,61 @@ const client = new pg.Client({
 try {
   await client.connect();
 
-  const statements = splitStatements(sql);
-  for (const [index, statement] of statements.entries()) {
+  // The ledger itself, created outside the per-file transactions because every
+  // one of them needs to read it.
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      filename   text PRIMARY KEY,
+      applied_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+
+  const { rows } = await client.query("SELECT filename FROM schema_migrations");
+  const applied = new Set(rows.map((row) => row.filename));
+
+  let ran = 0;
+  for (const filename of files) {
+    if (applied.has(filename)) continue;
+
+    const sql = await readFile(join(migrationsDir, filename), "utf8");
+
+    /*
+     * The whole file in one transaction, as one query.
+     *
+     * `pg` sends a parameterless query over the simple query protocol, which
+     * accepts multiple statements — so Postgres does the parsing, including
+     * dollar-quoted bodies, and BEGIN/COMMIT makes the file all-or-nothing.
+     */
     try {
-      await client.query(statement);
+      await client.query("BEGIN");
+      await client.query(sql);
+      await client.query("INSERT INTO schema_migrations (filename) VALUES ($1)", [filename]);
+      await client.query("COMMIT");
     } catch (error) {
-      const firstLine = statement.split("\n")[0];
-      throw new Error(
-        `statement ${index + 1} of ${statements.length} failed (${firstLine}…)\n  ${error.message}`,
-      );
+      await client.query("ROLLBACK").catch(() => {});
+      throw new Error(`${filename} failed and was rolled back:\n  ${error.message}`);
     }
+
+    console.log(`  applied ${filename}`);
+    ran++;
   }
 
-  const { rows } = await client.query(
+  if (ran === 0) {
+    console.log("Database is up to date; nothing to apply.");
+  } else {
+    console.log(`\n${ran} migration${ran === 1 ? "" : "s"} applied.`);
+  }
+
+  const { rows: tables } = await client.query(
     `SELECT table_name FROM information_schema.tables
      WHERE table_schema = current_schema()
      ORDER BY table_name`,
   );
-
-  console.log("Schema applied. Tables now present:");
-  for (const row of rows) console.log("  -", row.table_name);
+  console.log("\nTables now present:");
+  for (const row of tables) console.log("  -", row.table_name);
   console.log("\nNext: create an editor account with  npm run db:user");
 } catch (error) {
-  console.error("Could not apply the schema:\n", error.message);
+  console.error("Could not apply migrations:\n", error.message);
   process.exit(1);
 } finally {
   await client.end();
