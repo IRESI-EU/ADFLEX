@@ -1038,7 +1038,7 @@ export function NewsForm({ item }: { item?: NewsItem }) {
             <FieldError state={state} name="eventEndTime" />
             <span className={styles.hint}>
               {kind === "upcoming"
-                ? "The entry comes off the public page at this time."
+                ? "At this time the event moves to the past events, and stops taking bookings. It stays on the page."
                 : "Optional. Leave empty if it was not recorded."}
             </span>
           </p>
@@ -1131,6 +1131,71 @@ export function NewsForm({ item }: { item?: NewsItem }) {
           Plain text. Blank lines start a new paragraph.
         </span>
       </p>
+
+      {/*
+       * What happened, written afterwards.
+       *
+       * From the review meeting of 12 August 2026. An event used to disappear
+       * from the public page when it finished; it now stays on as a past event,
+       * which is only worth doing if there is somewhere to say how it went.
+       *
+       * Shown for both event kinds and never for a news post. It is offered
+       * before the event has happened on purpose: an "already held" entry is
+       * usually typed up weeks late, in one sitting, and an editor who has the
+       * write-up in front of them should not be told to come back later. The
+       * public page shows these only once the event is over.
+       *
+       * Photographs are not here because they already work — the picture
+       * chooser above takes as many as the editor likes, on the day or a
+       * fortnight afterwards.
+       */}
+      {isEventKind(kind) ? (
+        <div className={styles.section}>
+          <h3 className={styles.sectionTitle}>After the event</h3>
+          <p className={styles.hint}>
+            Fill these in once the event has taken place. They stay hidden until
+            it is over, so you can write them at any time. To add photographs,
+            use the pictures above.
+          </p>
+
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="n-event-outcome">
+              How it went
+            </label>
+            <textarea
+              id="n-event-outcome"
+              className={styles.textarea}
+              name="eventOutcome"
+              defaultValue={keep(state, "eventOutcome", item?.event_outcome ?? "")}
+              rows={5}
+            />
+            <span className={styles.hint}>
+              Optional. What took place, who attended, what came out of it.
+              Plain text; blank lines start a new paragraph.
+            </span>
+          </p>
+
+          <p className={styles.field}>
+            <label className={styles.label} htmlFor="n-event-video">
+              Video or recording
+            </label>
+            <input
+              id="n-event-video"
+              className={styles.input}
+              type="url"
+              name="eventVideoUrl"
+              defaultValue={keep(state, "eventVideoUrl", item?.event_video_url ?? "")}
+              placeholder="https://…"
+              {...fieldError(state, "eventVideoUrl").inputProps}
+            />
+            <span className={styles.hint}>
+              Optional. A YouTube link, or any other page with the recording on
+              it. It becomes a “Watch the recording” link once the event is over.
+            </span>
+            <FieldError state={state} name="eventVideoUrl" />
+          </p>
+        </div>
+      ) : null}
 
       <ImagesField existing={item?.images ?? []} />
 

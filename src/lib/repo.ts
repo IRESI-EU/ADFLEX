@@ -114,9 +114,24 @@ export type NewsItem = {
   /** Arranges entries within their own list. Lower first; 0 means "leave it to the date". */
   sort_order: number;
   /**
-   * True once an upcoming event's end time has passed. Computed per query, in
-   * the project's timezone — never stored, so it is right the moment it changes
-   * rather than whenever something last wrote the row.
+   * What happened at the event, written afterwards. Empty until someone adds it,
+   * and only shown once the event is over — see `event_video_url`.
+   */
+  event_outcome: string;
+  /**
+   * A recording of the event: a YouTube link, or any other video page. Null
+   * until someone adds one, and never shown before the event has happened,
+   * because until then there is nothing to have recorded.
+   */
+  event_video_url: string | null;
+  /**
+   * True once an upcoming event's end time has passed — that is, once it has
+   * happened. Computed per query, in the project's timezone — never stored, so
+   * it is right the moment it changes rather than whenever something last wrote
+   * the row.
+   *
+   * The entry stays on the public page either way; this decides whether it is
+   * presented as still to come or as a past event.
    */
   expired: boolean;
 };
@@ -273,6 +288,9 @@ export async function updateFinding(id: number, input: FindingInput): Promise<vo
   );
   await setFindingImages(id, input.imageIds);
   await setFindingFiles(id, input.fileIds);
+  // An edit that takes a picture off an entry orphans it just as surely as
+  // deleting the entry does.
+  await deleteOrphanedUploads();
 }
 
 /**
@@ -304,10 +322,11 @@ async function setFindingFiles(findingId: number, fileIds: number[]): Promise<vo
 }
 
 export async function deleteFinding(id: number): Promise<void> {
-  // `finding_images` and `finding_files` cascade; the `media` and `files` rows
-  // themselves are left alone so anything shared with another entry does not
-  // vanish from it.
+  // `finding_images` and `finding_files` cascade, which takes the attachments
+  // but not the uploads themselves. Anything still attached elsewhere survives
+  // the sweep — see `deleteOrphanedUploads`.
   await query("DELETE FROM findings WHERE id = $1", [id]);
+  await deleteOrphanedUploads();
 }
 
 /* --------------------------------------------------------------------------
@@ -380,6 +399,7 @@ export async function updatePublication(id: number, input: PublicationInput): Pr
     [id, input.title, input.authors, input.venue, input.year, input.doi, input.url, input.published, input.sortOrder],
   );
   await setPublicationFiles(id, input.fileIds);
+  await deleteOrphanedUploads();
 }
 
 /** Same delete-then-insert reasoning as `setFindingImages`. */
@@ -395,6 +415,7 @@ async function setPublicationFiles(publicationId: number, fileIds: number[]): Pr
 
 export async function deletePublication(id: number): Promise<void> {
   await query("DELETE FROM publications WHERE id = $1", [id]);
+  await deleteOrphanedUploads();
 }
 
 /* --------------------------------------------------------------------------
@@ -475,13 +496,33 @@ const EVENT_START = `(n.event_date + COALESCE(n.event_time, TIME '00:00'))`;
 const EVENT_END = `(n.event_date + COALESCE(n.event_end_time, TIME '23:59:59'))`;
 
 /**
- * An upcoming event that is over.
+ * An upcoming event whose end time has passed — in other words, one that has
+ * now happened.
  *
  * `COALESCE(..., false)` because a row with no `event_date` makes the comparison
  * NULL, and a NULL here would reach the page as neither true nor false. Only
- * `upcoming` can expire: an event already held is a record and is meant to stay.
+ * `upcoming` can reach this state: `event` means "already held" and was a record
+ * from the moment it was created.
+ *
+ * **This does not remove anything from the public page.** It used to: until
+ * 12 August 2026 the published list carried `AND NOT EXPIRED`, so an event
+ * disappeared the minute it finished and a visitor the following week found no
+ * trace of it. The review meeting asked for the opposite, and was right — the
+ * announcement, the poster and the date are exactly what makes a past event
+ * worth having. All this flag now decides is which half of the page an event
+ * belongs in and how it is labelled.
  */
 const EXPIRED = `COALESCE(n.kind = 'upcoming' AND ${EVENT_END} <= ${PROJECT_NOW}, false)`;
+
+/**
+ * An event that is still to come.
+ *
+ * The kind says what the editor intended and the clock has the final word, so
+ * an event moves from one group to the other by itself, at the minute it ends,
+ * with nothing scheduled to make it happen. Nobody has to remember to change
+ * anything, and there is no window in which the page is out of date.
+ */
+const LIVE_UPCOMING = `(n.kind = 'upcoming' AND NOT ${EXPIRED})`;
 
 const NEWS_COLUMNS = `
   n.id, n.kind, n.title, n.summary, n.body, n.image_size,
@@ -490,6 +531,7 @@ const NEWS_COLUMNS = `
   to_char(n.event_time, 'HH24:MI') AS event_time,
   to_char(n.event_end_time, 'HH24:MI') AS event_end_time,
   n.location, n.booking_url, n.slots_filled, n.published, n.sort_order,
+  n.event_outcome, n.event_video_url,
   ${EXPIRED} AS expired,
   ${imagesJson("news_images", "news_id", "n")}
 `;
@@ -509,21 +551,23 @@ const NEWS_COLUMNS = `
  * 2. **`sort_order`.** The editor's own arrangement, lower first. Everything is
  *    0 until someone changes it, so an untouched site is entirely date-ordered
  *    and stays that way.
- * 3. **The date.** Upcoming events ascend — the nearest thing first — and
+ * 3. **The date.** Events still to come ascend — the nearest thing first — and
  *    everything else descends. The two halves sort on opposite principles
  *    because they answer opposite questions, and one order for both makes one
  *    half read backwards.
  *
- * In the admin this also floats expired events to the top of the upcoming group,
- * since their dates are the earliest — which is where something needing
- * attention belongs.
+ * The first key is `LIVE_UPCOMING`, not `kind = 'upcoming'`. An event that has
+ * now happened leaves the top group on its own and joins the events already
+ * held, where the descending date puts the most recent one first — so the event
+ * that finished last night sits at the head of the past events, both for a
+ * reader and for the editor who is about to add the photographs to it.
  */
 const NEWS_ORDER = `
   ORDER BY
-    (n.kind = 'upcoming') DESC,
-    (n.kind = 'event') DESC,
+    ${LIVE_UPCOMING} DESC,
+    (n.kind IN ('event', 'upcoming')) DESC,
     n.sort_order,
-    CASE WHEN n.kind = 'upcoming' THEN ${EVENT_START} END ASC,
+    CASE WHEN ${LIVE_UPCOMING} THEN ${EVENT_START} END ASC,
     COALESCE(n.event_date, n.published_on) DESC,
     n.id DESC
 `;
@@ -551,7 +595,6 @@ export function listPublishedNewsStatus(): Promise<ReadStatus<NewsItem[]>> {
         SELECT ${NEWS_COLUMNS}
         FROM news_items n
         WHERE n.published
-          AND NOT ${EXPIRED}
         ${NEWS_ORDER}
       `),
     [],
@@ -649,6 +692,10 @@ export type NewsInput = {
   published: boolean;
   /** Position within this entry's own list. Lower first. */
   sortOrder: number;
+  /** What happened at the event, added after it. Empty string when unwritten. */
+  eventOutcome: string;
+  /** A recording of the event. Null when there is none. */
+  eventVideoUrl: string | null;
 };
 
 export async function createNewsItem(input: NewsInput): Promise<number> {
@@ -656,12 +703,13 @@ export async function createNewsItem(input: NewsInput): Promise<number> {
   const row = await queryOne<{ id: number }>(
     `INSERT INTO news_items
        (kind, title, summary, body, event_date, location, published, image_size,
-        booking_url, slots_filled, event_time, event_end_time, sort_order)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
+        booking_url, slots_filled, event_time, event_end_time, sort_order,
+        event_outcome, event_video_url)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
     [input.kind, input.title, input.summary, input.body,
      input.eventDate, input.location, input.published, input.imageSize,
      input.bookingUrl, input.slotsFilled, input.eventTime, input.eventEndTime,
-     input.sortOrder],
+     input.sortOrder, input.eventOutcome, input.eventVideoUrl],
   );
   await setNewsImages(row!.id, input.imageIds);
   return row!.id;
@@ -676,14 +724,16 @@ export async function updateNewsItem(id: number, input: NewsInput): Promise<void
          event_date = $6, location = $7, published = $8,
          image_size = $9, booking_url = $10, slots_filled = $11,
          event_time = $12, event_end_time = $13, sort_order = $14,
+         event_outcome = $15, event_video_url = $16,
          updated_at = now()
      WHERE id = $1`,
     [id, input.kind, input.title, input.summary, input.body,
      input.eventDate, input.location, input.published, input.imageSize,
      input.bookingUrl, input.slotsFilled, input.eventTime, input.eventEndTime,
-     input.sortOrder],
+     input.sortOrder, input.eventOutcome, input.eventVideoUrl],
   );
   await setNewsImages(id, input.imageIds);
+  await deleteOrphanedUploads();
 }
 
 /** Same delete-then-insert reasoning as `setFindingImages`. */
@@ -715,6 +765,7 @@ export async function setSlotsFilled(id: number, filled: boolean): Promise<void>
 
 export async function deleteNewsItem(id: number): Promise<void> {
   await query("DELETE FROM news_items WHERE id = $1", [id]);
+  await deleteOrphanedUploads();
 }
 
 /* --------------------------------------------------------------------------
@@ -842,6 +893,58 @@ export async function deleteMedia(id: number): Promise<void> {
   // Rows referencing this image have `ON DELETE SET NULL`, so an item whose
   // picture is removed keeps its text rather than disappearing with it.
   await query("DELETE FROM media WHERE id = $1", [id]);
+}
+
+/* --------------------------------------------------------------------------
+ * Uploads nothing points at any more
+ * ----------------------------------------------------------------------- */
+
+/**
+ * Deletes every upload that is no longer attached to anything, and reports how
+ * many went.
+ *
+ * `finding_images`, `news_images`, `finding_files` and `publication_files` all
+ * cascade, so deleting an entry takes its *attachments* with it — but the
+ * `media` and `files` rows themselves survive, and each one carries the whole
+ * file in a `BYTEA` column. Deleting an event with six photographs therefore
+ * used to leave six photographs in the database for ever: invisible, unreachable
+ * once `isMediaPublic` was added, and still occupying the space. Seven such rows
+ * had already accumulated when this was written.
+ *
+ * The old behaviour was deliberate — the comment on `deleteFinding` explains it
+ * as protecting an image shared with another entry — and that instinct is still
+ * respected here. This does not delete an upload because *one* entry let go of
+ * it; it deletes an upload that **nothing at all** refers to. A shared image
+ * keeps its other references and is left alone.
+ *
+ * The two legacy `image_id` columns are not consulted. Nothing reads them
+ * (verified by search), migration 001 copied their contents into the join
+ * tables, and they are `ON DELETE SET NULL` — so a delete here simply nulls a
+ * column no code looks at.
+ *
+ * **Safe only because uploads cannot exist unattached by design.** There is no
+ * media-library page: `createMedia` is called from one place, mid-save, inside
+ * the same transaction that attaches the row. Nothing uploads now and attaches
+ * later. If a library is ever added — an editor uploading a picture in advance —
+ * this becomes a reaper of their work, and it must then be given a grace period
+ * on `created_at` or a flag distinguishing "not attached yet" from "no longer
+ * attached". An uncommitted upload in another transaction is invisible to this
+ * one under MVCC, so concurrent saves are already safe.
+ */
+export async function deleteOrphanedUploads(): Promise<{ media: number; files: number }> {
+  const media = await query<{ id: number }>(`
+    DELETE FROM media m
+    WHERE NOT EXISTS (SELECT 1 FROM news_images    ni WHERE ni.media_id = m.id)
+      AND NOT EXISTS (SELECT 1 FROM finding_images fi WHERE fi.media_id = m.id)
+    RETURNING m.id
+  `);
+  const files = await query<{ id: number }>(`
+    DELETE FROM files f
+    WHERE NOT EXISTS (SELECT 1 FROM finding_files     ff WHERE ff.file_id = f.id)
+      AND NOT EXISTS (SELECT 1 FROM publication_files pf WHERE pf.file_id = f.id)
+    RETURNING f.id
+  `);
+  return { media: media.length, files: files.length };
 }
 
 /* --------------------------------------------------------------------------

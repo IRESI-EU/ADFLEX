@@ -196,33 +196,63 @@ to the same day as the start, and one that appears to finish earlier than it
 begins is refused rather than accepted and treated as already over.
 
 **An upcoming event needs both times.** The start is what the home-page
-countdown runs to. The end is when the entry comes off the public page — see
-below. An event already held needs neither: it is a record of something that
-happened, and the project has events going back before anyone was writing the
-hour down.
+countdown runs to. The end is when it becomes a past event — see below. An event
+already held needs neither: it is a record of something that happened, and the
+project has events going back before anyone was writing the hour down.
 
-### An upcoming event comes off the page when it finishes
+### An upcoming event becomes a past event when it finishes
 
-At its end time, an upcoming event disappears from the public News & Events page
-by itself. Nothing has to be taken down by hand, and there is no window where
-the site is advertising something that is over.
+At its end time, an upcoming event moves by itself from the top of the page down
+to the events already held. **It stays on the page.** It keeps its
+announcement, its date, its location and its pictures; it stops offering a
+booking link; and it is labelled *Past event* instead of *Upcoming*.
 
-**It is not deleted.** In the admin it stays in the entries list, at the top,
-marked **Expired**, so you can see what has come off and decide what to do with
-it. It is still published — expiry is about the date, not about publishing.
+Nothing has to be changed by hand, and there is no window where the site is
+advertising something that is over.
 
-Three things follow from that:
+> **This changed on 12 August 2026.** Until then the entry disappeared from the
+> public page entirely. It was never deleted — it sat in the admin marked
+> *Expired* — but for a visitor the week after, there was no evidence the event
+> had ever happened. The review meeting asked for the opposite, and the
+> announcement, the poster and the date are exactly what makes a past event
+> worth keeping.
+
+The **home page announcement does still expire**, which is the part that should:
+it exists to get somebody to book, and a countdown to something finished is
+just wrong. The entry it was announcing stays on News & Events.
+
+Three things follow:
 
 - It happens **on the clock, not on the next deploy**. The public page is built
-  per request, so an event that ended a minute ago is already gone.
+  per request, so an event that ended a minute ago has already moved.
 - It uses **Irish time**, not the server's. The database runs in UTC and would
   otherwise hold an event open an extra hour every summer.
-- **Only upcoming events expire.** An event marked as already held is a record
-  and stays on the page for good.
+- **Nothing is stored and nothing is scheduled.** Which state an event is in is
+  worked out from its end time every time the page is read, so it is never out
+  of date and there is no job that can fail to run.
 
-An expired entry cannot be switched to *Event (already held)* — the type is
-fixed once saved. To keep it as a record, add it again with that type and delete
-the expired one.
+You do not need to switch the entry to *Event (already held)* afterwards — it is
+already being shown as a past event. That type is for an event you are adding
+to the site after the fact, one the website never announced.
+
+### Adding photos and a write-up afterwards
+
+Open the event and look for **After the event** at the bottom of the form.
+
+| Field | What it is for |
+| --- | --- |
+| **How it went** | What took place, who attended, what came out of it |
+| **Video or recording** | A YouTube link, or any other page with the recording |
+| *(the pictures above)* | Photographs from the day — add as many as you like |
+
+Two things worth knowing:
+
+- **They stay hidden until the event is over**, so you can write them whenever
+  you like — including before the event, which is what usually happens when you
+  are adding an event that was held last year and typing it all in one sitting.
+- **There is no rush.** Photographs often arrive several days after the event.
+  The original announcement stays on the page in the meantime, so a visitor
+  always sees something.
 
 ### Arranging entries
 
@@ -619,8 +649,27 @@ more than object storage, and every backup carries the images.
 
 The swap point is `src/lib/repo.ts`; nothing else reads `data` directly.
 
-`/media/[id]` is **public and its ids are sequential**, so an unpublished item's
-image is guessable. Do not put anything confidential through it.
+**Ids are sequential, so the route checks permission rather than relying on the
+id being unguessable.** An image is served only if it is attached to something
+published, or the requester is signed in; anything else gets a 404, not a 403,
+because "forbidden" would confirm that something exists at that id. Cache
+headers follow the permission — public and immutable when published, `private,
+no-store` when it is visible only because an editor is signed in, so it cannot
+be left in a shared cache for the next person.
+
+**Uploads are swept when nothing points at them.** Deleting an entry used to
+leave its images in the table for ever: the join rows cascaded but the `media`
+row, carrying the whole file, did not. `deleteOrphanedUploads` in
+`src/lib/repo.ts` now runs after every delete and after any edit that detaches
+something. It removes only what **nothing at all** refers to, so an image used
+by two entries survives losing one of them.
+
+That is safe because an upload cannot exist before it is attached — there is no
+media-library page, and `createMedia` is called mid-save inside the same
+transaction that attaches the row. **If a library is ever added**, so that an
+editor can upload a picture in advance, this sweep would delete their work
+before they used it. It would then need a grace period on `created_at`, or a
+flag separating "not attached yet" from "no longer attached".
 
 ---
 

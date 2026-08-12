@@ -143,8 +143,47 @@
   border-radius: 999px;
 }
 
+/*
+ * The same pill for an event that has already happened, in the muted ink rather
+ * than the project green.
+ *
+ * Both labels are needed now that a past event stays on the page. Green is the
+ * colour the site uses to draw attention, and an event that finished in March
+ * is not competing for anybody's attention — it is there so the record is
+ * complete.
+ */
+.past {
+  composes: upcoming;
+  color: var(--adflex-color-muted);
+}
+
 .booking {
   margin-top: var(--adflex-space-4);
+}
+
+/*
+ * The write-up added after the event, and the link to any recording.
+ *
+ * Set off from the announcement above it, because they were written weeks
+ * apart and a reader arriving late is usually looking for this half.
+ */
+.afterEvent {
+  margin-top: var(--adflex-space-5);
+  padding-top: var(--adflex-space-4);
+  border-top: 1px solid var(--adflex-color-border);
+}
+
+.afterEventTitle {
+  margin: 0 0 var(--adflex-space-2);
+  font-size: var(--adflex-text-sm);
+  font-weight: 700;
+  letter-spacing: var(--adflex-tracking-wide);
+  text-transform: uppercase;
+  color: var(--adflex-color-muted);
+}
+
+.recording {
+  margin-top: var(--adflex-space-3);
 }
 
 /*

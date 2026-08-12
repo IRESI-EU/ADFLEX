@@ -579,7 +579,7 @@ export async function saveNewsItem(
     return invalid(form, "eventEndTime", "The end time must be given as HH:MM, for example 16:00.");
   }
   if (kind === "upcoming" && !eventEndTime) {
-    return invalid(form, "eventEndTime", "An upcoming event needs an end time — it is when the entry comes off the page.");
+    return invalid(form, "eventEndTime", "An upcoming event needs an end time — it is when the event becomes a past event.");
   }
 
   /*
@@ -607,6 +607,22 @@ export async function saveNewsItem(
     return invalid(form, "bookingUrl", "The booking link must start with http:// or https://");
   }
 
+  /*
+   * What happened at the event, filled in afterwards.
+   *
+   * Read for both event kinds, not only for one that has already passed. An
+   * editor adding an event weeks late — which is how "already held" entries
+   * usually arrive — writes the announcement and the write-up in the same
+   * sitting, and a field that refused to save until the clock caught up would
+   * throw that work away. The public page decides when to *show* it.
+   */
+  const eventOutcome = isEventKind ? text(form, "eventOutcome") : "";
+
+  const rawVideoUrl = isEventKind ? text(form, "eventVideoUrl") : "";
+  if (rawVideoUrl && !/^https?:\/\//i.test(rawVideoUrl)) {
+    return invalid(form, "eventVideoUrl", "The video link must start with http:// or https://");
+  }
+
   const id = int(form, "id", 0);
 
   // One transaction, for the same reason as findings above.
@@ -627,6 +643,8 @@ export async function saveNewsItem(
         slotsFilled: kind === "upcoming" && flag(form, "slotsFilled"),
         published: flag(form, "published"),
         sortOrder: int(form, "sortOrder"),
+        eventOutcome,
+        eventVideoUrl: rawVideoUrl || null,
       };
 
       if (id > 0) await updateNewsItem(id, input);

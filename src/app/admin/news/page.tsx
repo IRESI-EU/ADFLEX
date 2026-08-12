@@ -60,8 +60,10 @@ export default async function AdminNewsPage({
       <p className={styles.pageLead}>
         Published entries appear on <Link href="/news">the public News and Events page</Link>.
         An <strong>upcoming event</strong> leads that page, carries a booking
-        link, can be marked full, and comes off the page by itself at its end
-        time; an event that has already been held is kept there as a record.
+        link and can be marked full. At its end time it becomes a{" "}
+        <strong>past event</strong> by itself — it stays on the page, keeps its
+        announcement and pictures, and stops taking bookings. You can then add
+        photographs and a write-up to it whenever they are ready.
       </p>
 
       {params.saved ? (
@@ -140,14 +142,19 @@ export default async function AdminNewsPage({
                     <span className={`${styles.pill} ${styles.pillDraft}`}>Full</span>
                   ) : null}
                   {/*
-                   * An expired event has come off the public page on its own,
-                   * at its end time. Saying so here is the whole point of not
-                   * deleting it: the entry is still yours to keep as a record
-                   * or remove, and without this pill it would look published
-                   * and simply not be there.
+                   * An event that has now happened.
+                   *
+                   * It used to say "Expired", which was accurate when the entry
+                   * came off the public page at its end time — it was telling an
+                   * editor their published event was no longer anywhere. Since
+                   * 12 August 2026 the entry stays on the page as a past event,
+                   * so nothing has expired and the word would now be wrong. What
+                   * this says instead is which half of the public page the entry
+                   * is in, and that it is ready for the photographs and the
+                   * write-up.
                    */}
                   {item.expired ? (
-                    <span className={`${styles.pill} ${styles.pillDraft}`}>Expired</span>
+                    <span className={`${styles.pill} ${styles.pillDraft}`}>Past event</span>
                   ) : null}
 
                   <Link className={styles.tab} href={`/admin/news?edit=${item.id}`}>

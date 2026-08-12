@@ -195,4 +195,83 @@ form messages.
 
 ---
 
-*Written 9 August 2026, revised 11 August 2026.*
+## The review meeting, 12 August 2026
+
+Two things were asked for in the meeting. Both are done.
+
+### An event that has happened must stay on the site
+
+**The concern was right, and it was our reading of "expiry" that was wrong.**
+An upcoming event came off the public page at its end time. The row was never
+deleted — it sat in the admin marked *Expired* — but a visitor the following
+week found no evidence the event had ever taken place, which for a project with
+a dissemination work package is close to the opposite of the point.
+
+The lifecycle is now:
+
+> Upcoming → the event happens → **Past event, still on the page**
+
+At its end time an event moves from the top of News & Events down to the events
+already held. It keeps its announcement, date, location and pictures, stops
+offering a booking link, and is labelled *Past event*. The **home page
+announcement still expires**, which is the part that should — it exists to get
+someone to book.
+
+Nothing is stored and nothing is scheduled: which state an event is in is
+computed from its end time on every read, in Irish time. A stored flag would
+need something to run at the right moment and would be wrong in between.
+
+Editors can then add, whenever the material arrives:
+
+| | |
+| --- | --- |
+| **Photographs** | Already worked — as many as they like, added any time |
+| **How it went** | A write-up: what took place, who came, what came out of it |
+| **Video or recording** | A YouTube link, or any other page with the recording |
+
+Both new fields are accepted *before* the event and shown only *after* it. An
+event held last year is typed up in one sitting, and a form that refused the
+write-up until the clock caught up would throw that work away.
+
+*`migrations/004_past_events.sql`, `EXPIRED` and `LIVE_UPCOMING` in
+`src/lib/repo.ts`, `AfterEvent` in `src/components/PublishedList.tsx`.*
+
+### Deleting content must not leave its media behind
+
+**Adarsh was right, and this was still broken.** Point 6 above — "deleting an
+entry left its images publicly reachable" — was fixed by making the *route*
+refuse to serve an orphan. That closed the exposure but not the mess: the join
+rows cascaded, while the `media` row, which carries the entire file in a `BYTEA`
+column, stayed. **Seven such rows had accumulated in the development database**,
+each holding an image nothing could reach.
+
+`deleteOrphanedUploads` now runs after every delete and after any edit that
+detaches something. It deletes only what **nothing at all** points at, so an
+image shared by two entries survives losing one of them — which was the reason
+the original code kept everything, and is a real case, just not one worth
+keeping every file for ever to protect.
+
+Migration `004` sweeps what had already built up.
+
+The one assumption it rests on is written on the function: an upload cannot
+exist before it is attached, because there is no media-library page. Add one and
+this becomes a reaper of an editor's work.
+
+*Verified: deleting an entry removed the image only it used, kept the image its
+sibling still used, and deleting the sibling removed that one too. 27 checks.*
+
+### Also confirmed in that meeting
+
+- **"EU Funded Project" → "SEAI Funded Project".** Already done, on 31 July
+  2026. The footer reads "Funded by SEAI." with the SEAI logo, deliberately as
+  the shortest true statement — the grant number and the disclaimer have never
+  been supplied. Nothing on the site refers to the EU.
+- **SMTP must be tested, not merely documented.** Agreed, and it cannot start
+  until the credentials exist. What is needed is in
+  `handover/ACCESS-NEEDED.md`.
+- **Do not build nice-to-have features.** Nothing was added beyond the two
+  requests above.
+
+---
+
+*Written 9 August 2026, revised 11 and 12 August 2026.*

@@ -298,21 +298,15 @@ export function PublicationList({ publications }: { publications: Publication[] 
  * News and events
  * ----------------------------------------------------------------------- */
 
-/**
- * Is this event still to come?
- *
- * Compared as `YYYY-MM-DD` strings, which sort correctly and, more importantly,
- * never build a `Date` — a date-only value parsed as a Date lands at midnight
- * UTC, so an event on the 1st reads as still upcoming for a reader in Dublin
- * and already past for one in Tokyo. String comparison has no timezone in it at
- * all. Today counts as upcoming: the day of is exactly when someone is looking.
+/*
+ * `isUpcoming(eventDate)` used to live here, comparing the event's date against
+ * today's. It was removed on 12 August 2026: every caller now reads `expired`,
+ * which the database computes from the event's **end time** in the project's
+ * timezone. The old test was a day too coarse — a morning event stayed
+ * "Upcoming", and kept offering bookings, until midnight — and it derived the
+ * answer twice, once here and once in SQL, which is how the two came to
+ * disagree.
  */
-export function isUpcoming(eventDate: string | null): boolean {
-  if (!eventDate) return false;
-  const today = new Date();
-  const local = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  return eventDate >= local;
-}
 
 /**
  * What a reader can do about an event: book a place, or be told it is full.
@@ -322,10 +316,16 @@ export function isUpcoming(eventDate: string | null): boolean {
  * page that will either take a booking for nothing or confuse them.
  */
 function EventBooking({ item }: { item: NewsItem }) {
-  // Only an upcoming event, and only while its date is still ahead. The kind
-  // says what the editor intended; the date is the final word, so an upcoming
-  // event that passes stops offering a booking link on its own.
-  if (item.kind !== "upcoming" || !isUpcoming(item.event_date)) return null;
+  /*
+   * Only an upcoming event, and only while it is still to come. The kind says
+   * what the editor intended; the clock has the final word, so an event that
+   * passes stops offering a booking link on its own.
+   *
+   * `item.expired` rather than the date: it is computed by the database from
+   * the event's *end time* in the project's timezone, so a morning event stops
+   * taking bookings at lunchtime instead of at midnight.
+   */
+  if (item.kind !== "upcoming" || item.expired) return null;
 
   if (item.slots_filled) {
     return (
@@ -348,6 +348,41 @@ function EventBooking({ item }: { item: NewsItem }) {
         Book your place
       </a>
     </p>
+  );
+}
+
+/**
+ * What happened at the event, and where to watch it.
+ *
+ * Only once the event is over. An editor can write both at any time — an event
+ * typed up weeks after the fact is entered in one sitting — so the decision
+ * about when a reader sees them is made here rather than in the form.
+ *
+ * "Over" means `expired` for an upcoming event, and always, for an event
+ * recorded as already held. Between them those cover every event on the page,
+ * so a write-up is never withheld from an entry that has no clock to wait for.
+ *
+ * Renders nothing at all when there is nothing to say, which is the state every
+ * event is in until someone writes it up.
+ */
+function AfterEvent({ item }: { item: NewsItem }) {
+  const over = item.kind === "event" || item.expired;
+  if (!over || (!item.event_outcome && !item.event_video_url)) return null;
+
+  return (
+    <div className={styles.afterEvent}>
+      <h4 className={styles.afterEventTitle}>How it went</h4>
+      {item.event_outcome ? (
+        <Prose text={item.event_outcome} className={styles.body} />
+      ) : null}
+      {item.event_video_url ? (
+        <p className={styles.recording}>
+          <a href={item.event_video_url} target="_blank" rel="noreferrer noopener">
+            Watch the recording
+          </a>
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -388,10 +423,21 @@ export function NewsList({
                 <time dateTime={item.published_on}>{formatDate(item.published_on)}</time>
               )}
               {item.location ? <span>{item.location}</span> : null}
-              {/* Says which events have not happened yet, so a reader scanning
-                  the list does not have to work it out from the dates. */}
-              {item.kind === "upcoming" && isUpcoming(item.event_date) ? (
-                <span className={styles.upcoming}>Upcoming</span>
+              {/*
+                * Which events are still to come, and which have happened.
+                *
+                * Both labels, since 12 August 2026. A past event used to be
+                * taken off the page when it ended, so "Upcoming" or nothing
+                * meant "upcoming or news". Now that events stay, a reader
+                * scanning the list would otherwise have to work the answer out
+                * from the dates.
+                */}
+              {isEvent(item.kind) ? (
+                item.kind === "upcoming" && !item.expired ? (
+                  <span className={styles.upcoming}>Upcoming</span>
+                ) : (
+                  <span className={styles.past}>Past event</span>
+                )
               ) : null}
             </p>
 
@@ -403,6 +449,7 @@ export function NewsList({
           <>
             <Prose text={item.body} className={styles.body} />
             <EventBooking item={item} />
+            <AfterEvent item={item} />
           </>
         );
 
