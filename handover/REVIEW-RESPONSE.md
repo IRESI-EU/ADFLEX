@@ -166,7 +166,7 @@ read and written somewhere shared. Both are commented to say so.
 
 ---
 
-## Still open, and not ours to close
+## Still open
 
 These predate the review and are waiting on the project, not on code:
 
