@@ -17,9 +17,9 @@ quietly skipped.
 The architecture differs from the one suggested, deliberately — see
 [Not done](#not-done) below.
 
-Sending is not configured yet: it needs a permission on a Maynooth mailbox that
-only MU IT can grant. See `handover/EMAIL-SETUP.md`. Until then every message
-lands in **Admin → Messages**, which says so plainly.
+Sending is not configured yet: it needs SMTP credentials from IRESI. See
+`handover/EMAIL-SETUP.md`. Until then every message lands in **Admin →
+Messages**, which says so plainly.
 
 *`src/lib/mail.ts`, `src/app/contact/actions.ts`*
 
@@ -31,26 +31,26 @@ person who has genuinely sent five deserves to know why the sixth did not go.
 
 *`tooManySubmissions` in `src/lib/auth.ts`*
 
-### 3. Login limiter could be bypassed by changing the email
+### 3. Login limiter could be bypassed by changing the account name
 
 **Fixed, and the review's diagnosis was exactly right.** The old key was
-`<ip>:<email>` — one string, so a fresh address meant a fresh counter and the
-per-IP limit did not exist in practice.
+`<ip>:<account>` — one string, so a different account name meant a fresh counter
+and the per-IP limit did not exist in practice.
 
 There are now three independent counters, and a request is refused if **any** is
 over:
 
 | Counter | Ceiling per 15 min | Why |
 | --- | --- | --- |
-| email | 8 | Guessing one account is the attack that matters |
+| account | 8 | Guessing one account is the attack that matters |
 | IP | 30 | Looser: a university NAT puts a building behind one address |
-| IP + email | 8 | The cheapest signal that one machine is working on one account |
+| IP + account | 8 | The cheapest signal that one machine is working on one account |
 
-A successful sign-in clears the email and pair counters but **not** the IP one —
+A successful sign-in clears the account and pair counters but **not** the IP one —
 otherwise an attacker with any valid account of their own would have a reset
 button.
 
-*`src/lib/auth.ts`. Verified: blocked at attempt 31 using 31 different addresses.*
+*`src/lib/auth.ts`. Verified: blocked at attempt 31 using 31 different usernames.*
 
 ### 4. Changing a password did not revoke sessions
 
@@ -186,4 +186,13 @@ These predate the review and are waiting on the project, not on code:
 
 ---
 
-*Written 9 August 2026.*
+**Since this was written**, on 11 August 2026 the admin login moved from an
+email address to a **username**. Nothing was ever sent to that address — there
+is no reset by email, no notification, no verification — so it looked like a
+promise the site does not keep, and it tangled the login together with the
+project mailbox. `info@iresi.eu` now does exactly one job: receiving contact
+form messages.
+
+---
+
+*Written 9 August 2026, revised 11 August 2026.*

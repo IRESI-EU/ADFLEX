@@ -290,27 +290,27 @@ export async function signIn(
   _previous: ActionState,
   form: FormData,
 ): Promise<ActionState> {
-  const email = text(form, "email").toLowerCase();
+  const username = text(form, "username").toLowerCase();
   const password = String(form.get("password") ?? "");
 
-  if (!email || !password) return { error: "Enter your email and password." };
+  if (!username || !password) return { error: "Enter your username and password." };
 
   /*
-   * Counted against the email, the IP and the pair, independently — see
+   * Counted against the account, the IP and the pair, independently — see
    * `tooManyAttempts`. The single combined key this used to build could be
    * sidestepped by varying either half.
    */
   const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
 
-  if (tooManyAttempts(ip, email)) {
+  if (tooManyAttempts(ip, username)) {
     return { error: "Too many attempts. Wait fifteen minutes and try again." };
   }
 
   let row: { id: number; password_hash: string; session_version: number } | null = null;
   try {
     row = await queryOne<{ id: number; password_hash: string; session_version: number }>(
-      "SELECT id, password_hash, session_version FROM admin_users WHERE email = $1",
-      [email],
+      "SELECT id, password_hash, session_version FROM admin_users WHERE username = $1",
+      [username],
     );
   } catch (error) {
     console.error("[adflex] sign-in lookup failed:", error);
@@ -321,18 +321,18 @@ export async function signIn(
   }
 
   // Verify against a dummy hash when the account does not exist, so a missing
-  // email and a wrong password take the same time. Skipping the work here is
+  // unknown account and a wrong password take the same time. Skipping the work here is
   // how a login endpoint tells an attacker which addresses are real.
   const ok = row
     ? await verifyPassword(password, row.password_hash)
     : await verifyPassword(password, `scrypt$${"0".repeat(32)}$${"0".repeat(128)}`);
 
   if (!row || !ok) {
-    recordFailedAttempt(ip, email);
-    return { error: "That email and password do not match an account." };
+    recordFailedAttempt(ip, username);
+    return { error: "That username and password do not match an account." };
   }
 
-  clearAttempts(ip, email);
+  clearAttempts(ip, username);
 
   const store = await cookies();
   store.set(SESSION_COOKIE, createSessionToken(row.id, row.session_version), {

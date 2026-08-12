@@ -2,7 +2,7 @@ import "server-only";
 
 import nodemailer from "nodemailer";
 
-import { MAIL_SENDER, PROJECT_EMAIL } from "./site";
+import { CONTACT_EMAIL, MAIL_SENDER } from "./site";
 
 /**
  * Sending mail from the site. One sender, one purpose: the contact form.
@@ -21,7 +21,7 @@ import { MAIL_SENDER, PROJECT_EMAIL } from "./site";
  *    is outside the EEA, and a line in the policy. Sending through a mailbox
  *    the project already owns needs none of that.
  *  - **It works with what the project has.** IRESI already publishes
- *    `info@iresi.eu`. Any mailbox — institutional, Microsoft 365, Google
+ *    a project address already. Any mailbox — institutional, Microsoft 365, Google
  *    Workspace — can relay this. No new account, no card, no domain to verify.
  *
  * `nodemailer` is the one dependency, and it has no dependencies of its own.
@@ -51,7 +51,7 @@ type MailConfig = {
 
 /** Where contact form messages are sent. One line, in `site.ts`. */
 export function contactRecipient(): string {
-  return PROJECT_EMAIL.trim();
+  return CONTACT_EMAIL.trim();
 }
 
 /**
@@ -61,7 +61,7 @@ export function contactRecipient(): string {
  * ONE FILE FOR THE ADDRESSES, THE ENVIRONMENT FOR THE SECRET
  * ---------------------------------------------------------------------------
  * Everything that is not a secret — where messages go, which mailbox sends them,
- * the host and the port — comes from `PROJECT_EMAIL` and `MAIL_SENDER` in
+ * the host and the port — comes from `CONTACT_EMAIL` and `MAIL_SENDER` in
  * `site.ts`. No environment variable shadows them: there was an admin screen and
  * an env var for this at one point, and three places to look for one address is
  * how a site ends up mailing somewhere nobody expects.
@@ -76,13 +76,13 @@ function readConfig(): MailConfig | null {
   const host = MAIL_SENDER.host.trim();
   const recipient = contactRecipient();
   /*
-   * Blank means "send as the project address itself", which is the normal case:
-   * one mailbox, receiving its own site's mail. A value here is only for the
-   * arrangement where the site relays through a different account, and then the
-   * `From:` header has to follow it — a message sent as an address its mailbox
-   * cannot authenticate for is what SPF and DMARC reject.
+   * The sending mailbox is explicit — no falling back to the recipient. A
+   * default there would make `CONTACT_EMAIL` quietly do a second job, and the
+   * `From:` header has to follow whatever the site actually authenticates as:
+   * sending as an address its mailbox cannot authenticate for is what SPF and
+   * DMARC reject.
    */
-  const sender = MAIL_SENDER.address.trim() || recipient;
+  const sender = MAIL_SENDER.address.trim();
   const password = process.env.SMTP_PASSWORD || undefined;
 
   // No server, no sender, no recipient or no password means the site cannot

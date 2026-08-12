@@ -1,13 +1,18 @@
 /**
  * Creates or updates an editor account.
  *
- *   npm run db:user -- ann@mu.ie "Ann McKeon"
+ *   npm run db:user -- ann "Ann McKeon"
+ *
+ * The account is identified by a **username**, not an email address. Nothing is
+ * ever sent to it: there is no password reset by email, no notification and no
+ * verification, so an address here would only have looked like a promise the
+ * site does not keep.
  *
  * The password is asked for interactively and never appears in an argument, so
- * it does not land in shell history or a process list. Re-running for an email
- * that already exists resets that person's password, which is also how you
- * recover from a forgotten one — there is deliberately no reset flow on the web
- * surface.
+ * it does not land in shell history or a process list. Re-running for a username
+ * that already exists resets that person's password — which is also how you
+ * recover from a forgotten one, because there is deliberately no reset flow on
+ * the web surface — and signs out every session they had open.
  */
 import { createInterface } from "node:readline";
 import { scrypt as scryptCallback, randomBytes } from "node:crypto";
@@ -19,14 +24,26 @@ loadEnv();
 
 const scrypt = promisify(scryptCallback);
 
-const [email, name] = process.argv.slice(2);
+const [username, name] = process.argv.slice(2);
 
-if (!email || !name) {
-  console.error('Usage: npm run db:user -- <email> "<full name>"');
+if (!username || !name) {
+  console.error('Usage: npm run db:user -- <username> "<full name>"');
   process.exit(1);
 }
-if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-  console.error(`"${email}" does not look like an email address.`);
+
+/*
+ * Letters, digits, dot, underscore and hyphen; 3 to 64 characters.
+ *
+ * Deliberately narrow. The username is typed by hand into a login box, appears
+ * in log lines, and is compared in lower case — so spaces, quotes and anything
+ * that needs escaping are refused here rather than causing a puzzle later.
+ */
+if (!/^[a-zA-Z0-9._-]{3,64}$/.test(username)) {
+  console.error(
+    `"${username}" is not a valid username.\n\n` +
+      "Use 3 to 64 characters: letters, digits, dot, underscore or hyphen.\n" +
+      "It is a name to sign in with, not an email address.",
+  );
   process.exit(1);
 }
 if (!process.env.DATABASE_URL) {
@@ -168,17 +185,21 @@ try {
      * bumping it signs out every device immediately — which is the whole point
      * of changing a password you think someone else has.
      */
-    `INSERT INTO admin_users (email, name, password_hash)
+    `INSERT INTO admin_users (username, name, password_hash)
      VALUES ($1, $2, $3)
-     ON CONFLICT (email) DO UPDATE
+     ON CONFLICT (username) DO UPDATE
        SET name = EXCLUDED.name,
            password_hash = EXCLUDED.password_hash,
            session_version = admin_users.session_version + 1
      RETURNING id, (xmax = 0) AS created`,
-    [email.toLowerCase(), name, hash],
+    [username.toLowerCase(), name, hash],
   );
   const { id, created } = rows[0];
-  console.log(created ? `Created account #${id} for ${email}.` : `Updated the password for ${email}.`);
+  console.log(
+    created
+      ? `Created account #${id} for ${username.toLowerCase()}.`
+      : `Updated the password for ${username.toLowerCase()}.`,
+  );
   if (!created) console.log("Every existing session for that account has been signed out.");
   console.log("Sign in at /admin/login");
 } catch (error) {

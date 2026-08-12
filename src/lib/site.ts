@@ -67,59 +67,51 @@ export function canonical(path: string): { alternates?: { canonical: string } } 
   const url = absoluteUrl(path);
   return url ? { alternates: { canonical: url } } : {};
 }
+
 /* --------------------------------------------------------------------------
- * CONTACT FORM EMAIL  —  CHANGE IT HERE, AND ONLY HERE
+ * CONTACT FORM EMAIL
  * ----------------------------------------------------------------------- */
 
 /**
- * The project's address. Contact form messages are delivered to it, and sent
- * from it.
- *
- * One value doing both jobs, which is only possible because the site will sign
- * in to this same mailbox to send. If it ever has to relay through a *different*
- * account, set `MAIL_SENDER.address` below and the two separate cleanly.
+ * Where contact form messages are delivered. That is the whole of its job.
  *
  * ---------------------------------------------------------------------------
- * THE ADMIN LOGIN IS THE SAME ADDRESS, BUT NOT SET FROM HERE
+ * ONE ADDRESS, ONE PURPOSE
  * ---------------------------------------------------------------------------
- * Signing in needs a password, so that account lives in the database where its
- * hash can live with it — a source file is the wrong place for a credential.
- * Changing this line does not move the login. To bring it into step, run this
- * with the address from the line below:
+ * This is **not** the admin login — signing in uses a username, and nothing is
+ * ever sent to it. It is **not** the mailbox the site authenticates to either;
+ * that is `MAIL_SENDER` below, and it has to be filled in explicitly even when
+ * it happens to be the same address.
  *
- *     npm run db:user -- <the address below> "ADFLEX Editor"
- *
- * The address is deliberately not repeated in this comment. A worked example
- * with the current value baked in is a second copy that nobody updates, which is
- * the exact problem this constant exists to solve.
+ * Earlier versions let this one constant stand in for all three. It made the
+ * site look like it would email the admin account, which it never did, and it
+ * meant changing where enquiries go silently changed who could sign in. Doing
+ * one job is the point of it.
  */
-export const PROJECT_EMAIL = "info@iresi.eu";
+export const CONTACT_EMAIL = "info@iresi.eu";
 
 /**
- * The mail server, and optionally a different mailbox to send through.
+ * The mailbox the site signs into to send, and its server.
  *
  * ---------------------------------------------------------------------------
  * NOT FILLED IN YET — WAITING ON IRESI
  * ---------------------------------------------------------------------------
- * The site needs SMTP submission details for the address above: host, port,
- * username and password. That mailbox is hosted by Seeweb — `mail.iresi.eu`
- * resolves to `m-rb.th.seeweb.it` — so the host is very likely `mail.iresi.eu`
- * on port 587, but **confirm it with whoever administers IRESI's mail rather
- * than assuming it.** The request is written out in `handover/EMAIL-SETUP.md`.
+ * The site needs SMTP submission details: host, port, the mailbox to sign in as,
+ * and a password. `mail.iresi.eu` resolves to `m-rb.th.seeweb.it`, so the host is
+ * very likely `mail.iresi.eu` on port 587 — but **confirm it with whoever
+ * administers IRESI's mail rather than assuming.** The request to send them is
+ * written out in `handover/EMAIL-SETUP.md`.
  *
- * The address is not repeated here on purpose: a second copy in a comment is a
- * copy nobody updates.
+ * `address` is filled in even when it is the same as `CONTACT_EMAIL`. There is
+ * no "leave it blank and it defaults" shortcut, on purpose: a default would make
+ * `CONTACT_EMAIL` quietly do a second job, which is exactly what this file was
+ * reorganised to stop. The `From:` header follows this address, because a
+ * message must be sent as an address its mailbox is authorised to send as —
+ * that is what SPF and DMARC check.
  *
- * While `host` is empty the contact form works exactly as it always has: every
- * message goes to the admin dashboard instead of the mailbox. Nothing breaks.
- *
- * `address` is the mailbox the site signs into. **Leave it blank** and it uses
- * `PROJECT_EMAIL`, which is the intended arrangement — one address, sending to
- * itself. Only fill it in if IRESI provides a *separate* sending account, such
- * as a dedicated `website@iresi.eu`; the `From:` header follows it, because a
- * message must be sent as an address its mailbox is authorised to send as. That
- * is what SPF and DMARC check, and getting it wrong is how mail is silently
- * dropped or filed as spam.
+ * While any of these is empty the contact form works exactly as it always has:
+ * every message goes to the admin dashboard instead of a mailbox. Nothing
+ * breaks, and the Messages page says which state it is in.
  */
 export const MAIL_SENDER = {
   address: "",

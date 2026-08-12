@@ -76,7 +76,7 @@ export default async function AdminMessagesPage() {
             they are all landing here instead.
           </>
         )}{" "}
-        To change where they go, edit <code>PROJECT_EMAIL</code> in{" "}
+        To change where they go, edit <code>CONTACT_EMAIL</code> in{" "}
         <code>src/lib/site.ts</code> and restart the site. The mailbox they are
         sent <em>from</em> is a separate setting beside it,{" "}
         <code>MAIL_SENDER</code> — the site has to sign in to something, and that

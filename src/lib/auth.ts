@@ -26,7 +26,8 @@ const SCRYPT_KEYLEN = 64;
 
 export type AdminUser = {
   id: number;
-  email: string;
+  /** What is typed into the login box. Not an email address — see migration 003. */
+  username: string;
   name: string;
 };
 
@@ -179,7 +180,7 @@ export async function getCurrentUser(): Promise<AdminUser | null> {
 
   try {
     const row = await queryOne<AdminUser & { session_version: number }>(
-      "SELECT id, email, name, session_version FROM admin_users WHERE id = $1",
+      "SELECT id, username, name, session_version FROM admin_users WHERE id = $1",
       [claims.uid],
     );
     if (!row) return null;
@@ -193,7 +194,7 @@ export async function getCurrentUser(): Promise<AdminUser | null> {
      */
     if (row.session_version !== claims.sv) return null;
 
-    return { id: row.id, email: row.email, name: row.name };
+    return { id: row.id, username: row.username, name: row.name };
   } catch (error) {
     console.error("[adflex] session lookup failed:", error);
     return null;
@@ -232,21 +233,21 @@ const WINDOW_MS = 15 * 60 * 1000;
  * ---------------------------------------------------------------------------
  * WHY THE OLD ONE DID NOT WORK
  * ---------------------------------------------------------------------------
- * It counted against a single key of `<ip>:<email>`, which reads like a limit on
- * both and is a limit on neither. A new email address is a new key with a fresh
- * count, so one machine could keep guessing for ever by varying the address; and
- * one address could be attacked from many machines for the same reason. Raised
- * in the external review of 9 August 2026, correctly.
+ * It counted against a single key of `<ip>:<account>`, which reads like a limit
+ * on both and is a limit on neither. A different account name is a different key
+ * with a fresh count, so one machine could keep guessing for ever by varying it;
+ * and one account could be attacked from many machines for the same reason.
+ * Raised in the external review of 9 August 2026, correctly.
  *
  * Each dimension now has its own counter and its own ceiling, and a request is
  * refused if **any** of them is over:
  *
- *  - **email** — the tightest. Guessing one account's password is the attack
+ *  - **user** — the tightest. Guessing one account's password is the attack
  *    that matters, and a real person does not fail eight times on their own
- *    address.
+ *    account.
  *  - **ip** — looser, because a university NAT puts a whole building behind one
  *    address and a shared limit that is too tight locks out bystanders.
- *  - **ip+email** — the original pair, kept because it is the cheapest signal
+ *  - **ip+user** — the original pair, kept because it is the cheapest signal
  *    that one machine is working on one account.
  *
  * ---------------------------------------------------------------------------
@@ -259,15 +260,15 @@ const WINDOW_MS = 15 * 60 * 1000;
  * and written somewhere shared.
  */
 const LIMITS: ReadonlyArray<{ prefix: string; max: number }> = [
-  { prefix: "email", max: 8 },
+  { prefix: "user", max: 8 },
   { prefix: "ip", max: 30 },
   { prefix: "pair", max: 8 },
 ];
 
 /** The three keys a sign-in attempt counts against. */
-function keysFor(ip: string, email: string): string[] {
-  const address = email.toLowerCase();
-  return [`email:${address}`, `ip:${ip}`, `pair:${ip}:${address}`];
+function keysFor(ip: string, username: string): string[] {
+  const who = username.toLowerCase();
+  return [`user:${who}`, `ip:${ip}`, `pair:${ip}:${who}`];
 }
 
 function overLimit(key: string, now: number): boolean {
@@ -277,16 +278,16 @@ function overLimit(key: string, now: number): boolean {
   return record.count >= (limit?.max ?? 8);
 }
 
-export function tooManyAttempts(ip: string, email: string): boolean {
+export function tooManyAttempts(ip: string, username: string): boolean {
   const now = Date.now();
-  return keysFor(ip, email).some((key) => overLimit(key, now));
+  return keysFor(ip, username).some((key) => overLimit(key, now));
 }
 
 /**
  * Drops records whose window has closed.
  *
  * Without this the map only ever grows: the keys come from the request, so
- * anyone posting the login form with a fresh address each time adds an entry
+ * anyone posting the login form with a fresh account name each time adds an entry
  * that is never read again and never removed — `tooManyAttempts` ignores an
  * expired record but does not delete it, and `clearAttempts` only fires on a
  * *successful* sign-in, which an attacker never reaches. A few million failed
@@ -301,11 +302,11 @@ function pruneExpired(now: number): void {
   }
 }
 
-export function recordFailedAttempt(ip: string, email: string): void {
+export function recordFailedAttempt(ip: string, username: string): void {
   const now = Date.now();
   pruneExpired(now);
 
-  for (const key of keysFor(ip, email)) {
+  for (const key of keysFor(ip, username)) {
     const record = attempts.get(key);
     if (!record || now - record.first > WINDOW_MS) {
       attempts.set(key, { count: 1, first: now });
@@ -324,10 +325,10 @@ export function recordFailedAttempt(ip: string, email: string): void {
  * button: fail twenty times, sign in once with an account they do own, start
  * again.
  */
-export function clearAttempts(ip: string, email: string): void {
-  const address = email.toLowerCase();
-  attempts.delete(`email:${address}`);
-  attempts.delete(`pair:${ip}:${address}`);
+export function clearAttempts(ip: string, username: string): void {
+  const who = username.toLowerCase();
+  attempts.delete(`user:${who}`);
+  attempts.delete(`pair:${ip}:${who}`);
 }
 
 /* --------------------------------------------------------------------------

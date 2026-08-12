@@ -75,7 +75,7 @@ file that is not in the repository.
 
 ```bash
 npm run db:setup                              # creates the tables
-npm run db:user -- ann@mu.ie "Ann McKeon"     # asks for a password
+npm run db:user -- ann "Ann McKeon"           # asks for a password
 ```
 
 `db:setup` applies any migration in `migrations/` the database has not seen
@@ -90,7 +90,7 @@ file will not run again.
 
 `db:user` asks for the password interactively rather than taking it as an
 argument, so it never lands in shell history or a process list. Running it again
-for an existing email **resets that person's password** — that is also the
+for an existing username **resets that person's password** — that is also the
 password reset flow, because there deliberately isn't one on the web.
 
 ### 2.4 Deploying
@@ -512,45 +512,59 @@ admin **only when that email could not be sent** — so that page is a failure
 queue, not an archive: anything on it did not reach the mailbox and still needs
 answering.
 
+### Signing in
+
+**The admin uses a username and a password. Not an email address.**
+
+Nothing is ever sent to the account: there is no password reset by email, no
+notification and no verification. An address there would have looked like a
+promise the site does not keep, and it would have tangled the login up with the
+project's real mailbox — change one and you would have changed the other.
+
+Add or change an account:
+
+```
+npm run db:user -- <username> "<full name>"
+```
+
+A username is 3 to 64 characters: letters, digits, dot, underscore or hyphen. It
+is compared without case, so `ADFLEX` and `adflex` are the same account.
+
+The command asks for a password, creates the account if it is new, and **signs
+out every existing session for that account** if it is not. That is also the
+password reset, because there deliberately is not one on the web.
+
+Accounts live in the database, not in a file — a password belongs with its hash,
+and neither belongs in source control.
+
 ### Changing where contact messages go
 
-Two settings, both in `src/lib/site.ts`, and they are deliberately separate:
+Two settings, both in `src/lib/site.ts`, and each does exactly one job:
 
 | Setting | What it is |
 | --- | --- |
-| `PROJECT_EMAIL` | **Where messages are delivered.** The project address, published on the contact page. |
+| `CONTACT_EMAIL` | **Where messages are delivered.** The project address, and the one published on the contact page. |
 | `MAIL_SENDER` | **The mailbox the site signs into to send them**, plus its server and port. Appears as the `From:` address. |
 
-They are not the same address, and that is not an oversight. Messages go to an
-`iresi.eu` address; the only mailbox the site can currently authenticate to is
-at Maynooth. Those are two different mail systems, so the site sends *from* the
-Maynooth account and *delivers to* IRESI — which is ordinary, and is what SPF
-and DMARC require. Sending as an address you cannot authenticate for is exactly
-what they exist to reject.
+**`CONTACT_EMAIL` is used for nothing else.** Not the login, not the sender. It
+stood in for all three at one point, which made changing where enquiries go
+silently change who could sign in.
 
-The visitor goes in `Reply-To`, so replying from the project mailbox answers
-them directly.
+`MAIL_SENDER.address` has to be filled in even when it is the same address as
+`CONTACT_EMAIL`. There is no "leave it blank and it defaults" shortcut, on
+purpose — a default is how one value quietly starts doing two jobs again.
 
-If IRESI ever supplies SMTP credentials for `info@iresi.eu`, point `MAIL_SENDER`
-at it and the two collapse into one.
-
-**The admin login is separate from both.** It is an account in the database, not
-a line in a file, because signing in needs a password and a password does not
-belong in source. Add or change one with:
-
-```
-npm run db:user -- <address> "<name>"
-```
-
-It asks for a password, creates the account if it is new, and **signs out every
-existing session for that account** if it is not.
+The `From:` header follows `MAIL_SENDER.address` because a message has to be
+sent as an address its mailbox is authorised to send as. That is what SPF and
+DMARC check, and getting it wrong is how mail is silently dropped or filed as
+spam. The visitor goes in `Reply-To`, so replying answers them directly.
 
 ### What still lives in the environment
 
-**`SMTP_PASSWORD`, and nothing else.** The mail server host and port sit beside
-the address in `src/lib/site.ts`; only the password is in `.env.local`, because
-that file is gitignored and a credential in a source file is a credential in the
-git history for good.
+**`SMTP_PASSWORD`, and nothing else.** The addresses, the mail server host and
+the port all sit in `src/lib/site.ts`; only the password is in `.env.local`,
+because that file is gitignored and a credential in a source file is a credential
+in the git history for good.
 
 Gmail and Microsoft 365 both reject the ordinary account password over SMTP — it
 has to be an app password, or an account with SMTP AUTH switched on.

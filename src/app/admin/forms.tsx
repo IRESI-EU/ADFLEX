@@ -583,15 +583,25 @@ export function LoginForm() {
       <Banner state={state} />
 
       <p className={styles.field}>
-        <label className={styles.label} htmlFor="email">
-          Email <Required />
+        <label className={styles.label} htmlFor="username">
+          Username <Required />
         </label>
+        {/*
+         * `type="text"`, not `type="email"`. The account is identified by a
+         * username, and an email input would refuse to submit anything without
+         * an @ in it — telling an editor their correct username is malformed.
+         *
+         * `autoComplete="username"` is unchanged and is the right value either
+         * way: it is what tells a password manager which field to fill.
+         */}
         <input
-          id="email"
+          id="username"
           className={styles.input}
-          type="email"
-          name="email"
+          type="text"
+          name="username"
           autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
           required
         />
       </p>

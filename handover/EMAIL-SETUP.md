@@ -75,8 +75,8 @@ This is the expected case. Two lines.
 
 ```ts
 export const MAIL_SENDER = {
-  address: "",              // leave blank: it means "the project address itself"
-  host: "mail.iresi.eu",    // whatever IRESI confirms
+  address: "info@iresi.eu",  // the mailbox the site signs in as
+  host: "mail.iresi.eu",     // whatever IRESI confirms
   port: 587,
 };
 ```
@@ -102,7 +102,7 @@ export const MAIL_SENDER = {
 };
 ```
 
-`PROJECT_EMAIL` stays `info@iresi.eu` — that is where messages are *delivered*.
+`CONTACT_EMAIL` stays `info@iresi.eu` — that is where messages are *delivered*.
 The `From:` header follows `MAIL_SENDER.address`, because a message has to be
 sent as an address its mailbox is authorised to send as. The visitor's own
 address goes in `Reply-To` either way, so replying answers them directly.
