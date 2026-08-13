@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   basePath: repositoryBasePath,
   assetPrefix: repositoryBasePath,
+  env: { NEXT_PUBLIC_BASE_PATH: repositoryBasePath },
   images: { unoptimized: true },
   /**
    * `X-Powered-By: Next.js` on every response names the framework and, by
