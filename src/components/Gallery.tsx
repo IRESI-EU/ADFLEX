@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ImageSize, MediaRef } from "@/lib/repo";
+import type { ImageSize, MediaRef } from "@/content/published";
 import styles from "./Gallery.module.css";
 
 /**
@@ -198,7 +198,7 @@ export function Gallery({
             <a
               ref={(node) => { triggersRef.current[index] = node; }}
               className={styles.trigger}
-              href={`/media/${image.id}`}
+              href={image.src}
               aria-label={
                 image.alt
                   ? `View “${image.alt}” at full size`
@@ -216,7 +216,7 @@ export function Gallery({
                   source or a configured loader, and this route has neither. */}
               <img
                 className={styles.image}
-                src={`/media/${image.id}`}
+                src={image.src}
                 alt={image.alt}
                 width={image.width ?? undefined}
                 height={image.height ?? undefined}
@@ -328,7 +328,7 @@ export function Gallery({
               {/* eslint-disable-next-line @next/next/no-img-element -- as above */}
               <img
                 className={styles.lightboxImage}
-                src={`/media/${current.id}`}
+                src={current.src}
                 alt={current.alt}
                 width={current.width ?? undefined}
                 height={current.height ?? undefined}

@@ -18,29 +18,20 @@ import type { NextConfig } from "next";
  * The four below have no such trade-off: they are inert for a site that frames
  * nothing, embeds nothing and asks for no device permissions.
  */
-const securityHeaders = [
-  // Stops a browser second-guessing a declared Content-Type — the defence
-  // against a stored file being sniffed as HTML and executed.
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  // Send the full URL to ourselves, origin only to anyone else. Keeps admin
-  // paths and query strings out of third-party referer logs.
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  // Nothing here is meant to be framed, and the admin least of all.
-  { key: "X-Frame-Options", value: "SAMEORIGIN" },
-  // The site asks for none of these, so nothing is given up by refusing them.
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
-];
+const isGitHubPages = process.env.GITHUB_ACTIONS === "true";
+const repositoryBasePath = isGitHubPages ? "/ADFLEX" : "";
 
 const nextConfig: NextConfig = {
+  output: "export",
+  trailingSlash: true,
+  basePath: repositoryBasePath,
+  assetPrefix: repositoryBasePath,
+  images: { unoptimized: true },
   /**
    * `X-Powered-By: Next.js` on every response names the framework and, by
    * extension, the CVE list worth trying. It buys nothing.
    */
   poweredByHeader: false,
-
-  async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
-  },
 
   experimental: {
     /**
@@ -76,27 +67,6 @@ const nextConfig: NextConfig = {
      * because nothing here will fail a build if it silently stops working.
      */
     appNewScrollHandler: true,
-    serverActions: {
-      /**
-       * Raised from Next's 1 MB default so image uploads reach our own checks.
-       *
-       * **This must stay above `MAX_UPLOAD_TOTAL_BYTES`, not
-       * `MAX_UPLOAD_BYTES`.** A Server Action receives every chosen file in one
-       * request body, so the number that matters is the total, not the largest
-       * file. This was 6 MB — sized for a single 5 MB image — and stayed that
-       * way when multi-image upload was added, so three 3 MB photographs
-       * tripped the framework limit and produced a runtime error page instead
-       * of a readable message.
-       *
-       * 22 MB leaves ~2 MB of headroom over the 20 MB total for multipart
-       * boundaries, part headers and the other form fields, which keeps
-       * `readUploads()` — and its readable error — the thing that refuses an
-       * oversized batch.
-       *
-       * Raise `MAX_UPLOAD_TOTAL_BYTES` and this together, or neither.
-       */
-      bodySizeLimit: "22mb",
-    },
   },
 };
 

@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { adflexContent } from "@/content/adflex";
 import { siteUrl } from "@/lib/site";
 
+export const dynamic = "force-static";
+
 /**
  * `/sitemap.xml`.
  *

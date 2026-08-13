@@ -5,11 +5,10 @@ import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { PageHero } from "@/components/PageHero";
 import { AwaitingContent } from "@/components/AwaitingContent";
-import { TemporarilyUnavailable } from "@/components/TemporarilyUnavailable";
 import { NewsList } from "@/components/PublishedList";
 import listStyles from "@/components/PublishedList.module.css";
 import newsStyles from "./news.module.css";
-import { isEvent, listPublishedNewsStatus } from "@/lib/repo";
+import { isEvent, newsItems } from "@/content/published";
 
 const { brand, navigation, news } = adflexContent;
 
@@ -34,11 +33,9 @@ export const metadata: Metadata = {
  * lands on it, and on a publicly funded project site that is a false statement
  * rather than a design detail.
  */
-export const dynamic = "force-dynamic";
-
-export default async function NewsPage() {
+export default function NewsPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
-  const { data: items, degraded } = await listPublishedNewsStatus();
+  const items = newsItems;
 
   /*
    * News and events are stored in one table and shown in two sections.
@@ -99,8 +96,6 @@ export default async function NewsPage() {
               ) : null}
             </div>
           </div>
-        ) : degraded ? (
-          <TemporarilyUnavailable what="News and events" />
         ) : (
           <AwaitingContent page={news} />
         )}
@@ -109,4 +104,3 @@ export default async function NewsPage() {
     </>
   );
 }
-

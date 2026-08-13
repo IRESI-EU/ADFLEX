@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { adflexContent, resolveNavigation } from "@/content/adflex";
 import { canonical } from "@/lib/site";
-import { getNextUpcomingEvent } from "@/lib/repo";
+import { nextUpcomingEvent } from "@/content/published";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexHero } from "@/components/AdflexHero";
 import { SectionShell } from "@/components/SectionShell";
@@ -46,7 +46,7 @@ export default async function HomePage() {
    * of the page. `safeRead` inside means this is `null` with no database, so
    * the home page is unchanged on a deployment that has none.
    */
-  const upcomingEvent = await getNextUpcomingEvent();
+  const upcomingEvent = nextUpcomingEvent();
   const aboutGlimpse = about.items.find((item) => item.id === about.home.itemId);
 
   return (
