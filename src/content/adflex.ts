@@ -33,6 +33,8 @@ export type ImageAsset = {
   height: number;
 };
 
+const publicAsset = (path: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${path}`;
+
 export type HeroContent = {
   tags: readonly string[];
   headline: string;
@@ -370,7 +372,7 @@ export const adflexContent = {
 
   brand: {
     logo: {
-      src: "/images/adflex/adflex-logo.png",
+      src: publicAsset("/images/adflex/adflex-logo.png"),
       alt: "ADFLEX — Local Energy Flexibility",
       width: 3790,
       height: 1148,
@@ -433,7 +435,7 @@ export const adflexContent = {
       // Kept as PNG rather than re-encoded to JPEG like the photographic
       // imagery: this diagram carries fine light text on a dark background,
       // where JPEG ringing would show. next/image still serves it as WebP.
-      src: "/images/adflex/adflex-system-concept.png",
+      src: publicAsset("/images/adflex/adflex-system-concept.png"),
       alt: "ADFLEX system concept. Digital Spine middleware sits at the centre, linked to rooftop solar PV and battery, a heat pump, an immersion heater and an EV charger, and to a digital twin, an aggregator in a market role, ESB Networks as distribution system operator, and the main grid. Red arrows show power flow and blue arrows show data and control signals.",
       width: 1672,
       height: 941,
@@ -495,7 +497,7 @@ export const adflexContent = {
         description:
           "The data backbone of the project. It connects heat pumps, EV chargers, batteries and PV systems to grid stakeholders through standards-based, interoperable data exchange, so devices from different manufacturers can be coordinated without custom integration work for each one.",
         image: {
-          src: "/images/technologies/digital-spine.png",
+          src: publicAsset("/images/technologies/digital-spine.png"),
           alt: "",
           width: 1672,
           height: 941,
@@ -507,7 +509,7 @@ export const adflexContent = {
         description:
           "A virtual replica of the pilot buildings and local network, used to model how changes in heating, charging or storage behaviour affect both resident comfort and grid load, before those changes are rolled out physically.",
         image: {
-          src: "/images/technologies/digital-twin.png",
+          src: publicAsset("/images/technologies/digital-twin.png"),
           alt: "",
           width: 1672,
           height: 941,
@@ -519,7 +521,7 @@ export const adflexContent = {
         description:
           "Pricing mechanisms that let flexibility translate into a tangible benefit for residents, giving communities a reason to shift consumption in response to grid conditions rather than just a technical capability to do so.",
         image: {
-          src: "/images/technologies/smart-tariffs.png",
+          src: publicAsset("/images/technologies/smart-tariffs.png"),
           alt: "",
           width: 1672,
           height: 941,
@@ -531,7 +533,7 @@ export const adflexContent = {
         description:
           "ADFLEX uses data spaces, secure, agreed environments for exchanging energy data, so information from the pilot can be trusted, compared and reused by other communities, grid operators and researchers working on flexibility elsewhere.",
         image: {
-          src: "/images/technologies/data-spaces.png",
+          src: publicAsset("/images/technologies/data-spaces.png"),
           alt: "",
           width: 1672,
           height: 941,
@@ -595,7 +597,7 @@ export const adflexContent = {
         id: "iresi",
         name: "IRESI",
         logo: {
-          src: "/images/partners/iresi.png",
+          src: publicAsset("/images/partners/iresi.png"),
           alt: "",
           width: 1094,
           height: 291,
@@ -605,7 +607,7 @@ export const adflexContent = {
         id: "maynooth-university",
         name: "Maynooth University",
         logo: {
-          src: "/images/partners/maynooth-university.png",
+          src: publicAsset("/images/partners/maynooth-university.png"),
           alt: "",
           width: 436,
           height: 197,
@@ -615,7 +617,7 @@ export const adflexContent = {
         id: "university-college-dublin",
         name: "University College Dublin (UCD)",
         logo: {
-          src: "/images/partners/university-college-dublin.png",
+          src: publicAsset("/images/partners/university-college-dublin.png"),
           alt: "",
           width: 182,
           height: 263,
@@ -625,7 +627,7 @@ export const adflexContent = {
         id: "arden-energy",
         name: "Arden Energy",
         logo: {
-          src: "/images/partners/arden-energy.png",
+          src: publicAsset("/images/partners/arden-energy.png"),
           alt: "",
           width: 302,
           height: 71,
@@ -645,23 +647,23 @@ export const adflexContent = {
       {
         id: "heat-pumps",
         label: "Heat pumps",
-        icon: { src: "/images/pilot-icons/heat-pumps.png", alt: "", width: 1536, height: 1024 },
+        icon: { src: publicAsset("/images/pilot-icons/heat-pumps.png"), alt: "", width: 1536, height: 1024 },
       },
       {
         id: "ev-charging",
         label: "Electric vehicles and EV charging",
-        icon: { src: "/images/pilot-icons/ev-charging.png", alt: "", width: 1536, height: 1024 },
+        icon: { src: publicAsset("/images/pilot-icons/ev-charging.png"), alt: "", width: 1536, height: 1024 },
       },
       {
         id: "solar-pv",
         label: "Solar PV",
-        icon: { src: "/images/pilot-icons/solar-pv.png", alt: "", width: 1536, height: 1024 },
+        icon: { src: publicAsset("/images/pilot-icons/solar-pv.png"), alt: "", width: 1536, height: 1024 },
       },
       {
         id: "combined-heat-and-power",
         label: "Combined heat and power",
         icon: {
-          src: "/images/pilot-icons/combined-heat-and-power.png",
+          src: publicAsset("/images/pilot-icons/combined-heat-and-power.png"),
           alt: "",
           width: 1536,
           height: 1024,
@@ -670,13 +672,13 @@ export const adflexContent = {
       {
         id: "digital-spine",
         label: "Digital Spine",
-        icon: { src: "/images/pilot-icons/digital-spine.png", alt: "", width: 1536, height: 1024 },
+        icon: { src: publicAsset("/images/pilot-icons/digital-spine.png"), alt: "", width: 1536, height: 1024 },
       },
       {
         id: "arden-energy-platform",
         label: "Arden Energy’s platform",
         icon: {
-          src: "/images/pilot-icons/arden-energy-platform.png",
+          src: publicAsset("/images/pilot-icons/arden-energy-platform.png"),
           alt: "",
           width: 1536,
           height: 1024,
@@ -685,11 +687,11 @@ export const adflexContent = {
       {
         id: "esb-networks",
         label: "ESB Networks’ Beat the Peak programme",
-        icon: { src: "/images/pilot-icons/esb-networks.png", alt: "", width: 1536, height: 1024 },
+        icon: { src: publicAsset("/images/pilot-icons/esb-networks.png"), alt: "", width: 1536, height: 1024 },
       },
     ],
     image: {
-      src: "/images/pilot/ringsend-pilot.png",
+      src: publicAsset("/images/pilot/ringsend-pilot.png"),
       alt: "",
       width: 1672,
       height: 941,
@@ -1078,7 +1080,7 @@ export const adflexContent = {
     funding: {
       statement: "Funded by SEAI.",
       emblem: {
-        src: "/images/funded-logo/seai-logo.png",
+        src: publicAsset("/images/funded-logo/seai-logo.png"),
         alt: "Sustainable Energy Authority of Ireland",
         width: 1552,
         height: 415,
