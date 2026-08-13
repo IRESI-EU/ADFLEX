@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import type { ImageAsset, NavigationItem } from "@/content/adflex";
+import { publicPath, type ImageAsset, type NavigationItem } from "@/content/adflex";
 import { NavLink } from "./NavLink";
 import styles from "./AdflexHeader.module.css";
 
@@ -104,7 +104,10 @@ export function AdflexHeader({
       className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""}`}
     >
       <div className={`adflex-container ${styles.inner}`}>
-        <a className={styles.logoLink} href={homeHref}>
+        <a
+          className={styles.logoLink}
+          href={homeHref.startsWith("/") ? publicPath(homeHref) : homeHref}
+        >
           <Image
             className={styles.logo}
             src={logo.src}
