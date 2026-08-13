@@ -5,12 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "npx serve out",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run build && npm run typecheck",
-    "db:setup": "node scripts/db-setup.mjs",
-    "db:user": "node scripts/db-user.mjs"
+    "check": "npm run lint && npm run build && npm run typecheck"
   },
   "dependencies": {
     "next": "16.2.12",

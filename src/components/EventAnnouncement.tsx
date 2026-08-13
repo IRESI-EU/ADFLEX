@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { NewsItem } from "@/lib/repo";
+import type { NewsItem } from "@/content/published";
 import styles from "./EventAnnouncement.module.css";
 
 /**

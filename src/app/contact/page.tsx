@@ -4,13 +4,10 @@ import { canonical } from "@/lib/site";
 import { AdflexHeader } from "@/components/AdflexHeader";
 import { AdflexFooter } from "@/components/AdflexFooter";
 import { ContactBlock } from "@/components/ContactBlock";
-import { ContactForm } from "@/components/ContactForm";
 import { PageHero } from "@/components/PageHero";
-import { isDatabaseConfigured } from "@/lib/db";
-import { isMailConfigured } from "@/lib/mail";
 import styles from "./contact.module.css";
 
-const { brand, navigation, contact, contactForm } = adflexContent;
+const { brand, navigation, contact } = adflexContent;
 
 export const metadata: Metadata = {
   title: contact.title,
@@ -29,8 +26,6 @@ export const metadata: Metadata = {
  * built: disabled, with the note saying so. The email address beside it is the
  * working route either way.
  */
-export const dynamic = "force-dynamic";
-
 export default function ContactPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
   /*
@@ -41,8 +36,6 @@ export default function ContactPage() {
    * configured and no database has a perfectly good contact form — and one with
    * a database and no SMTP still has the one it always had.
    */
-  const formEnabled = isMailConfigured() || isDatabaseConfigured();
-
   return (
     <>
       <AdflexHeader logo={brand.logo} navigation={nav} homeHref="/" />
@@ -57,7 +50,6 @@ export default function ContactPage() {
         <div className={styles.body}>
           <div className={`adflex-container ${styles.layout}`}>
             <ContactBlock contact={contact} showIntro={false} />
-            <ContactForm form={contactForm} enabled={formEnabled} />
           </div>
         </div>
       </main>
@@ -66,4 +58,3 @@ export default function ContactPage() {
     </>
   );
 }
-

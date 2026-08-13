@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { PageHero } from "@/components/PageHero";
 import { FindingList, PublicationList } from "@/components/PublishedList";
 import listStyles from "@/components/PublishedList.module.css";
-import { listPublishedFindingsStatus, listPublishedPublicationsStatus } from "@/lib/repo";
+import { findings, publications } from "@/content/published";
 import styles from "./outcomes.module.css";
 
 const { brand, navigation, outcomes } = adflexContent;
@@ -33,22 +33,10 @@ export const metadata: Metadata = {
  * publications, dates, DOIs or download links. The difference is only that real
  * ones now arrive from an editor instead of a commit.
  */
-export const dynamic = "force-dynamic";
-
-export default async function OutcomesPage() {
+export default function OutcomesPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
 
-  const [findingsRead, publicationsRead] = await Promise.all([
-    listPublishedFindingsStatus(),
-    listPublishedPublicationsStatus(),
-  ]);
-
-  const findings = findingsRead.data;
-  const publications = publicationsRead.data;
   const hasContent = findings.length > 0 || publications.length > 0;
-  // Either read failing means the page cannot claim the project has published
-  // nothing — see TemporarilyUnavailable.
-  const degraded = findingsRead.degraded || publicationsRead.degraded;
 
   return (
     <>
@@ -86,12 +74,6 @@ export default async function OutcomesPage() {
                   </section>
                 ) : null}
               </>
-            ) : degraded ? (
-              <EmptyState
-                heading="Temporarily unavailable"
-                body="Project outcomes cannot be loaded at the moment. This is a temporary problem at our end, not a change to the project — please try again shortly."
-                headingLevel="h2"
-              />
             ) : (
               /* h2 because it sits directly under the page h1 — using the
                  default h3 here would skip a heading level. */
@@ -109,5 +91,4 @@ export default async function OutcomesPage() {
     </>
   );
 }
-
 

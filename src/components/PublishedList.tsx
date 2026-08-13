@@ -5,8 +5,8 @@ import type {
   MediaRef,
   NewsItem,
   Publication,
-} from "@/lib/repo";
-import { doiUrl, fileKind, fileSize, isEvent } from "@/lib/repo";
+} from "@/content/published";
+import { doiUrl, fileKind, fileSize, isEvent } from "@/content/published";
 import { Gallery } from "./Gallery";
 import styles from "./PublishedList.module.css";
 
@@ -143,7 +143,7 @@ function Downloads({ files }: { files: FileRef[] }) {
     <ul className={styles.downloads}>
       {files.map((file) => (
         <li key={file.id}>
-          <a className={`adflex-link ${styles.download}`} href={`/files/${file.id}`} download>
+          <a className={`adflex-link ${styles.download}`} href={file.href} download>
             {/*
              * The format is shown once, as the tag, and said once, in the
              * hidden text. Printing it in the tag *and* again beside the size
