@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ImageSize, MediaRef } from "@/content/published";
+import { publicPath } from "@/lib/site";
 import styles from "./Gallery.module.css";
 
 /**
@@ -13,12 +14,12 @@ import styles from "./Gallery.module.css";
  * Two inputs, and neither is guessed:
  *
  * **The chosen size** (`small` / `medium` / `large`) sets how much room the
- * images get — a narrow column beside the text, a wider one, or a wide block
+ * images get â€” a narrow column beside the text, a wider one, or a wide block
  * above it. That is the editor's call, stored on the entry.
  *
  * **The number of images** sets how many go across, via `columnsFor` below.
  * That count is then capped by how wide the column actually is, using container
- * queries in the stylesheet — so the same gallery is three across in a wide
+ * queries in the stylesheet â€” so the same gallery is three across in a wide
  * block and one across in a narrow one, without the component knowing anything
  * about screen sizes.
  *
@@ -34,9 +35,9 @@ import styles from "./Gallery.module.css";
  * makes a gallery look unfinished. Three go three-across rather than two-plus-
  * one; four go two-by-two rather than three-plus-one; nine go three-by-three.
  *
- *   1→1  2→2  3→3  4→2x2  5→3+2  6→3+3  7→4+3  8→4+4  9→3x3  10+→4
+ *   1â†’1  2â†’2  3â†’3  4â†’2x2  5â†’3+2  6â†’3+3  7â†’4+3  8â†’4+4  9â†’3x3  10+â†’4
  *
- * A shorter last row is fine — the stylesheet centres it — so the only thing
+ * A shorter last row is fine â€” the stylesheet centres it â€” so the only thing
  * being avoided here is a row of one.
  */
 export function columnsFor(count: number): number {
@@ -115,8 +116,8 @@ export function Gallery({
   /**
    * Only ever asks the dialog to close.
    *
-   * Everything that has to happen afterwards — clearing the index, returning
-   * focus — lives in `onClose`, because a `<dialog>` can also be dismissed by
+   * Everything that has to happen afterwards â€” clearing the index, returning
+   * focus â€” lives in `onClose`, because a `<dialog>` can also be dismissed by
    * Escape, which does not come through here. Doing the tidying in both places
    * meant Escape left focus on `<body>`, so a keyboard user had to tab from the
    * top of the page again.
@@ -162,7 +163,7 @@ export function Gallery({
        * One image across, swipeable, once there is more than one.
        *
        * The gallery used to tile every image into a grid, which meant four
-       * images each rendered at a quarter of the column — too small to read a
+       * images each rendered at a quarter of the column â€” too small to read a
        * chart in, and nothing like the size a single image gets. Now every
        * image is shown at the same full width of its column and the set is
        * swiped through instead.
@@ -182,7 +183,7 @@ export function Gallery({
           ? {
               tabIndex: 0,
               role: "group" as const,
-              "aria-label": `${images.length} images — scroll or use the arrows`,
+              "aria-label": `${images.length} images â€” scroll or use the arrows`,
             }
           : {})}
         onScroll={images.length > 1 ? onTrackScroll : undefined}
@@ -198,10 +199,10 @@ export function Gallery({
             <a
               ref={(node) => { triggersRef.current[index] = node; }}
               className={styles.trigger}
-              href={image.src}
+              href={publicPath(image.src)}
               aria-label={
                 image.alt
-                  ? `View “${image.alt}” at full size`
+                  ? `View â€œ${image.alt}â€ at full size`
                   : `View image ${index + 1} of ${images.length} at full size`
               }
               onClick={(event) => {
@@ -216,7 +217,7 @@ export function Gallery({
                   source or a configured loader, and this route has neither. */}
               <img
                 className={styles.image}
-                src={image.src}
+                src={publicPath(image.src)}
                 alt={image.alt}
                 width={image.width ?? undefined}
                 height={image.height ?? undefined}
@@ -242,7 +243,7 @@ export function Gallery({
        * holding their own state, so the track stays the single source of truth
        * for which image is showing.
        *
-       * The dots are buttons, not decoration — jumping straight to the fourth
+       * The dots are buttons, not decoration â€” jumping straight to the fourth
        * of six is a real thing to want, and a row of undifferentiated dots that
        * cannot be clicked is a common and pointless piece of theatre.
        */}
@@ -255,7 +256,7 @@ export function Gallery({
             disabled={slide === 0}
             aria-label="Previous image"
           >
-            <span aria-hidden="true">‹</span>
+            <span aria-hidden="true">â€¹</span>
           </button>
 
           <ol className={styles.dots}>
@@ -279,7 +280,7 @@ export function Gallery({
             disabled={slide === images.length - 1}
             aria-label="Next image"
           >
-            <span aria-hidden="true">›</span>
+            <span aria-hidden="true">â€º</span>
           </button>
         </div>
       ) : null}
@@ -321,14 +322,14 @@ export function Gallery({
                   onClick={() => step(-1)}
                   aria-label="Previous image"
                 >
-                  <span aria-hidden="true">‹</span>
+                  <span aria-hidden="true">â€¹</span>
                 </button>
               ) : null}
 
               {/* eslint-disable-next-line @next/next/no-img-element -- as above */}
               <img
                 className={styles.lightboxImage}
-                src={current.src}
+                src={publicPath(current.src)}
                 alt={current.alt}
                 width={current.width ?? undefined}
                 height={current.height ?? undefined}
@@ -341,7 +342,7 @@ export function Gallery({
                   onClick={() => step(1)}
                   aria-label="Next image"
                 >
-                  <span aria-hidden="true">›</span>
+                  <span aria-hidden="true">â€º</span>
                 </button>
               ) : null}
             </div>

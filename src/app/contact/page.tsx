@@ -15,27 +15,10 @@ export const metadata: Metadata = {
   ...canonical("/contact"),
 };
 
-/**
- * Contact details on their own route.
- *
- * Section anchors in the navigation only resolve on the home page, so they are
- * resolved here with `onHome: false`.
- *
- * Rendered per request only so the form knows whether a submission has anywhere
- * to go. With neither route it renders exactly as it did before the admin was
- * built: disabled, with the note saying so. The email address beside it is the
- * working route either way.
- */
+/** Static contact details; enquiries use the published mailto address. */
 export default function ContactPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
-  /*
-   * Either route will do.
-   *
-   * The form used to need a database, because the database was the only place a
-   * message could land. Now that a submission is emailed first, a site with SMTP
-   * configured and no database has a perfectly good contact form — and one with
-   * a database and no SMTP still has the one it always had.
-   */
+
   return (
     <>
       <AdflexHeader logo={brand.logo} navigation={nav} homeHref="/" />

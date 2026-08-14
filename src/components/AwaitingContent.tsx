@@ -7,29 +7,13 @@ type AwaitingContentProps = {
   page: AwaitingContentPage;
 };
 
-/**
- * Body for a route that exists structurally but has no approved content yet —
- * News, Events and the three legal pages.
- *
- * It states plainly that nothing is published rather than showing sample
- * entries. A placeholder news post or a specimen privacy policy reads as real
- * the moment someone lands on it, and on a publicly funded project site that is a
- * false statement, not a design detail.
- *
- * The `h2` sits directly under the page `h1` from `PageHero`, so `EmptyState`
- * is told to render at that level rather than its default `h3`.
- */
+/** Honest empty state for a route that has no approved published entries yet. */
 export function AwaitingContent({ page }: AwaitingContentProps) {
   return (
     <div className={styles.body}>
       <div className="adflex-container">
         <EmptyState heading={page.heading} body={page.body} headingLevel="h2" />
 
-        {/* Points at the contact page rather than opening a mail client.
-            A bare `mailto:` assumes a configured desktop mail app, which most
-            visitors on a phone or in webmail do not have — the link appeared to
-            do nothing. The contact page carries the same address as visible,
-            copyable text *and* the form, so it works either way. */}
         <p className={styles.contact}>
           In the meantime,{" "}
           <Link className="adflex-link" href="/contact">

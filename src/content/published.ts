@@ -1,8 +1,9 @@
 /**
- * Public news, events and outcomes stored in Git instead of PostgreSQL.
+ * Git-backed public news, events and project outcomes.
  *
  * Add reviewed entries to these arrays and place their images/documents under
- * `public/content/`. A merge to `main` rebuilds and publishes the site.
+ * `public/content/`. A merge to `main` rebuilds and publishes the static site.
+ * See docs/PUBLISHING.md before changing these records.
  */
 export type ImageSize = "small" | "medium" | "large";
 export type NewsKind = "news" | "event" | "upcoming";
@@ -63,9 +64,12 @@ export type NewsItem = {
   slots_filled: boolean;
   event_outcome: string;
   event_video_url: string | null;
+  /** Maintained by the publishing record when an upcoming event becomes past. */
   expired: boolean;
 };
 
+// Editorial order: keep the most relevant/recent public items first unless the
+// project team asks for another order.
 export const findings: Finding[] = [];
 export const publications: Publication[] = [];
 export const newsItems: NewsItem[] = [];
@@ -89,6 +93,7 @@ export function fileKind(filename: string): string {
   return extension || "FILE";
 }
 
+/** Earliest event still eligible for the home-page announcement. */
 export function nextUpcomingEvent(): NewsItem | null {
   return (
     newsItems
