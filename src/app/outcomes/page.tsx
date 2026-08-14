@@ -18,24 +18,9 @@ export const metadata: Metadata = {
   ...canonical("/outcomes"),
 };
 
-/**
- * Project Outcomes.
- *
- * Editor-managed since 31 July 2026 — findings and publications are written in
- * `/admin/outcomes` and stored in Postgres, so publishing one has to show here
- * without a redeploy. That is why the route renders per request rather than
- * being prerendered.
- *
- * **The empty state is the default, not a fallback.** Both reads go through
- * `safeRead`, so no database, an unreachable database and nothing published yet
- * all land in the same place: the honest "not final" message this page has
- * always shown. The old rule still holds exactly as written — no placeholder
- * publications, dates, DOIs or download links. The difference is only that real
- * ones now arrive from an editor instead of a commit.
- */
+/** Project findings and papers published from the Git-backed content file. */
 export default function OutcomesPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
-
   const hasContent = findings.length > 0 || publications.length > 0;
 
   return (
@@ -51,9 +36,6 @@ export default function OutcomesPage() {
               <>
                 {findings.length > 0 ? (
                   <section className={listStyles.section} aria-labelledby="findings-heading">
-                    {/* h2 under the page h1, and h3 for each entry inside the
-                        lists — the heading order has to stay unbroken now that
-                        this page has real sections in it. */}
                     <h2 id="findings-heading" className={listStyles.sectionTitle}>
                       Project findings
                     </h2>
@@ -75,8 +57,6 @@ export default function OutcomesPage() {
                 ) : null}
               </>
             ) : (
-              /* h2 because it sits directly under the page h1 — using the
-                 default h3 here would skip a heading level. */
               <EmptyState
                 heading={outcomes.heading}
                 body={outcomes.body}
@@ -91,4 +71,3 @@ export default function OutcomesPage() {
     </>
   );
 }
-

@@ -18,39 +18,11 @@ export const metadata: Metadata = {
   ...canonical("/news"),
 };
 
-/**
- * News & Events.
- *
- * One route, not two. News and Events were separate pages until 30 July 2026;
- * both were empty, so the navigation offered a visitor two dead ends instead of
- * one.
- *
- * Editor-managed since 31 July 2026. `AwaitingContent` is still here and still
- * the default: the read goes through `safeRead`, so a missing database, an
- * unreachable one, or nothing published yet all show the same honest empty
- * state. **It must stay that way** — the standing rule on this route is that a
- * placeholder post or an invented event date reads as real the moment someone
- * lands on it, and on a publicly funded project site that is a false statement
- * rather than a design detail.
- */
+/** News and events published from the Git-backed content file. */
 export default function NewsPage() {
   const nav = resolveNavigation(navigation, { onHome: false });
-  const items = newsItems;
-
-  /*
-   * News and events are stored in one table and shown in two sections.
-   *
-   * They are genuinely different things to a reader — an event is something to
-   * turn up to on a date, a news post is something that already happened — and
-   * interleaving them by date buried the next event among older announcements.
-   *
-   * A section only appears when it has entries, so the page never shows an
-   * "Events" heading above nothing.
-   */
-  // Both event kinds sit under one Events heading; an upcoming one is still an
-  // event to a reader, and splitting them would give the page three sections.
-  const events = items.filter((item) => isEvent(item.kind));
-  const posts = items.filter((item) => item.kind === "news");
+  const events = newsItems.filter((item) => isEvent(item.kind));
+  const posts = newsItems.filter((item) => item.kind === "news");
 
   return (
     <>
@@ -59,19 +31,8 @@ export default function NewsPage() {
       <main id="main-content">
         <PageHero eyebrow={news.eyebrow} title={news.title} />
 
-        {items.length > 0 ? (
+        {newsItems.length > 0 ? (
           <div className={newsStyles.body}>
-            {/*
-              * Events lead, then News. Fixed, not a setting — a switch for this
-              * was built on 8 August 2026 and removed the next day: the useful
-              * thing to arrange turned out to be entries within a list, not the
-              * lists themselves, which is what the Order field does.
-              *
-              * Within Events, upcoming ones come first and events already held
-              * follow. Both stay under one heading: an upcoming event is still
-              * an event to a reader, and a third heading would split the page
-              * into three lists that are often one or two entries each.
-              */}
             <div className="adflex-container">
               {events.length > 0 ? (
                 <section className={listStyles.section} aria-labelledby="events-heading">
@@ -100,6 +61,7 @@ export default function NewsPage() {
           <AwaitingContent page={news} />
         )}
       </main>
+
       <AdflexFooter logo={brand.logo} />
     </>
   );
