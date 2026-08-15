@@ -29,6 +29,30 @@ Use this workflow for:
 
 Do not use it to publish confidential drafts, personal data, unapproved project claims, invented dates, guessed DOIs, or unconfirmed partner/funding information.
 
+## Approved-content-only rule
+
+**Codex must not write public ADFLEX editorial content on its own.** Only wording supplied by or explicitly approved by the authorised content publisher may appear as project content on the website.
+
+This rule covers, among other things:
+
+- titles;
+- summaries and descriptions;
+- article/event body text;
+- photo captions;
+- image alternative text;
+- quotations;
+- link labels;
+- project findings and outcomes;
+- publication metadata and descriptive wording.
+
+Codex may perform technical formatting and unambiguous normalization, such as storing `15 April 2026` as `2026-04-15`, without changing the meaning. It must not paraphrase, polish, expand, summarise or invent public wording unless the authorised content publisher explicitly requests that rewrite and then approves the result.
+
+If required public wording is missing, Codex should ask for it or leave the field absent where the website supports that. For an image, never generate a visual description. Use alternative text only when it has been supplied or explicitly approved. If the image is decorative or repeats information already provided beside it and no approved alternative text was supplied, use an empty alt value (`alt: ""`).
+
+Alternative text is for accessibility and is **not** a photo caption. A visible photo caption must be separately supplied or approved. The gallery must never display alt text as a visible caption.
+
+Fixed interface controls such as **Menu**, **Close**, previous/next arrows and image counters are website UI, not project editorial content. They are not generated as part of a publishing request.
+
 ## Normal workflow
 
 1. Open Codex in ChatGPT.
@@ -36,10 +60,10 @@ Do not use it to publish confidential drafts, personal data, unapproved project 
 3. Attach or provide the approved information.
 4. Paste one of the prompt templates below.
 5. Let Codex prepare the change and run its checks.
-6. Review Codex's summary. Make sure it changed only the intended content.
+6. Review Codex's summary. Make sure it changed only the intended content and did not add wording that you did not supply or approve.
 7. Click **Create PR**.
 8. On GitHub, wait for **All checks have passed**.
-9. Review the title, dates, links and attached media paths.
+9. Review the title, wording, dates, links and attached media paths.
 10. Click **Merge pull request** and confirm the merge.
 11. GitHub automatically rebuilds and publishes the website.
 
@@ -90,10 +114,12 @@ Use descriptive filenames. If Windows or the browser adds an extra extension suc
 
 Check these items:
 
+- Is every piece of visible project wording supplied or explicitly approved?
 - Is the title and wording correct?
 - Are the date, time and location correct?
 - Are all URLs, DOI values and booking links correct?
 - Are the correct images/PDFs referenced?
+- If an image has alt text or a visible caption, did you supply or explicitly approve that wording?
 - Does GitHub show **All checks have passed**?
 - Did Codex avoid unrelated website changes?
 
@@ -111,14 +137,17 @@ Date: [for example 15 April 2026, 15-04-2026, or 2026-04-15]
 Start time: [optional]
 End time: [optional]
 Location: [location]
-Summary: [short summary]
+Summary: [approved short summary, or leave absent if not supplied and supported]
 Description: [approved event description]
 Booking URL: [optional]
 Related links: [optional]
+Approved alt text/captions: [optional; use only exactly supplied/approved wording]
 
 Approved media already uploaded to GitHub:
 [path(s), if applicable]
 
+Use only public wording I supplied or explicitly approved.
+Do not generate or paraphrase titles, summaries, descriptions, captions, alt text, link labels or other public copy.
 Do not invent missing information.
 Preserve the date precision I supplied.
 Normalize a full date internally to YYYY-MM-DD.
@@ -138,13 +167,16 @@ Publish this as a past ADFLEX event.
 Title: [event title]
 Date: [exact date or month/year if that is all that is known]
 Location: [location]
-Summary: [short summary]
+Summary: [approved short summary, if supplied]
 Description: [approved description]
 Related links: [optional]
+Approved alt text/captions: [optional; use only exactly supplied/approved wording]
 
 Approved photographs already uploaded to GitHub:
 [path(s), if applicable]
 
+Use only public wording I supplied or explicitly approved.
+Do not generate or paraphrase titles, summaries, descriptions, captions, alt text, link labels or other public copy.
 This is a past event, not an upcoming booking event.
 Do not invent a missing day or time.
 Do not add a booking link unless I provide one.
@@ -162,12 +194,15 @@ Publish the following as an ADFLEX news update.
 
 Title: [title]
 Publication date: [date]
-Summary: [short summary]
+Summary: [approved short summary, if supplied]
 Body: [approved news text]
 Related links: [optional]
+Approved alt text/captions: [optional]
 Approved images already uploaded to GitHub: [optional paths]
 
-Do not invent project facts or rewrite approved wording.
+Use only public wording I supplied or explicitly approved.
+Do not generate, rewrite, summarise or expand public copy.
+Do not invent project facts.
 Do not modify unrelated events, publications or project copy.
 Run the checks and prepare a pull request to main.
 Do not merge automatically.
@@ -178,7 +213,7 @@ Do not merge automatically.
 ```text
 Work in IRESI-EU/ADFLEX from the latest main branch.
 
-Add this publication to Project Outcomes → Publications.
+Add this publication to Publications.
 
 Title: [exact paper title]
 Authors: [approved author list]
@@ -189,8 +224,8 @@ Publisher URL: [URL if available]
 Publication date for the website: [date]
 Approved PDF already uploaded to GitHub: [path, if applicable]
 
-Do not guess a DOI, publication status, authorship or venue.
-Use the exact bibliographic information supplied.
+Use only the bibliographic wording and metadata I supplied or explicitly approved.
+Do not guess a DOI, publication status, authorship, venue or descriptive text.
 Run the checks and prepare a pull request to main.
 Do not merge automatically.
 ```
@@ -204,12 +239,14 @@ Publish the following approved ADFLEX project finding/outcome.
 
 Title: [title]
 Publication date: [date]
-Summary: [short summary]
+Summary: [approved short summary]
 Body: [approved finding text]
+Approved alt text/captions: [optional]
 Approved images/files already uploaded to GitHub: [optional paths]
 
+Use only public wording I supplied or explicitly approved.
 Treat this as a public project claim.
-Do not infer or invent results, statistics or conclusions that I have not supplied.
+Do not infer, rewrite or invent results, statistics or conclusions that I have not supplied.
 Run the checks and prepare a pull request to main.
 Do not merge automatically.
 ```
@@ -225,7 +262,8 @@ Update the existing website item titled:
 Make only these changes:
 [describe the exact corrections]
 
-Do not rewrite other parts of the item unless required for consistency.
+Use only the replacement wording I supplied or explicitly approved.
+Do not rewrite other parts of the item unless I explicitly request and approve that rewrite.
 Do not modify unrelated website content.
 Run the checks and prepare a pull request to main.
 Do not merge automatically.
@@ -245,6 +283,7 @@ Keep it visible as an ADFLEX dissemination record.
 Approved outcome text: [optional]
 Recording URL: [optional]
 
+Do not author any outcome text on my behalf.
 Do not invent an outcome or recording link if I have not supplied one.
 Run the checks and prepare a pull request to main.
 Do not merge automatically.
@@ -260,19 +299,21 @@ Remove the website item titled:
 
 Do not modify any other event, news item, publication, finding or project copy.
 Remove associated media only if it is not referenced anywhere else.
+Do not replace the removed item with AI-generated or placeholder content.
 Run the checks and prepare a pull request to main.
 Do not merge automatically.
 ```
 
 ## If Codex asks for missing information
 
-Provide the missing approved fact if you know it. If it is genuinely unknown, tell Codex to leave it absent where possible rather than inventing it.
+Provide the missing approved fact or wording if you know it. If it is genuinely unknown, tell Codex to leave it absent where possible rather than inventing it.
 
 Examples:
 
 - `The exact day is not known; keep April 2026.`
 - `There is no booking URL.`
 - `No DOI has been assigned yet.`
+- `No caption or alt text has been approved; do not generate one.`
 - `Do not publish a result until it has been approved.`
 
 ## If Codex reports a Google Fonts build error
@@ -293,4 +334,4 @@ GitHub Pages deployment normally starts automatically after the merge. If the we
 
 The authorised content publisher supplies and approves the content. Codex performs the technical editing. GitHub provides access control, review, validation, history and deployment.
 
-The public website must never depend on an AI service at runtime.
+The public website must never depend on an AI service at runtime, and AI-generated editorial wording must never be published without explicit approval.

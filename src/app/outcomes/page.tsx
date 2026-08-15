@@ -33,29 +33,16 @@ export default function OutcomesPage() {
         <div className={styles.body}>
           <div className="adflex-container">
             {hasContent ? (
-              <>
-                {findings.length > 0 ? (
-                  <section className={listStyles.section} aria-labelledby="findings-heading">
-                    <h2 id="findings-heading" className={listStyles.sectionTitle}>
-                      Project findings
-                    </h2>
-                    <div className={listStyles.sectionList}>
-                      <FindingList findings={findings} />
-                    </div>
-                  </section>
-                ) : null}
-
-                {publications.length > 0 ? (
-                  <section className={listStyles.section} aria-labelledby="publications-heading">
-                    <h2 id="publications-heading" className={listStyles.sectionTitle}>
-                      Publications
-                    </h2>
-                    <div className={listStyles.sectionList}>
-                      <PublicationList publications={publications} />
-                    </div>
-                  </section>
-                ) : null}
-              </>
+              findings.length > 0 ? (
+                <section className={listStyles.section} aria-labelledby="findings-heading">
+                  <h2 id="findings-heading" className={listStyles.sectionTitle}>
+                    Project findings
+                  </h2>
+                  <div className={listStyles.sectionList}>
+                    <FindingList findings={findings} />
+                  </div>
+                </section>
+              ) : null
             ) : (
               <EmptyState
                 heading={outcomes.heading}
@@ -63,6 +50,21 @@ export default function OutcomesPage() {
                 headingLevel="h2"
               />
             )}
+
+            <section
+              id="publications"
+              className={listStyles.section}
+              aria-labelledby="publications-heading"
+            >
+              <h2 id="publications-heading" className={listStyles.sectionTitle}>
+                Publications
+              </h2>
+              {publications.length > 0 ? (
+                <div className={listStyles.sectionList}>
+                  <PublicationList publications={publications} />
+                </div>
+              ) : null}
+            </section>
           </div>
         </div>
       </main>

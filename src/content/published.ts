@@ -12,6 +12,8 @@ export type MediaRef = {
   id: string;
   src: string;
   alt: string;
+  /** Optional visible caption. Publish only wording supplied or approved by the authorised content publisher. */
+  caption?: string;
   width: number | null;
   height: number | null;
 };
@@ -110,14 +112,14 @@ The session was chaired by Muhammad Waseem and attended by several experts in th
       {
         id: "maynooth-energy-analytics-presentation",
         src: "/content/events/maynooth-business-analytics-engagement-2026/energy-analytics-presentation.jpg.jpeg",
-        alt: "A classroom presentation with a presenter pointing to energy analytics charts on a large screen while another participant stands at the lectern.",
+        alt: "",
         width: 1280,
         height: 574,
       },
       {
         id: "maynooth-analytics-live-project-presentation",
         src: "/content/events/maynooth-business-analytics-engagement-2026/analytics-live-project-presentation.jpg.jpeg",
-        alt: "A presenter at a lectern between two large screens during an Analytics Live Project presentation.",
+        alt: "",
         width: 1280,
         height: 574,
       },

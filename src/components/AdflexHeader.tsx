@@ -23,6 +23,12 @@ type AdflexHeaderProps = {
 };
 
 const MENU_ID = "adflex-primary-navigation";
+const PUBLICATIONS_ITEM: NavigationItem = {
+  id: "publications",
+  label: "Publications",
+  kind: "route",
+  href: publicPath("/outcomes#publications"),
+};
 
 /**
  * Sticky site header: official logo on a white surface, navigation on the
@@ -82,8 +88,17 @@ export function AdflexHeader({
     return pathname === item.href;
   };
 
+  // Publications remains a distinct top-level navigation choice, while the
+  // Git-backed publication records continue to live with project outcomes.
+  // Do not add it twice if the content navigation gains an explicit item later.
+  const primaryItems: NavigationItem[] = navigation.some((item) => item.id === "publications")
+    ? [...navigation]
+    : navigation.flatMap((item) =>
+        item.id === "outcomes" ? [item, PUBLICATIONS_ITEM] : [item],
+      );
+
   const items: NavigationItem[] = [
-    ...navigation,
+    ...primaryItems,
     ...(trailingLink
       ? [
           {
