@@ -27,7 +27,7 @@ const PUBLICATIONS_ITEM: NavigationItem = {
   id: "publications",
   label: "Publications",
   kind: "route",
-  href: "/outcomes#publications",
+  href: publicPath("/outcomes#publications"),
 };
 
 /**
