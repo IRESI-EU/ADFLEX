@@ -18,7 +18,7 @@ import styles from "./PublishedList.module.css";
  * EVERYTHING HERE IS TEXT, NEVER MARKUP
  * ---------------------------------------------------------------------------
  * The bodies are stored as plain text in the Git-backed content record. They are split on blank lines
- * into paragraphs and rendered as text nodes â€” no `dangerouslySetInnerHTML`, no
+ * into paragraphs and rendered as text nodes — no `dangerouslySetInnerHTML`, no
  * Markdown parser, no sanitiser. That is a deliberate ceiling on what an editor
  * can do: they get paragraphs and nothing else, and in exchange there is no
  * injection surface and no half-supported syntax leaking onto a public,
@@ -65,7 +65,7 @@ export function formatDate(iso: string): string {
 }
 
 /**
- * A date with its time after it â€” "10 August 2026, 14:30" â€” or the date alone
+ * A date with its time after it — "10 August 2026, 14:30" — or the date alone
  * when no time has been set.
  *
  * Kept inside one `<time>` element rather than split into two, so the hour
@@ -82,7 +82,7 @@ function formatDateTime(
   endTime: string | null = null,
 ): string {
   const date = formatDate(iso);
-  if (time && endTime) return `${date}, ${time}â€“${endTime}`;
+  if (time && endTime) return `${date}, ${time}–${endTime}`;
   if (time) return `${date}, ${time}`;
   // An end time with no start is possible only on a record typed in that way.
   // Saying "until 16:00" is honest about knowing one end of it and not the other.
@@ -94,7 +94,7 @@ function formatDateTime(
  * The `datetime` attribute for the pair above.
  *
  * Only the start is machine-readable. `datetime` holds one moment, and the
- * range syntax a calendar would want is not part of it â€” the visible text
+ * range syntax a calendar would want is not part of it — the visible text
  * carries the full span, and the attribute carries the moment the entry is
  * sorted and found by.
  */
@@ -109,7 +109,7 @@ function machineDateTime(iso: string, time: string | null): string {
 /**
  * Which layout an entry takes.
  *
- * `large` stacks â€” images across the full width, text underneath â€” because a
+ * `large` stacks — images across the full width, text underneath — because a
  * chart that needs the width has nothing to sit beside. Everything else puts
  * the images in a column next to the text, `small` narrower than `medium`.
  * No images at all means the text takes the whole row.
@@ -130,7 +130,7 @@ function isStacked(images: MediaRef[], size: ImageSize): boolean {
  * The documents attached to an outcome, as download links.
  *
  * Each says what it is and how big it is before the reader commits to the
- * click â€” `/files/[id]` sends everything as an attachment, so following one
+ * click — `/files/[id]` sends everything as an attachment, so following one
  * starts a download rather than opening a tab, and being told that first is the
  * difference between a considered click and a surprise.
  *
@@ -149,7 +149,7 @@ function Downloads({ files }: { files: FileRef[] }) {
             {/*
              * The format is shown once, as the tag, and said once, in the
              * hidden text. Printing it in the tag *and* again beside the size
-             * gave every link a stuttering "PDF â€¦ PDF, 214 KB"; leaving it out
+             * gave every link a stuttering "PDF … PDF, 214 KB"; leaving it out
              * of the accessible name altogether would have told a screen-reader
              * user the size of something without saying what it was.
              */}
@@ -178,7 +178,7 @@ export function FindingList({ findings }: { findings: Finding[] }) {
         const heading = (
           <>
             {/* A real <time>, so the date is machine-readable as well as
-                legible â€” the same treatment news entries get. */}
+                legible — the same treatment news entries get. */}
             <p className={styles.meta}>
               <time dateTime={finding.published_on}>
                 {formatDate(finding.published_on)}
@@ -198,7 +198,7 @@ export function FindingList({ findings }: { findings: Finding[] }) {
         return (
           <li key={finding.id} className={entryClass(finding.images, finding.image_size)}>
             {/*
-             * Stacked entries read heading, summary, picture, then the detail â€”
+             * Stacked entries read heading, summary, picture, then the detail —
              * the shape of an article. A reader should know what they are
              * looking at before they look at it, and the long text belongs
              * after the thing it describes rather than before it.
@@ -251,7 +251,7 @@ export function PublicationList({ publications }: { publications: Publication[] 
             <p className={styles.publicationMeta}>
               {[publication.authors, publication.venue, publication.year?.toString()]
                 .filter(Boolean)
-                .join(" Â· ")}
+                .join(" · ")}
             </p>
           ) : null}
 
@@ -261,7 +261,7 @@ export function PublicationList({ publications }: { publications: Publication[] 
            * The DOI used to be rendered as its own full doi.org URL used as the
            * link text, which set a 40-character machine string as the most
            * prominent thing under the title. It is now a short labelled link,
-           * and the plain link â€” the ordinary way to reach a publication â€”
+           * and the plain link — the ordinary way to reach a publication —
            * comes first. Either, both or neither may be present.
            */}
           {publication.url || publication.doi ? (
@@ -304,8 +304,8 @@ export function PublicationList({ publications }: { publications: Publication[] 
  * `isUpcoming(eventDate)` used to live here, comparing the event's date against
  * today's. It was removed on 12 August 2026: every caller now reads `expired`,
  * which the database computes from the event's **end time** in the project's
- * timezone. The old test was a day too coarse â€” a morning event stayed
- * "Upcoming", and kept offering bookings, until midnight â€” and it derived the
+ * timezone. The old test was a day too coarse — a morning event stayed
+ * "Upcoming", and kept offering bookings, until midnight — and it derived the
  * answer twice, once here and once in SQL, which is how the two came to
  * disagree.
  */
@@ -314,7 +314,7 @@ export function PublicationList({ publications }: { publications: Publication[] 
  * What a reader can do about an event: book a place, or be told it is full.
  *
  * Only shown while the event is still to come. A booking button on an event
- * that happened last month is worse than no button â€” it sends someone to a
+ * that happened last month is worse than no button — it sends someone to a
  * page that will either take a booking for nothing or confuse them.
  */
 function EventBooking({ item }: { item: NewsItem }) {
@@ -356,8 +356,8 @@ function EventBooking({ item }: { item: NewsItem }) {
 /**
  * What happened at the event, and where to watch it.
  *
- * Only once the event is over. An editor can write both at any time â€” an event
- * typed up weeks after the fact is entered in one sitting â€” so the decision
+ * Only once the event is over. An editor can write both at any time — an event
+ * typed up weeks after the fact is entered in one sitting — so the decision
  * about when a reader sees them is made here rather than in the form.
  *
  * "Over" means `expired` for an upcoming event, and always, for an event
@@ -483,7 +483,7 @@ export function NewsList({
 
         return (
           <li key={item.id} className={entryClass(item.images, item.image_size)}>
-            {/* Heading and summary above the pictures, detail below them â€” see
+            {/* Heading and summary above the pictures, detail below them — see
                 the note in FindingList. */}
             {isStacked(item.images, item.image_size) ? (
               <>

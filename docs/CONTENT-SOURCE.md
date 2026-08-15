@@ -24,7 +24,7 @@ Before adding an item, confirm the factual fields that make it public: dates, lo
 
 ### Arden Energy logo
 
-The current `public/images/partners/arden-energy.png` is the full-colour Arden Energy logo supplied to the project team and uploaded on 14 August 2026. Its source image dimensions are 2560 Ã— 1252.
+The current `public/images/partners/arden-energy.png` is the full-colour Arden Energy logo supplied to the project team and uploaded on 14 August 2026. Its source image dimensions are 2560 × 1252.
 
 ## Legal content
 
