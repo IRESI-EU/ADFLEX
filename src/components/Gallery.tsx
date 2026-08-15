@@ -347,8 +347,8 @@ export function Gallery({
               ) : null}
             </div>
 
-            {current.alt ? (
-              <p className={styles.lightboxCaption}>{current.alt}</p>
+            {current.caption ? (
+              <p className={styles.lightboxCaption}>{current.caption}</p>
             ) : null}
           </div>
         ) : null}
