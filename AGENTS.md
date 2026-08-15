@@ -52,6 +52,7 @@ When asked to publish, update, unpublish, or remove website content:
 9. Do not silently rewrite unrelated content while publishing one item.
 10. Do not create placeholder news, events, publications or results just to make an empty page look populated.
 11. Files committed under `public/` are public once merged. Never commit confidential drafts, credentials, personal data or private correspondence.
+12. If the Codex web Create PR flow rejects binary files, do not invent alternate media or remove media references silently. Ask the user to upload the approved binary to the exact `public/content/` path in GitHub, then reference the real filename from the text/source PR. See `docs/LAB-MANAGER-PUBLISHING.md`.
 
 ## Event handling
 
@@ -61,6 +62,10 @@ When asked to publish, update, unpublish, or remove website content:
 - For an upcoming event, `expired: false` means the page may show booking/upcoming treatment. When the event is over, deliberately update the record to a past-event state (`kind: "event"` or `expired: true`) and remove any obsolete booking URL if appropriate.
 - Keep dates, times, location and booking information exactly consistent with supplied source material.
 - Preserve past events as project dissemination records when appropriate rather than deleting them merely because the date passed.
+- Accept natural human date input such as `15-04-2026`, `2026-04-15`, `15 April 2026`, or `April 2026`.
+- Normalize a known full event date to ISO `YYYY-MM-DD` before storing it.
+- Preserve month-only precision as `YYYY-MM`; never invent a missing day.
+- Never invent a start or end time. If only one time is known, preserve only that known value.
 
 ## Publications and findings
 
@@ -92,6 +97,8 @@ For content updates, also verify:
 - image dimensions match the actual files;
 - file byte sizes match the actual files;
 - no unrelated project copy changed.
+
+If `npm run build` fails only because the Codex cloud environment cannot fetch the configured Google Fonts, report that limitation clearly, still run lint/typecheck/diff checks, and rely on the GitHub pull-request workflow for the authoritative build. Do not change the website fonts just to work around the Codex environment.
 
 GitHub pull requests are validated by `.github/workflows/validate.yml`. A merge to `main` triggers the GitHub Pages deployment workflow.
 
