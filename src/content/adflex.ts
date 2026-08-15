@@ -9,7 +9,7 @@ export { publicPath };
  * No ADFLEX facts, statistics, partner details, publications or funding
  * details may be added here unless they have been supplied and approved.
  *
- * To change the website copy, edit this file only â€” components read it through
+ * To change the website copy, edit this file only — components read it through
  * props and must not hard-code project paragraphs.
  */
 
@@ -21,8 +21,8 @@ export type NavigationItem = {
   id: string;
   label: string;
   /**
-   * `section` â€” an anchor on the home page, e.g. `#technologies`.
-   * `route` â€” a page of its own, e.g. `/contact`.
+   * `section` — an anchor on the home page, e.g. `#technologies`.
+   * `route` — a page of its own, e.g. `/contact`.
    */
   kind: "section" | "route";
   href: string;
@@ -56,7 +56,7 @@ export type HeroContent = {
    */
   secondaryCta?: { label: string; href: string };
   /**
-   * The system diagram. Its labels are not repeated as visible text â€” `alt`
+   * The system diagram. Its labels are not repeated as visible text — `alt`
    * is therefore the only place the diagram's parts are named, so keep it
    * complete if the image ever changes.
    */
@@ -68,7 +68,7 @@ export type AboutItem = {
   title: string;
   /**
    * The glimpse shown on the home page. This must stay a verbatim extract from
-   * the opening of `body` â€” shorten by cutting, never by rewriting, so the home
+   * the opening of `body` — shorten by cutting, never by rewriting, so the home
    * page and the About page cannot drift apart or introduce unapproved wording.
    */
   summary: string;
@@ -122,7 +122,7 @@ export type Partner = {
    * There is deliberately no `role` field. The one-line roles were taken off
    * the cards on 6 August 2026 at the client's request; the supplied wording is
    * preserved in a comment beside `partners` below. Restoring them means adding
-   * the field *and* rendering it again â€” an orphan field that silently rendered
+   * the field *and* rendering it again — an orphan field that silently rendered
    * nowhere would be worse than none.
    */
   name: string;
@@ -153,7 +153,7 @@ export type PilotAsset = {
   /** Named in the supplied pilot description. */
   label: string;
   /**
-   * Optional icon. `alt` is empty by design â€” the label sits next to it, so
+   * Optional icon. `alt` is empty by design — the label sits next to it, so
    * announcing the icon as well would only repeat the label.
    */
   icon?: ImageAsset;
@@ -164,7 +164,7 @@ export type PilotContent = {
   subtitle: string;
   body: string;
   /**
-   * A phrase inside `body` given typographic emphasis â€” see `FigureText`.
+   * A phrase inside `body` given typographic emphasis — see `FigureText`.
    * Must appear verbatim in `body`. This is the community size, the only hard
    * number ADFLEX has supplied.
    */
@@ -176,7 +176,7 @@ export type PilotContent = {
    *
    * `alt` is empty by design: it is an illustration of the kind of community
    * the pilot covers, and the paragraph beside it already states that in full.
-   * It is not a photograph of the pilot site â€” see docs/CONTENT-SOURCE.md.
+   * It is not a photograph of the pilot site — see docs/CONTENT-SOURCE.md.
    */
   image?: ImageAsset;
 };
@@ -207,7 +207,7 @@ export type BrandAssets = {
 /**
  * A route that exists structurally but has no approved content yet.
  *
- * These render a visible, deliberate empty state â€” never dummy items. A
+ * These render a visible, deliberate empty state — never dummy items. A
  * placeholder news post or a specimen privacy policy is a false statement about
  * a publicly funded research project the moment anyone reads it, so the page
  * says plainly that the content is not published rather than pretending it is.
@@ -234,7 +234,7 @@ export type AwaitingContentPage = {
  * file: a string here is exactly the string that renders.
  *
  * Email addresses and bare `www.` domains inside `text` are turned into links
- * at render time â€” see `LegalDocument`. Nothing else is interpreted.
+ * at render time — see `LegalDocument`. Nothing else is interpreted.
  */
 export type LegalBlock =
   | { kind: "heading"; text: string }
@@ -250,7 +250,7 @@ export type LegalBlock =
  * ours to edit, shorten or tidy: if something in it is wrong or out of date,
  * that is a question for whoever carries the liability, not a code change.
  * Square-bracketed placeholders in the source are left exactly as supplied so
- * they stay visible rather than being quietly invented â€” see docs/OPEN-ITEMS.md.
+ * they stay visible rather than being quietly invented — see docs/OPEN-ITEMS.md.
  */
 export type LegalPage = {
   slug: string;
@@ -279,7 +279,7 @@ export type AdflexContent = {
     title: string;
     intro: string;
     /**
-     * A phrase inside `intro` given typographic emphasis â€” see `FigureText`.
+     * A phrase inside `intro` given typographic emphasis — see `FigureText`.
      * Must appear verbatim in `intro`.
      */
     introFigure?: string;
@@ -296,7 +296,7 @@ export type AdflexContent = {
    *
    * Filled on 30 July 2026 from the supplied ADFLEX_Legal_Pages_Draft_v2.docx.
    * The wording is reproduced verbatim, including its square-bracketed
-   * placeholders â€” see docs/OPEN-ITEMS.md for what is still outstanding in it.
+   * placeholders — see docs/OPEN-ITEMS.md for what is still outstanding in it.
    */
   legal: {
     eyebrow: string;
@@ -311,7 +311,7 @@ export type AdflexContent = {
   footer: {
     /**
      * Funding programme, grant number and disclaimer. Not supplied or
-     * approved, so the row is not rendered at all â€” see docs/OPEN-ITEMS.md.
+     * approved, so the row is not rendered at all — see docs/OPEN-ITEMS.md.
      * Filling this in publishes it; no layout change is needed.
      */
     funding: {
@@ -328,7 +328,7 @@ export type AdflexContent = {
        */
       href: string | null;
     };
-    /** Follows "Â© <year> " on the legal line. */
+    /** Follows "© <year> " on the legal line. */
     copyright: string;
     /**
      * The organisation behind ADFLEX, linked from the legal line. Optional, so
@@ -340,7 +340,7 @@ export type AdflexContent = {
 
 export const adflexContent = {
   meta: {
-    title: "ADFLEX â€” Local Energy Flexibility",
+    title: "ADFLEX — Local Energy Flexibility",
     description:
       "ADFLEX develops and validates a digital framework that helps Sustainable Energy Communities in mixed-use buildings provide flexibility and take part in local energy markets, piloted in Ringsend, Dublin.",
     skipLinkLabel: "Skip to main content",
@@ -361,7 +361,7 @@ export const adflexContent = {
   brand: {
     logo: {
       src: publicPath("/images/adflex/adflex-logo.png"),
-      alt: "ADFLEX â€” Local Energy Flexibility",
+      alt: "ADFLEX — Local Energy Flexibility",
       width: 3790,
       height: 1148,
     },
@@ -399,13 +399,13 @@ export const adflexContent = {
     // Programme". The earlier "EU-Funded Project" tag was wrong.
     tags: ["SEAI-Funded Project", "Energy Flexibility", "Digital Integration"],
     headline:
-      "ADFLEX â€” Advanced Demonstrators for Flexibility and Local Energy Exchange in Sustainable Energy Communities",
+      "ADFLEX — Advanced Demonstrators for Flexibility and Local Energy Exchange in Sustainable Energy Communities",
     tagline:
       "Turning community buildings into flexumers, prosumers and flexible energy users, who together help balance a smarter, cleaner grid.",
     // The supplied copy asked for this definition as muted text on its own line
     // beneath the tagline, explicitly "not a tooltip or footnote, since those
     // get missed". It was moved inline at the client's request after the first
-    // build â€” see docs/CONTENT-SOURCE.md. The wording itself is unchanged.
+    // build — see docs/CONTENT-SOURCE.md. The wording itself is unchanged.
     glossary: {
       term: "flexumers",
       definition:
@@ -413,7 +413,7 @@ export const adflexContent = {
     },
     // Project Outcomes lives at /outcomes, so this is a route rather than an
     // anchor. The label is the supplied wording and is unchanged.
-    // Was "See Pilot Results" â†’ /outcomes. That page is still the empty
+    // Was "See Pilot Results" → /outcomes. That page is still the empty
     // "awaiting content" state, so the hero's main action promised results and
     // delivered nothing. Both actions now point at sections that have real
     // content today.
@@ -433,7 +433,7 @@ export const adflexContent = {
   },
 
   // /about shows every item in full. The home page shows a glimpse of just one
-  // of them â€” `home.itemId` â€” and links through.
+  // of them — `home.itemId` — and links through.
   //
   // Every item keeps a `summary` even though only one is currently shown, so
   // the home page can be pointed at a different item without new copy. Each
@@ -461,7 +461,7 @@ export const adflexContent = {
         title: "Impact",
         summary:
           "By giving distribution and transmission system operators real-time visibility into local load and generation, ADFLEX supports the wider EU push to cut emissions and absorb more renewable energy onto the grid.",
-        body: "By giving distribution and transmission system operators real-time visibility into local load and generation, ADFLEX supports the wider EU push to cut emissions and absorb more renewable energy onto the grid. The projectâ€™s outcome is a blueprint that other Sustainable Energy Communities across Europe can adopt and adapt, not a one-off pilot result.",
+        body: "By giving distribution and transmission system operators real-time visibility into local load and generation, ADFLEX supports the wider EU push to cut emissions and absorb more renewable energy onto the grid. The project’s outcome is a blueprint that other Sustainable Energy Communities across Europe can adopt and adapt, not a one-off pilot result.",
       },
       {
         id: "our-role",
@@ -535,7 +535,7 @@ export const adflexContent = {
     // The count and its `introFigure` emphasis were removed on 6 August 2026 at
     // the client's request. Only the number is gone; the rest of the approved
     // sentence is untouched. Dropping it also means the line no longer has to
-    // be edited every time a partner joins or leaves â€” which it would have, the
+    // be edited every time a partner joins or leaves — which it would have, the
     // moment IRESI was added.
     intro:
       "ADFLEX brings together partners spanning research, technical delivery and energy market expertise:",
@@ -555,15 +555,15 @@ export const adflexContent = {
     // The supplied roles are kept below, commented out rather than deleted, so
     // restoring them is a one-line change and the approved wording is not lost.
     // They were supplied by the project team on 30 July 2026:
-    //   Maynooth University â€” Project coordinator, building the Digital Spine
+    //   Maynooth University — Project coordinator, building the Digital Spine
     //     middleware
-    //   University College Dublin (UCD) â€” Modelling the digital twin and
+    //   University College Dublin (UCD) — Modelling the digital twin and
     //     communication gateway in the lab
-    //   Arden Energy â€” Implementing flexibility on the ground in the Ringsend
+    //   Arden Energy — Implementing flexibility on the ground in the Ringsend
     //     pilot
     // No role has been supplied for IRESI, and none is guessed at here.
     //
-    // Partner descriptions, URLs and countries have never been supplied â€” do
+    // Partner descriptions, URLs and countries have never been supplied — do
     // not add them without approved source material.
     //
     // Logos live in public/images/partners/ and were supplied for the project.
@@ -577,7 +577,7 @@ export const adflexContent = {
       // Supplied 6 August 2026. The file as delivered was a 1672x941 export with
       // the mark floating in a large white field, so it has been trimmed to the
       // mark per the logo rules in README.md, and its near-white background
-      // snapped to pure white â€” the export came from a lossy source and its
+      // snapped to pure white — the export came from a lossy source and its
       // "white" was really 248-255 with compression speckle, which showed as a
       // grey rectangle on the card. The mark's own colours are untouched.
       // `width`/`height` are the trimmed file's intrinsic size.
@@ -664,7 +664,7 @@ export const adflexContent = {
       },
       {
         id: "arden-energy-platform",
-        label: "Arden Energyâ€™s platform",
+        label: "Arden Energy’s platform",
         icon: {
           src: publicPath("/images/pilot-icons/arden-energy-platform.webp"),
           alt: "",
@@ -674,7 +674,7 @@ export const adflexContent = {
       },
       {
         id: "esb-networks",
-        label: "ESB Networksâ€™ Beat the Peak programme",
+        label: "ESB Networks’ Beat the Peak programme",
         icon: { src: publicPath("/images/pilot-icons/esb-networks.webp"), alt: "", width: 1536, height: 1024 },
       },
     ],
@@ -691,12 +691,12 @@ export const adflexContent = {
   // publications, deliverables, dates, DOIs or downloads.
   //
   // Renamed from "Outputs" to "Outcomes" on 6 August 2026 at the client's
-  // request â€” heading, navigation label and the route itself. The content key
+  // request — heading, navigation label and the route itself. The content key
   // was `results` before that, a third name for the same thing; it is now
   // `outcomes` so the code, the URL and the page all agree.
   //
   // `body` is the supplied paragraph and still opens "Results and publications"
-  // â€” left verbatim because it is approved copy, and not ours to reword.
+  // — left verbatim because it is approved copy, and not ours to reword.
   outcomes: {
     title: "Project Outcomes",
     pageDescription:
@@ -706,7 +706,7 @@ export const adflexContent = {
   },
 
   // A dedicated ADFLEX contact has not been confirmed. These are the standard
-  // IRESI contact details supplied with the website copy â€” replace the values
+  // IRESI contact details supplied with the website copy — replace the values
   // here and both the contact section and the footer will follow.
   contact: {
     title: "Contact",
@@ -732,7 +732,7 @@ export const adflexContent = {
     pageDescription:
       "News, updates and events from the ADFLEX project, published as the work progresses.",
     heading: "Nothing published yet",
-    body: "This is where ADFLEX will publish project news and updates, and list events, talks and workshops. Nothing has been published or scheduled so far â€” entries will appear here as the project progresses.",
+    body: "This is where ADFLEX will publish project news and updates, and list events, talks and workshops. Nothing has been published or scheduled so far — entries will appear here as the project progresses.",
   },
 
   // Transcribed verbatim from ADFLEX_Legal_Pages_Draft_v2.docx, supplied by the
@@ -752,12 +752,12 @@ export const adflexContent = {
         pageDescription:
           "How the ADFLEX project website handles personal data.",
         status:
-          "Draft v2, supplied by the project team. Not yet finalised â€” the site address and the review date are still marked as to be confirmed.",
+          "Draft v2, supplied by the project team. Not yet finalised — the site address and the review date are still marked as to be confirmed.",
         blocks: [
           { kind: "heading", text: "1. Introduction" },
           {
             kind: "paragraph",
-            text: "This Privacy Policy explains what information the ADFLEX project website collects, why, how it is treated, where it may be transferred to, and how you can access, update or delete it. Our aim is to comply with the General Data Protection Regulation (Regulation (EU) 2016/679, â€œGDPRâ€). This Policy covers all users residing in the European Economic Area or elsewhere.",
+            text: "This Privacy Policy explains what information the ADFLEX project website collects, why, how it is treated, where it may be transferred to, and how you can access, update or delete it. Our aim is to comply with the General Data Protection Regulation (Regulation (EU) 2016/679, “GDPR”). This Policy covers all users residing in the European Economic Area or elsewhere.",
           },
           {
             kind: "paragraph",
@@ -814,7 +814,7 @@ export const adflexContent = {
             ordered: true,
             items: [
               "You have given consent, by sending a message or submitting a form, or",
-              "Processing is required to comply with a legal obligation (for example, reporting requirements under ADFLEXâ€™s SEAI funding agreement, using aggregated, non-identifying statistics only)",
+              "Processing is required to comply with a legal obligation (for example, reporting requirements under ADFLEX’s SEAI funding agreement, using aggregated, non-identifying statistics only)",
             ],
           },
           {
@@ -831,7 +831,7 @@ export const adflexContent = {
           { kind: "heading", text: "6. Sharing your information" },
           {
             kind: "paragraph",
-            text: "Your information is shared only where required by law, for example if requested by police or a supervisory authority investigating a suspected illegal act, or where SEAI requires aggregated, anonymised reporting on website engagement as part of ADFLEXâ€™s funding obligations.",
+            text: "Your information is shared only where required by law, for example if requested by police or a supervisory authority investigating a suspected illegal act, or where SEAI requires aggregated, anonymised reporting on website engagement as part of ADFLEX’s funding obligations.",
           },
 
           { kind: "heading", text: "7. Your rights" },
@@ -844,7 +844,7 @@ export const adflexContent = {
               "Correction of your personal data",
               "Objection to, restriction of, or cancellation of processing",
               "Portability of your data, in a structured, readable format",
-              "Deletion of your data (â€œright to be forgottenâ€)",
+              "Deletion of your data (“right to be forgotten”)",
             ],
           },
           {
@@ -859,11 +859,11 @@ export const adflexContent = {
           { kind: "heading", text: "8. Contact" },
           {
             kind: "paragraph",
-            text: "ADFLEXâ€™s Data Protection Officer is Ann McKeon (ann.mckeon@mu.ie). If you have questions about this Policy or wish to exercise your rights, please get in touch.",
+            text: "ADFLEX’s Data Protection Officer is Ann McKeon (ann.mckeon@mu.ie). If you have questions about this Policy or wish to exercise your rights, please get in touch.",
           },
           {
             kind: "paragraph",
-            text: "Last reviewed: [month/year] â€” version 1.0",
+            text: "Last reviewed: [month/year] — version 1.0",
           },
         ],
       },
@@ -874,11 +874,11 @@ export const adflexContent = {
         pageDescription:
           "How the ADFLEX project website uses cookies and similar technologies.",
         status:
-          "Draft v2, supplied by the project team. Not yet finalised â€” the site address and the review date are still marked as to be confirmed.",
+          "Draft v2, supplied by the project team. Not yet finalised — the site address and the review date are still marked as to be confirmed.",
         blocks: [
           {
             kind: "paragraph",
-            text: "This document explains the technologies (â€œTrackersâ€) used on the ADFLEX website to help it function and, where you consent, to help us understand how it is used.",
+            text: "This document explains the technologies (“Trackers”) used on the ADFLEX website to help it function and, where you consent, to help us understand how it is used.",
           },
 
           {
@@ -887,7 +887,7 @@ export const adflexContent = {
           },
           {
             kind: "paragraph",
-            text: "This Website uses its own (â€œfirst-partyâ€) cookies, set by Maynooth University, and may use third-party cookies where content from other services is embedded (for example, an embedded video or social media post).",
+            text: "This Website uses its own (“first-party”) cookies, set by Maynooth University, and may use third-party cookies where content from other services is embedded (for example, an embedded video or social media post).",
           },
           {
             kind: "paragraph",
@@ -895,7 +895,7 @@ export const adflexContent = {
           },
           {
             kind: "paragraph",
-            text: "Analytics: cookies that let us count visitors and understand how the Siteâ€™s content is used, so we can improve it. These require your consent. (Tool to be confirmed once the site is built, e.g. Matomo or Google Analytics â€” to be listed here by name once chosen, following the same practice as ADFLEXâ€™s sister project RESSKILL.)",
+            text: "Analytics: cookies that let us count visitors and understand how the Site’s content is used, so we can improve it. These require your consent. (Tool to be confirmed once the site is built, e.g. Matomo or Google Analytics — to be listed here by name once chosen, following the same practice as ADFLEX’s sister project RESSKILL.)",
           },
           {
             kind: "paragraph",
@@ -943,7 +943,7 @@ export const adflexContent = {
           },
           {
             kind: "paragraph",
-            text: "Last reviewed: [month/year] â€” version 1.0",
+            text: "Last reviewed: [month/year] — version 1.0",
           },
         ],
       },
@@ -953,12 +953,12 @@ export const adflexContent = {
         title: "Terms of Use",
         pageDescription: "Terms of use for the ADFLEX project website.",
         status:
-          "Draft v2, supplied by the project team. Not yet finalised â€” the site address and the review date are still marked as to be confirmed.",
+          "Draft v2, supplied by the project team. Not yet finalised — the site address and the review date are still marked as to be confirmed.",
         blocks: [
           { kind: "heading", text: "Purpose" },
           {
             kind: "paragraph",
-            text: "These Terms of Use (hereinafter â€œPolicyâ€ or â€œTermsâ€) regulate the terms and conditions under which any user may access and use the website with the URL [www.adflex.ie / adflex domain TBC] (hereinafter â€œSiteâ€ or â€œWebsiteâ€), owned by Maynooth University (hereinafter â€œMUâ€), coordinator of the ADFLEX project.",
+            text: "These Terms of Use (hereinafter “Policy” or “Terms”) regulate the terms and conditions under which any user may access and use the website with the URL [www.adflex.ie / adflex domain TBC] (hereinafter “Site” or “Website”), owned by Maynooth University (hereinafter “MU”), coordinator of the ADFLEX project.",
           },
           {
             kind: "paragraph",
@@ -986,11 +986,11 @@ export const adflexContent = {
           {
             kind: "list",
             items: [
-              "Access or use the Siteâ€™s services and content for illegal actions, or in a manner contrary to this Policy, current legislation, or the rights of MU or third parties",
-              "Use the services and content to promote, sell, hire or disclose advertising or information about themselves or third parties without MUâ€™s prior written permission",
-              "Use any computer virus, code, or software that may damage or alter the Siteâ€™s content, programs or systems",
-              "Reproduce, distribute, copy, publicly communicate or transform this Website, in whole or in part, without MUâ€™s prior written consent",
-              "Use ADFLEXâ€™s name, logo, or any identifying sign subject to intellectual or industrial property rights without prior written permission",
+              "Access or use the Site’s services and content for illegal actions, or in a manner contrary to this Policy, current legislation, or the rights of MU or third parties",
+              "Use the services and content to promote, sell, hire or disclose advertising or information about themselves or third parties without MU’s prior written permission",
+              "Use any computer virus, code, or software that may damage or alter the Site’s content, programs or systems",
+              "Reproduce, distribute, copy, publicly communicate or transform this Website, in whole or in part, without MU’s prior written consent",
+              "Use ADFLEX’s name, logo, or any identifying sign subject to intellectual or industrial property rights without prior written permission",
             ],
           },
 
@@ -1020,7 +1020,7 @@ export const adflexContent = {
           { kind: "heading", text: "Hyperlinks" },
           {
             kind: "paragraph",
-            text: "Links to this Website may only be made to the Siteâ€™s home page, must not â€œframeâ€ or distort the Siteâ€™s presentation, and must not imply any relationship, sponsorship or endorsement by MU unless explicitly agreed in writing.",
+            text: "Links to this Website may only be made to the Site’s home page, must not “frame” or distort the Site’s presentation, and must not imply any relationship, sponsorship or endorsement by MU unless explicitly agreed in writing.",
           },
 
           { kind: "heading", text: "Duration" },
@@ -1040,7 +1040,7 @@ export const adflexContent = {
     //
     // The programme name (National Energy RD&D Funding Programme) is named in
     // the supplied legal text but has not been approved as footer wording, and
-    // the grant number and the disclaimer have never been supplied at all â€”
+    // the grant number and the disclaimer have never been supplied at all —
     // see docs/OPEN-ITEMS.md. Neither is guessed at here. Extending this
     // statement later needs no layout change: add to `statement`.
     //
@@ -1052,7 +1052,7 @@ export const adflexContent = {
     // file's intrinsic size, so the aspect ratio is preserved.
     //
     // `alt` carries the funder's name because this logo is the only place the
-    // footer names SEAI in full â€” the statement beside it says just "SEAI".
+    // footer names SEAI in full — the statement beside it says just "SEAI".
     funding: {
       statement: "Funded by SEAI.",
       emblem: {
@@ -1076,7 +1076,7 @@ export const adflexContent = {
        * The public address of the same page is the company URL without the
        * `/admin/dashboard/` suffix, which is what is used here. Worth replacing
        * with the page's vanity URL (e.g. /company/adflex-project/) once the
-       * page has one â€” a numeric id works but tells a reader nothing.
+       * page has one — a numeric id works but tells a reader nothing.
        */
       href: "https://www.linkedin.com/company/112635173/",
     },

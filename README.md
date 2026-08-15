@@ -1,6 +1,6 @@
 # ADFLEX Project Website
 
-The public website for **ADFLEX â€” Advanced Demonstrators for Flexibility and Local Energy Exchange in Sustainable Energy Communities**.
+The public website for **ADFLEX — Advanced Demonstrators for Flexibility and Local Energy Exchange in Sustainable Energy Communities**.
 
 Production site: `https://iresi-eu.github.io/ADFLEX/`
 
@@ -38,8 +38,8 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design rationale and 
 
 Content has two sources of truth:
 
-- `src/content/adflex.ts` â€” durable project copy and configuration: navigation, About, technologies, consortium, pilot, contact details, legal content and funding information.
-- `src/content/published.ts` â€” news, events, project findings and publications.
+- `src/content/adflex.ts` — durable project copy and configuration: navigation, About, technologies, consortium, pilot, contact details, legal content and funding information.
+- `src/content/published.ts` — news, events, project findings and publications.
 
 Images and documents associated with published entries live under `public/content/`. Public asset references are stored as root-relative paths such as `/content/events/example/poster.webp`; `publicPath()` adds the `/ADFLEX` prefix in the GitHub Pages build.
 
