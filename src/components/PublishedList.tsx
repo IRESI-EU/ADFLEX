@@ -51,7 +51,7 @@ function Prose({ text, className }: { text: string; className: string }) {
   );
 }
 
-/** Formats `YYYY-MM-DD` without building a Date, so no timezone can shift the day. */
+/** Formats `YYYY-MM` or `YYYY-MM-DD` without a Date, so no timezone can shift it. */
 export function formatDate(iso: string): string {
   const [year, month, day] = iso.split("-");
   const months = [
@@ -60,6 +60,7 @@ export function formatDate(iso: string): string {
   ];
   const index = Number(month) - 1;
   if (!months[index]) return iso;
+  if (!day) return `${months[index]} ${year}`;
   return `${Number(day)} ${months[index]} ${year}`;
 }
 
@@ -387,6 +388,31 @@ function AfterEvent({ item }: { item: NewsItem }) {
   );
 }
 
+function RelatedLinks({ item }: { item: NewsItem }) {
+  const links = item.related_links ?? [];
+  if (links.length === 0) return null;
+
+  return (
+    <div className={styles.relatedLinks}>
+      <h4 className={styles.relatedLinksTitle}>Related links</h4>
+      <ul>
+        {links.map((link) => (
+          <li key={link.href}>
+            <a
+              className="adflex-link"
+              href={link.href}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /**
  * `showKind` adds a News/Event pill to each entry.
  *
@@ -449,6 +475,7 @@ export function NewsList({
         const detail = (
           <>
             <Prose text={item.body} className={styles.body} />
+            <RelatedLinks item={item} />
             <EventBooking item={item} />
             <AfterEvent item={item} />
           </>

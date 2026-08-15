@@ -24,6 +24,11 @@ export type FileRef = {
   label: string;
 };
 
+export type RelatedLink = {
+  label: string;
+  href: string;
+};
+
 export type Finding = {
   id: string;
   title: string;
@@ -53,6 +58,7 @@ export type NewsItem = {
   title: string;
   summary: string;
   body: string;
+  related_links?: RelatedLink[];
   images: MediaRef[];
   image_size: ImageSize;
   published_on: string;
@@ -72,7 +78,63 @@ export type NewsItem = {
 // project team asks for another order.
 export const findings: Finding[] = [];
 export const publications: Publication[] = [];
-export const newsItems: NewsItem[] = [];
+export const newsItems: NewsItem[] = [
+  {
+    id: "maynooth-business-analytics-engagement-2026",
+    kind: "event",
+    title: "ADFLEX engagement with MSc Business Analytics students at Maynooth University",
+    summary:
+      "MSc Business Analytics students explored wholesale market pricing, demand response and data-driven flexibility modelling through Analytics Live Project presentations aligned with ADFLEX.",
+    body: `We were delighted to see strong engagement from MSc Business Analytics students at the School of Business, Maynooth University, during their Analytics Live Project presentations aligned with the ADFLEX initiative.
+
+A key highlight of the session was an insightful discussion led by our PI, Fabiano Pallonetto, on the intersection of wholesale market pricing mechanisms, including dynamic and settlement prices, and energy flexibility coordination. Understanding how wholesale price signals and settlement mechanisms can drive demand-side response is central to designing flexibility services that work within real market conditions.
+
+The student projects covered a range of critical topics, including residential load clustering, demand response strategies, and data-driven flexibility modelling in sustainable energy communities.
+
+The session was chaired by Muhammad Waseem and attended by several experts in the field, fostering valuable discussion connecting academic research with practical energy-system challenges.`,
+    related_links: [
+      {
+        label: "School of Business Maynooth University",
+        href: "https://www.linkedin.com/company/school-of-business-maynooth-university/",
+      },
+      {
+        label: "Fabiano Pallonetto",
+        href: "https://www.linkedin.com/in/fabianopallonetto/",
+      },
+      {
+        label: "Muhammad Waseem",
+        href: "https://www.linkedin.com/in/muhammad-waseem-97a073226/",
+      },
+    ],
+    images: [
+      {
+        id: "maynooth-energy-analytics-presentation",
+        src: "/content/events/maynooth-business-analytics-engagement-2026/energy-analytics-presentation.jpg.jpeg",
+        alt: "A classroom presentation with a presenter pointing to energy analytics charts on a large screen while another participant stands at the lectern.",
+        width: 1280,
+        height: 574,
+      },
+      {
+        id: "maynooth-analytics-live-project-presentation",
+        src: "/content/events/maynooth-business-analytics-engagement-2026/analytics-live-project-presentation.jpg.jpeg",
+        alt: "A presenter at a lectern between two large screens during an Analytics Live Project presentation.",
+        width: 1280,
+        height: 574,
+      },
+    ],
+    image_size: "large",
+    published_on: "2026-08-15",
+    event_date: "2026-04",
+    event_time: null,
+    event_end_time: null,
+    location: "Maynooth University",
+    booking_url: null,
+    slots_filled: false,
+    event_outcome: "",
+    event_video_url: null,
+    expired: true,
+  },
+];
 
 export function isEvent(kind: NewsKind): boolean {
   return kind === "event" || kind === "upcoming";
