@@ -2,6 +2,8 @@
 
 This is the operating guide for news, events, findings and publications.
 
+For project staff who do not work with code or Git, use [`LAB-MANAGER-PUBLISHING.md`](LAB-MANAGER-PUBLISHING.md). It contains the simplified workflow and copy-and-paste prompts.
+
 ## Normal workflow
 
 A project team member can make a plain-language request such as:
@@ -27,6 +29,26 @@ Codex/developer workflow:
 7. Open a pull request.
 8. Merge after validation/review. The merge to `main` deploys automatically.
 
+## Date input and normalization
+
+Project staff may provide dates naturally. Codex should normalize full dates internally while preserving the precision actually supplied.
+
+| Supplied value | Store as |
+| --- | --- |
+| `April 2026` | `2026-04` |
+| `15-04-2026` | `2026-04-15` |
+| `2026-04-15` | `2026-04-15` |
+| `15 April 2026` | `2026-04-15` |
+
+Rules:
+
+- full event dates are stored as `YYYY-MM-DD`;
+- month-only event dates are stored as `YYYY-MM`;
+- do not invent a day when only month/year are known;
+- do not invent a time when none was supplied;
+- for upcoming events, use the full date when it is known;
+- keep displayed date/time/location/booking information consistent with the approved source.
+
 ## Public asset paths
 
 A file committed at:
@@ -44,6 +66,16 @@ is referenced in content as:
 The rendering components resolve that path through `publicPath()` so it works both locally and at the `/ADFLEX` GitHub Pages base path.
 
 Use descriptive kebab-case folders. Do not put confidential drafts in `public/`.
+
+### Current Codex web binary-file limitation
+
+The Codex web **Create PR** flow may reject binary changes such as JPG, PNG or PDF files with **Binary files are not supported**.
+
+Until that limitation changes, approved media may be uploaded separately through GitHub under `public/content/`. Then tell Codex the exact repository path and have the content PR reference the existing file without attempting to add the binary again.
+
+Verify the exact filename after upload. Browsers or operating systems can produce names such as `photo.jpg.jpeg`; content must reference the filename that actually exists in GitHub.
+
+The nontechnical step-by-step version of this workaround is documented in [`LAB-MANAGER-PUBLISHING.md`](LAB-MANAGER-PUBLISHING.md).
 
 ## News item example
 
@@ -104,11 +136,7 @@ Use descriptive kebab-case folders. Do not put confidential drafts in `public/`.
 
 The URL above is intentionally an example only. Never publish it; use only a URL supplied for the real event.
 
-Past events whose exact day is not known may use a month-precision
-`event_date` in `YYYY-MM` form. The site displays this as, for example,
-`April 2026`; do not invent a day to satisfy the full-date form. Related links
-are stored as `{ label, href }` entries in `related_links` and render as safe
-external links rather than Markdown embedded in the body.
+Past events whose exact day is not known may use a month-precision `event_date` in `YYYY-MM` form. The site displays this as, for example, `April 2026`; do not invent a day to satisfy the full-date form. Related links are stored as `{ label, href }` entries in `related_links` and render as safe external links rather than Markdown embedded in the body.
 
 After the event, deliberately update its record so it no longer offers an obsolete booking action. Usually that means recording it as a past event (`kind: "event"`) and adding an approved outcome/recording only if those have been supplied.
 
