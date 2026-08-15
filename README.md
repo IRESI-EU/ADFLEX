@@ -32,7 +32,7 @@ Git is both the content store and the audit trail. Codex is an editing interface
 
 The production architecture has **no `/admin` dashboard, PostgreSQL CMS, server-side media store, or runtime publishing API**. That older implementation is retained in Git history rather than in the current source tree.
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design rationale, [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the technical publishing workflow, and [`docs/LAB-MANAGER-PUBLISHING.md`](docs/LAB-MANAGER-PUBLISHING.md) for the nontechnical ChatGPT/Codex guide.
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design rationale, [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the technical publishing workflow, and [`docs/CONTENT-PUBLISHING.md`](docs/CONTENT-PUBLISHING.md) for the nontechnical ChatGPT/Codex content-publishing guide.
 
 ## Content model
 
@@ -85,13 +85,16 @@ npm run check
 
 Normal public updates follow this path:
 
-1. A project team member supplies approved content and any media.
+1. An authorised project team member supplies approved content and any media.
 2. Codex (or a developer) updates the relevant Git-backed content and assets.
 3. The change is reviewed in a pull request.
 4. GitHub Actions validates the site.
-5. Merging to `main` automatically rebuilds and deploys GitHub Pages.
+5. An authorised user merges the approved pull request into `main`.
+6. Merging to `main` automatically rebuilds and deploys GitHub Pages.
 
-For nontechnical project staff, use [`docs/LAB-MANAGER-PUBLISHING.md`](docs/LAB-MANAGER-PUBLISHING.md). It contains copy-and-paste prompts for events, news, publications, findings, updates and removals, plus the current media-upload workaround.
+The repository is public for transparency, but public visibility does **not** grant publishing permission. External users may read or fork the repository and may propose pull requests, but only users with the required permissions on `IRESI-EU/ADFLEX` can change the official repository or merge changes that reach the live website.
+
+For nontechnical project staff, use [`docs/CONTENT-PUBLISHING.md`](docs/CONTENT-PUBLISHING.md). It contains copy-and-paste prompts for events, news, publications, findings, updates and removals, plus the current media-upload workaround.
 
 Developer/Codex schemas, path conventions and removal rules are in [`docs/PUBLISHING.md`](docs/PUBLISHING.md).
 
@@ -113,8 +116,7 @@ The GitHub Pages build sets the repository base path to `/ADFLEX`. Do not bypass
 docs/
   ARCHITECTURE.md        current technical architecture
   PUBLISHING.md          developer/Codex publishing procedure
-  LAB-MANAGER-PUBLISHING.md
-                        nontechnical ChatGPT/Codex publishing guide
+  CONTENT-PUBLISHING.md  nontechnical ChatGPT/Codex content-publishing guide
   CONTENT-SOURCE.md      content provenance and approval rules
   OPEN-ITEMS.md          genuine unresolved project inputs
 
