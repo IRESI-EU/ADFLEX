@@ -1,8 +1,19 @@
-# ADFLEX Lab Manager Guide: Publishing with ChatGPT Codex
+# ADFLEX Content Publishing Guide: Publishing with ChatGPT Codex
 
-This guide is for project staff who need to publish, update or remove ADFLEX website content without editing web pages or writing Git commands.
+This guide is for authorised project staff who need to publish, update or remove ADFLEX website content without editing web pages or writing Git commands.
 
 You do not need to know TypeScript, Next.js, Git, branches or pull-request commands. Use Codex in ChatGPT, provide approved content, review the result, and merge the approved change after GitHub shows the green validation check.
+
+## Who can publish?
+
+The ADFLEX GitHub repository is public so anyone can read the source code and documentation. Public visibility does **not** give someone permission to publish to the ADFLEX website.
+
+- Anyone may view the repository and may fork it.
+- An external GitHub user may propose a pull request from a fork, but cannot merge it into ADFLEX `main` unless the organisation grants them the required repository permission.
+- Only authorised users with appropriate write/maintain/admin or merge permissions can change the official repository or merge an approved pull request.
+- The public website is deployed from the official `main` branch. A change in someone else's fork does not publish to the ADFLEX website.
+
+For normal content publishing, authorised project staff should use the pull-request workflow in this guide rather than publishing directly to `main`.
 
 ## What you can publish
 
@@ -77,7 +88,7 @@ Use descriptive filenames. If Windows or the browser adds an extra extension suc
 
 ## Review checklist before merging
 
-You only need to check these items:
+Check these items:
 
 - Is the title and wording correct?
 - Are the date, time and location correct?
@@ -86,7 +97,7 @@ You only need to check these items:
 - Does GitHub show **All checks have passed**?
 - Did Codex avoid unrelated website changes?
 
-If all are correct, merge the pull request.
+If all are correct and you are authorised to merge, merge the pull request.
 
 ## Prompt: publish an upcoming event
 
@@ -280,6 +291,6 @@ GitHub Pages deployment normally starts automatically after the merge. If the we
 
 ## Key principle
 
-The lab manager supplies and approves the content. Codex performs the technical editing. GitHub provides review, validation, history and deployment.
+The authorised content publisher supplies and approves the content. Codex performs the technical editing. GitHub provides access control, review, validation, history and deployment.
 
 The public website must never depend on an AI service at runtime.
