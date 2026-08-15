@@ -2,7 +2,7 @@
 
 This is the operating guide for news, events, findings and publications.
 
-For project staff who do not work with code or Git, use [`LAB-MANAGER-PUBLISHING.md`](LAB-MANAGER-PUBLISHING.md). It contains the simplified workflow and copy-and-paste prompts.
+For project staff who do not work with code or Git, use [`CONTENT-PUBLISHING.md`](CONTENT-PUBLISHING.md). It contains the simplified workflow and copy-and-paste prompts.
 
 ## Normal workflow
 
@@ -75,7 +75,7 @@ Until that limitation changes, approved media may be uploaded separately through
 
 Verify the exact filename after upload. Browsers or operating systems can produce names such as `photo.jpg.jpeg`; content must reference the filename that actually exists in GitHub.
 
-The nontechnical step-by-step version of this workaround is documented in [`LAB-MANAGER-PUBLISHING.md`](LAB-MANAGER-PUBLISHING.md).
+The nontechnical step-by-step version of this workaround is documented in [`CONTENT-PUBLISHING.md`](CONTENT-PUBLISHING.md).
 
 ## News item example
 
