@@ -186,6 +186,22 @@
   margin-top: var(--adflex-space-3);
 }
 
+.relatedLinks {
+  margin-top: var(--adflex-space-4);
+}
+
+.relatedLinksTitle {
+  margin-bottom: var(--adflex-space-2);
+  font-size: var(--adflex-text-base);
+  color: var(--adflex-color-ink);
+}
+
+.relatedLinks ul {
+  display: grid;
+  gap: var(--adflex-space-2);
+  padding-left: var(--adflex-space-4);
+}
+
 /*
  * "Fully booked", where the button would have been.
  *

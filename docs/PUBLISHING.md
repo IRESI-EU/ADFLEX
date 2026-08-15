@@ -78,6 +78,7 @@ Use descriptive kebab-case folders. Do not put confidential drafts in `public/`.
   title: "Approved event title",
   summary: "Approved event summary.",
   body: "Approved event description.",
+  related_links: [],
   images: [
     {
       id: "community-energy-workshop-poster",
@@ -102,6 +103,12 @@ Use descriptive kebab-case folders. Do not put confidential drafts in `public/`.
 ```
 
 The URL above is intentionally an example only. Never publish it; use only a URL supplied for the real event.
+
+Past events whose exact day is not known may use a month-precision
+`event_date` in `YYYY-MM` form. The site displays this as, for example,
+`April 2026`; do not invent a day to satisfy the full-date form. Related links
+are stored as `{ label, href }` entries in `related_links` and render as safe
+external links rather than Markdown embedded in the body.
 
 After the event, deliberately update its record so it no longer offers an obsolete booking action. Usually that means recording it as a past event (`kind: "event"`) and adding an approved outcome/recording only if those have been supplied.
 
