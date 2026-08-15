@@ -4,6 +4,16 @@ This is the operating guide for news, events, findings and publications.
 
 For project staff who do not work with code or Git, use [`CONTENT-PUBLISHING.md`](CONTENT-PUBLISHING.md). It contains the simplified workflow and copy-and-paste prompts.
 
+## Approved-content-only rule
+
+The coding agent is an editor of supplied/approved material, not an author of ADFLEX public copy.
+
+Do not generate public-facing titles, summaries, descriptions, body text, captions, image alt text, quotations, outcomes, link labels, publication metadata, claims or similar editorial wording. Every such string must come from the authorised content publisher or be explicitly approved by them before publication.
+
+Technical normalization is allowed where it does not alter meaning, for example converting a supplied full date to ISO storage. Do not paraphrase, polish, expand or summarise public content unless the authorised content publisher explicitly asks for that rewrite and approves it.
+
+If required wording is missing, ask for it or leave the field absent where supported. Never generate a photo description. Alt text and visible captions are separate: alt text must be supplied/approved for informative images; a visible caption must be separately supplied/approved. Where an image is decorative or redundant and no approved alt text is supplied, use `alt: ""`.
+
 ## Normal workflow
 
 A project team member can make a plain-language request such as:
@@ -20,12 +30,12 @@ or:
 
 Codex/developer workflow:
 
-1. Confirm the request contains enough approved facts to publish.
+1. Confirm the request contains enough approved facts **and approved wording** to publish.
 2. Read `AGENTS.md` and the types in `src/content/published.ts`.
-3. Add/update/remove the relevant object.
+3. Add/update/remove the relevant object without authoring missing public copy.
 4. Put associated public files under `public/content/`.
 5. Run `npm run check`.
-6. Review the diff for unrelated changes.
+6. Review the diff for unrelated changes and for any public wording that was not supplied/approved.
 7. Open a pull request.
 8. Merge after validation/review. The merge to `main` deploys automatically.
 
@@ -115,7 +125,8 @@ The nontechnical step-by-step version of this workaround is documented in [`CONT
     {
       id: "community-energy-workshop-poster",
       src: "/content/events/community-energy-workshop-2026/poster.webp",
-      alt: "Textual description of information carried by the poster",
+      alt: "Approved alternative text",
+      caption: "Approved visible caption, if supplied",
       width: 1600,
       height: 900,
     },
@@ -134,7 +145,7 @@ The nontechnical step-by-step version of this workaround is documented in [`CONT
 }
 ```
 
-The URL above is intentionally an example only. Never publish it; use only a URL supplied for the real event.
+The URL and text values above are examples of the schema only. Never publish example values; use only supplied/approved values for a real item.
 
 Past events whose exact day is not known may use a month-precision `event_date` in `YYYY-MM` form. The site displays this as, for example, `April 2026`; do not invent a day to satisfy the full-date form. Related links are stored as `{ label, href }` entries in `related_links` and render as safe external links rather than Markdown embedded in the body.
 
@@ -157,14 +168,14 @@ After the event, deliberately update its record so it no longer offers an obsole
       href: "/content/publications/paper-short-stable-id/paper.pdf",
       filename: "paper.pdf",
       byte_size: 1234567,
-      label: "Download paper",
+      label: "Approved download label",
     },
   ],
   published_on: "2026-09-22",
 }
 ```
 
-Do not guess a DOI, venue, authorship or publication status.
+Do not guess or generate a DOI, venue, authorship, publication status, title, label or descriptive text.
 
 ## Finding example
 
@@ -181,7 +192,7 @@ Do not guess a DOI, venue, authorship or publication status.
 }
 ```
 
-A finding is a public project claim. Internal analysis is not automatically publishable evidence.
+A finding is a public project claim. Internal analysis is not automatically publishable evidence. Do not generate finding wording from internal material.
 
 ## Ordering
 
