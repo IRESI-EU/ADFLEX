@@ -32,7 +32,7 @@ Git is both the content store and the audit trail. Codex is an editing interface
 
 The production architecture has **no `/admin` dashboard, PostgreSQL CMS, server-side media store, or runtime publishing API**. That older implementation is retained in Git history rather than in the current source tree.
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design rationale and [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the publishing workflow.
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design rationale, [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the technical publishing workflow, and [`docs/LAB-MANAGER-PUBLISHING.md`](docs/LAB-MANAGER-PUBLISHING.md) for the nontechnical ChatGPT/Codex guide.
 
 ## Content model
 
@@ -91,7 +91,9 @@ Normal public updates follow this path:
 4. GitHub Actions validates the site.
 5. Merging to `main` automatically rebuilds and deploys GitHub Pages.
 
-Examples, schemas and removal rules are in [`docs/PUBLISHING.md`](docs/PUBLISHING.md).
+For nontechnical project staff, use [`docs/LAB-MANAGER-PUBLISHING.md`](docs/LAB-MANAGER-PUBLISHING.md). It contains copy-and-paste prompts for events, news, publications, findings, updates and removals, plus the current media-upload workaround.
+
+Developer/Codex schemas, path conventions and removal rules are in [`docs/PUBLISHING.md`](docs/PUBLISHING.md).
 
 ## Deployment
 
@@ -110,7 +112,9 @@ The GitHub Pages build sets the repository base path to `/ADFLEX`. Do not bypass
 
 docs/
   ARCHITECTURE.md        current technical architecture
-  PUBLISHING.md          human/Codex publishing procedure
+  PUBLISHING.md          developer/Codex publishing procedure
+  LAB-MANAGER-PUBLISHING.md
+                        nontechnical ChatGPT/Codex publishing guide
   CONTENT-SOURCE.md      content provenance and approval rules
   OPEN-ITEMS.md          genuine unresolved project inputs
 
