@@ -43,16 +43,17 @@ When asked to publish, update, unpublish, or remove website content:
 
 1. Read `docs/PUBLISHING.md` and the existing types in `src/content/published.ts`.
 2. Change only the relevant content object and its own media unless the request explicitly needs a layout change.
-3. Never invent project facts, event dates, venues, authors, DOIs, results, funding claims, partner roles, URLs, statistics or quotations. If a required fact is missing, leave it absent where the type allows it or ask for it.
-4. Preserve supplied wording when the request says content is approved, final, verbatim, or provided by a project partner.
-5. Use unique, stable IDs. Do not recycle an ID from a removed item for unrelated content.
-6. For images, record the real intrinsic pixel dimensions and use meaningful alt text when the image carries information not already stated beside it. Decorative images use empty alt text.
-7. For downloadable files, keep the filename human-readable and set `byte_size` to the real file size.
-8. When removing an entry, remove associated media only when it is not referenced anywhere else.
-9. Do not silently rewrite unrelated content while publishing one item.
-10. Do not create placeholder news, events, publications or results just to make an empty page look populated.
-11. Files committed under `public/` are public once merged. Never commit confidential drafts, credentials, personal data or private correspondence.
-12. If the Codex web Create PR flow rejects binary files, do not invent alternate media or remove media references silently. Ask the user to upload the approved binary to the exact `public/content/` path in GitHub, then reference the real filename from the text/source PR. See `docs/LAB-MANAGER-PUBLISHING.md`.
+3. **Never author public editorial content on behalf of ADFLEX.** Public-facing titles, summaries, descriptions, body copy, captions, alternative text, quotations, outcomes, link labels, publication metadata, project claims and similar wording must be supplied by or explicitly approved by the authorised content publisher. AI-generated wording must not be published merely because it sounds reasonable.
+4. Never invent project facts, event dates, venues, authors, DOIs, results, funding claims, partner roles, URLs, statistics or quotations. If a required fact or required wording is missing, leave it absent where the type allows it or ask the authorised content publisher for it.
+5. Preserve supplied wording. Formatting and date normalization are allowed where they do not change meaning, but do not paraphrase, polish, summarise, expand or rewrite approved public copy unless the authorised content publisher explicitly asks for that rewrite and approves the result.
+6. Use unique, stable IDs. Do not recycle an ID from a removed item for unrelated content.
+7. For images, record the real intrinsic pixel dimensions. Never generate image descriptions or captions. Use alt text only when it was supplied or explicitly approved. If an image is decorative or repeats information already present beside it and no approved alt text was supplied, use `alt: ""`. A visible caption is separate from alt text and must also be supplied or explicitly approved.
+8. For downloadable files, keep the filename human-readable and set `byte_size` to the real file size.
+9. When removing an entry, remove associated media only when it is not referenced anywhere else.
+10. Do not silently rewrite unrelated content while publishing one item.
+11. Do not create placeholder news, events, publications or results just to make an empty page look populated.
+12. Files committed under `public/` are public once merged. Never commit confidential drafts, credentials, personal data or private correspondence.
+13. If the Codex web Create PR flow rejects binary files, do not invent alternate media or remove media references silently. Ask the user to upload the approved binary to the exact `public/content/` path in GitHub, then reference the real filename from the text/source PR. See `docs/CONTENT-PUBLISHING.md`.
 
 ## Event handling
 
@@ -92,6 +93,7 @@ npm run check
 
 For content updates, also verify:
 
+- every piece of new or changed public editorial wording has a supplied/approved source;
 - referenced media paths exist;
 - event/publication links are exactly the supplied links;
 - image dimensions match the actual files;
